@@ -46,8 +46,7 @@ nopoll-0.2.8.b184
 		这里要改下nopoll_config.h（此文件应该是自动生成的，我们要手动修改一个出来）
 
 		做了几个修改：
-
-      ```c++
+      ```c
       //#define NOPOLL_OS_UNIX (1)
       #define NOPOLL_OS_WIN32 (1)
       #define R_OK 4
