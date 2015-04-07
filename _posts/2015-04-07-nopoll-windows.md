@@ -1,5 +1,6 @@
 ---
-published: false
+layout: post
+title: windows 7 下编译 nopoll
 ---
 
 ## 编译环境：
