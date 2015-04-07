@@ -20,8 +20,8 @@ nopoll-0.2.8.b184
 2. nopoll依赖openssl，所以先编译openssl：
 	* 下载[http://www.openssl.org/source/openssl-1.0.2a.tar.gz](http://www.openssl.org/source/openssl-1.0.2a.tar.gz)
 	* 安装perl [http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi](http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi)
-	* 解压后，阅读INSTALL.W64安装说明：
-    
+	* 解压后，阅读INSTALL.W64安装说明
+ 
      	> To build for Win64/x64:
      	> 
     	 > perl Configure VC-WIN64A
@@ -33,7 +33,7 @@ nopoll-0.2.8.b184
     	 > cd out32dll
      	>  
      	> ..\ms\test
-  
+
 	* 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
 	* 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件，
 	* 生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
