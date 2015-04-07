@@ -30,7 +30,7 @@ nopoll-0.2.8.b184
 		> ..\ms\test
 	- 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
 	
-		![1.png](/images/1.png)
+		![1.png](/images/2015.4/1.png)
 
 	- 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件, 生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
     
@@ -109,6 +109,10 @@ nopoll-0.2.8.b184
       ```
     - 配置编译环境
 
+		![1.png](/images/2015.4/2.png)
+
+		![1.png](/images/2015.4/3.png)
+
 		- 添加openssl的include、nopoll的src到包含目录；
 
 		- 添加上一步生成的ssl/lib目录 到 库目录；
@@ -118,21 +122,29 @@ nopoll-0.2.8.b184
 
 4. 测试libnopoll.lib是否可用：
 
-	新建测试项目，一样是
+	新建测试项目，一样是	![1.png](/images/2015.4/4.png)
     
 	添加nopoll官方的example代码，https://dolphin.aspl.es/svn/publico/nopoll/trunk/test/nopoll-regression-listener.c；
     
-	复制 /test的pem、crt、key文件到工程目录里；
+	复制 /test的pem、crt、key文件到工程目录里:
+	
+	![1.png](/images/2015.4/5.png)
     
 	然后是附加依赖项：
+	
+	![1.png](/images/2015.4/6.png)
     
 	之后就可以编译 运行了：
+
+	![1.png](/images/2015.4/7.png)
     
 	看样子是成功了。
     
 	最后客户端的例子也试着编译下，工程配置和server的一样
     
 	！！ 编译时出现error:
+
+	![1.png](/images/2015.4/8.png)
     
 	照着反馈做即可，在文件头添加一个define 
     
@@ -140,13 +152,21 @@ nopoll-0.2.8.b184
   		#define _CRT_SECURE_NO_WARNINGS
  	 ```
 
-	unlink改成_unlink呗；
-    
+
+	![1.png](/images/2015.4/9.png)
+	
+	unlink改成_unlink呗。
+
+   
 	VERSION可能是要自己定义，也定义一个，之后就顺利编译出来了。
     
-	不过运行的时候又出现报错，
-    
-	问题就是windows下没有linux的diff工具，先把相关的几行代码屏蔽掉先把，再次编译运行
+	不过运行的时候又出现报错：
+
+	![1.png](/images/2015.4/10.png)
+
+	问题就是windows下没有linux的diff工具，先把相关的几行代码屏蔽掉先把，再次编译运行：
+
+	![1.png](/images/2015.4/11.png)
     
 	good，客户端和服务端协同工作了。
 
