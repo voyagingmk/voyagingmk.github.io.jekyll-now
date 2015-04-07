@@ -1,6 +1,7 @@
 ---
 layout: post
 title: windows 7 下编译 nopoll
+published: true
 ---
 
 ## 编译环境：
@@ -16,15 +17,10 @@ nopoll-0.2.8.b184
 ## 编译步骤：
 
 1. nopoll官网提供了二进制安装包，不过不知为什么无法直接用，所以还是得手动编译个
-2.  nopoll依赖openssl，所以先编译openssl：
-
-1）下载http://www.openssl.org/source/openssl-1.0.2a.tar.gz
-
-2）安装perl，http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi
-
-3）解压后，阅读INSTALL.W64安装说明：
-
-
+2. nopoll依赖openssl，所以先编译openssl：
+	1. 下载[http://www.openssl.org/source/openssl-1.0.2a.tar.gz](http://www.openssl.org/source/openssl-1.0.2a.tar.gz)
+	2. 安装perl，[http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi](http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi)
+	3. 解压后，阅读INSTALL.W64安装说明：
  To build for Win64/x64:
  > perl Configure VC-WIN64A
  > ms\do_win64a
