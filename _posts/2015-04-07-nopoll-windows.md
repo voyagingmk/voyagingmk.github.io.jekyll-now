@@ -108,12 +108,13 @@ nopoll-0.2.8.b184
 
     - 配置编译环境
 
-		添加openssl的include、nopoll的src到包含目录；
+		- 添加openssl的include、nopoll的src到包含目录；
 
-		添加上一步生成的ssl/lib目录 到 库目录；
+		- 添加上一步生成的ssl/lib目录 到 库目录；
 	
-		执行 生成项目，就得到了libnopoll.lib文件；
+		- 执行 生成项目，就得到了libnopoll.lib文件；
 	
+
 4. 测试libnopoll.lib是否可用：
 
 	新建测试项目，一样是
