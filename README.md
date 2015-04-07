@@ -1,1 +1,1 @@
-## fork from (barryclark/jekyll-now)[https://github.com/barryclark/jekyll-now]
+# fork from (barryclark/jekyll-now)[https://github.com/barryclark/jekyll-now]
