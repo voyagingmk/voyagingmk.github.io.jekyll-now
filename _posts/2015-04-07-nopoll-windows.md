@@ -18,9 +18,9 @@ nopoll-0.2.8.b184
 
 1. nopoll官网提供了二进制安装包，不过不知为什么无法直接用，所以还是得手动编译个
 2. nopoll依赖openssl，所以先编译openssl：
-	* 下载[http://www.openssl.org/source/openssl-1.0.2a.tar.gz](http://www.openssl.org/source/openssl-1.0.2a.tar.gz)
-	* 安装perl [http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi](http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi)
-	* 解压后，阅读INSTALL.W64安装说明
+	- 下载[http://www.openssl.org/source/openssl-1.0.2a.tar.gz](http://www.openssl.org/source/openssl-1.0.2a.tar.gz)
+	- 安装perl [http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi](http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi)
+	- 解压后，阅读INSTALL.W64安装说明
 		> We loved with a love that was more than love
 		> To build for Win64/x64: 
 		> perl Configure VC-WIN64A
@@ -28,9 +28,9 @@ nopoll-0.2.8.b184
 		> nmake -f ms\ntdll.mak
 		> cd out32dll
 		> ..\ms\test
-	* 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
-	* 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件，
-	* 生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
+	- 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
+	- 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件，
+	- 生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
     
 
 3. 用编译好的openssl库来编译Nopoll
@@ -38,84 +38,75 @@ nopoll-0.2.8.b184
 	nopoll虽然提供了Makefile.win，但我试了下，发现并不能一键编译，会提示缺少versions.mk和config.mk（这2个文件最后在nopoll的svn仓库里找到），补上这2个文件后再次执行nmake，会提示./prepare-nsh.sh permission denied（win平台执行sh文件？）
 
 	按官方的编译方法失败后，只能自行建工程编译了：
+    - 新建一个vs工程，取名libnopoll
+    - 添加 nopoll-0.2.8.b184/src目录的源码文件到工程
+    - 这里要改下nopoll_config.h（此文件应该是自动生成的，我们要手动修改一个出来）
 
-		* 新建一个vs工程，取名libnopoll
+      ```c
+      /*
+      * Nopoll Library nopoll_config.h
+      * Platform dependant definitions.
+      *
+      * This is a generated file.  Please modify 'configure.in'
+      */
+      #ifndef __NOPOLL_CONFIG_H__
+      #define __NOPOLL_CONFIG_H__
+      /**
+      * \addtogroup nopoll_decl_module
+      * @{
+      */
+      /**
+      * @brief Allows to convert integer value (including constant values)
+      * into a pointer representation.
+      *
+      * Use the oposite function to restore the value from a pointer to a
+      * integer: \ref PTR_TO_INT.
+      *
+      * @param integer The integer value to cast to pointer.
+      *
+      * @return A \ref noPollPtr reference.
+      */
+      #ifndef INT_TO_PTR
+      #define INT_TO_PTR(integer)   ((noPollPtr) (long) ((int)integer))
+      #endif
+      /**
+      * @brief Allows to convert a pointer reference (\ref noPollPtr),
+      * which stores an integer that was stored using \ref INT_TO_PTR.
+      *
+      * Use the oposite function to restore the pointer value stored in the
+      * integer value.
+      *
+      * @param ptr The pointer to cast to a integer value.
+      *
+      * @return A int value.
+      */
+      #ifndef PTR_TO_INT
+      #define PTR_TO_INT(ptr) ((int) (long) (ptr))
+      #endif
+      /**
+      * @brief Allows to get current platform configuration. This is used
+      * by Nopoll library but could be used by applications built on top of
+      * Nopoll to change its configuration based on the platform information.
+      */
+      //#define NOPOLL_OS_UNIX (1)
+      #define NOPOLL_OS_WIN32 (1)
+      #define R_OK 4
+      #define W_OK 2
+      /**
+      * @internal Allows to now if the platform support vasprintf
+      * function. Do not use this macro as it is supposed to be for
+      * internal use.
+      */
+      //#define NOPOLL_HAVE_VASPRINTF (1)
+      /**
+      * @brief Indicates that this platform have support for 64bits.
+      */
+      #define NOPOLL_64BIT_PLATFORM (1)
+      /* @} */
+      #endif
+      ```
 
-		* 添加 nopoll-0.2.8.b184/src目录的源码文件到工程里
-
-		* 这里要改下nopoll_config.h（此文件应该是自动生成的，我们要手动修改一个出来）
-        ```c
-        //#define NOPOLL_OS_UNIX (1)
-        #define NOPOLL_OS_WIN32 (1)
-        #define R_OK 4
-        #define W_OK 2
-        //#define NOPOLL_HAVE_VASPRINTF (1)
-        ```
-        ```c 
-        /*
-         * Nopoll Library nopoll_config.h
-         * Platform dependant definitions.
-         *
-         * This is a generated file.  Please modify 'configure.in'
-         */
-        #ifndef __NOPOLL_CONFIG_H__
-        #define __NOPOLL_CONFIG_H__
-        /**
-         * \addtogroup nopoll_decl_module
-         * @{
-         */
-        /**
-         * @brief Allows to convert integer value (including constant values)
-         * into a pointer representation.
-         *
-         * Use the oposite function to restore the value from a pointer to a
-         * integer: \ref PTR_TO_INT.
-         *
-         * @param integer The integer value to cast to pointer.
-         *
-         * @return A \ref noPollPtr reference.
-         */
-        #ifndef INT_TO_PTR
-        #define INT_TO_PTR(integer)   ((noPollPtr) (long) ((int)integer))
-        #endif
-        /**
-         * @brief Allows to convert a pointer reference (\ref noPollPtr),
-         * which stores an integer that was stored using \ref INT_TO_PTR.
-         *
-         * Use the oposite function to restore the pointer value stored in the
-         * integer value.
-         *
-         * @param ptr The pointer to cast to a integer value.
-         *
-         * @return A int value.
-         */
-        #ifndef PTR_TO_INT
-        #define PTR_TO_INT(ptr) ((int) (long) (ptr))
-        #endif
-        /**
-         * @brief Allows to get current platform configuration. This is used
-         * by Nopoll library but could be used by applications built on top of
-         * Nopoll to change its configuration based on the platform information.
-         */
-        //#define NOPOLL_OS_UNIX (1)
-        #define NOPOLL_OS_WIN32 (1)
-        #define R_OK 4
-        #define W_OK 2
-        /**
-         * @internal Allows to now if the platform support vasprintf
-         * function. Do not use this macro as it is supposed to be for
-         * internal use.
-         */
-        //#define NOPOLL_HAVE_VASPRINTF (1)
-        /**
-         * @brief Indicates that this platform have support for 64bits.
-         */
-        #define NOPOLL_64BIT_PLATFORM (1)
-        /* @} */
-        #endif
-        ```
-
-	* 配置编译环境
+    - 配置编译环境
 
 		添加openssl的include、nopoll的src到包含目录；
 
