@@ -22,14 +22,18 @@ nopoll-0.2.8.b184
 	* 安装perl [http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi](http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi)
 	* 解压后，阅读INSTALL.W64安装说明：
     
-     	To build for Win64/x64
-    	 ```javascript
-       perl Configure VC-WIN64A
-       ms\do_win64a
-       nmake -f ms\ntdll.mak
-       cd out32dll
-       ..\ms\test
-       ```
+     	> To build for Win64/x64:
+     	> 
+    	 > perl Configure VC-WIN64A
+     	> 
+     	> ms\do_win64a
+     	>  
+     	> nmake -f ms\ntdll.mak
+    	 >  
+    	 > cd out32dll
+     	>  
+     	> ..\ms\test
+  
 	* 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
 	* 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件，
 
