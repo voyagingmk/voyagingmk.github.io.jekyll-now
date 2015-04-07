@@ -39,13 +39,11 @@ nopoll-0.2.8.b184
 
 	按官方的编译方法失败后，只能自行建工程编译了：
 
-	* 新建一个vs工程，取名libnopoll
+		* 新建一个vs工程，取名libnopoll
 
-	* 添加 nopoll-0.2.8.b184/src目录的源码文件到工程里
+		* 添加 nopoll-0.2.8.b184/src目录的源码文件到工程里
 
-		这里要改下nopoll_config.h（此文件应该是自动生成的，我们要手动修改一个出来）
-
-		做了几个修改：
+		* 这里要改下nopoll_config.h（此文件应该是自动生成的，我们要手动修改一个出来）
       ```c
       //#define NOPOLL_OS_UNIX (1)
       #define NOPOLL_OS_WIN32 (1)
@@ -53,7 +51,7 @@ nopoll-0.2.8.b184
       #define W_OK 2
       //#define NOPOLL_HAVE_VASPRINTF (1)
       ```
-      ```c++  
+      ```c 
       /*
        * Nopoll Library nopoll_config.h
        * Platform dependant definitions.
