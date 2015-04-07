@@ -157,52 +157,38 @@ nopoll-0.2.8.b184
 	
 		执行 生成项目，就得到了libnopoll.lib文件；
 	
-4.测试libnopoll.lib是否可用：
+4. 测试libnopoll.lib是否可用：
 
-新建测试项目，一样是Clipboard Image.png
-
-添加nopoll官方的example代码，https://dolphin.aspl.es/svn/publico/nopoll/trunk/test/nopoll-regression-listener.c；
-
-复制 /test的pem、crt、key文件到工程目录里；
-
-Clipboard Image.png
-
-然后是附加依赖项：
-
-Clipboard Image.png
-
-之后就可以编译 运行了：
-
-Clipboard Image.png
-
-看样子是成功了。
-
-最后客户端的例子也试着编译下，工程配置和server的一样
-
-！！ 编译时出现error:
-
-Clipboard Image.png
-
-照着反馈做即可，在文件头添加一个define 
-
-#define _CRT_SECURE_NO_WARNINGS
-Clipboard Image.png
-
-unlink改成_unlink呗；
-
-VERSION可能是要自己定义，也定义一个，之后就顺利编译出来了。
-
-不过运行的时候又出现报错，
-
-Clipboard Image.png
-
-问题就是windows下没有linux的diff工具，先把相关的几行代码屏蔽掉先把，再次编译运行
-
-Clipboard Image.png
-
-good，客户端和服务端协同工作了。
-
-
+	新建测试项目，一样是
+    
+	添加nopoll官方的example代码，https://dolphin.aspl.es/svn/publico/nopoll/trunk/test/nopoll-regression-listener.c；
+    
+	复制 /test的pem、crt、key文件到工程目录里；
+    
+	然后是附加依赖项：
+    
+	之后就可以编译 运行了：
+    
+	看样子是成功了。
+    
+	最后客户端的例子也试着编译下，工程配置和server的一样
+    
+	！！ 编译时出现error:
+    
+	照着反馈做即可，在文件头添加一个define 
+    
+	```
+  	#define _CRT_SECURE_NO_WARNINGS
+ 	 ```
+	unlink改成_unlink呗；
+    
+	VERSION可能是要自己定义，也定义一个，之后就顺利编译出来了。
+    
+	不过运行的时候又出现报错，
+    
+	问题就是windows下没有linux的diff工具，先把相关的几行代码屏蔽掉先把，再次编译运行
+    
+	good，客户端和服务端协同工作了。
 
 附：
 
