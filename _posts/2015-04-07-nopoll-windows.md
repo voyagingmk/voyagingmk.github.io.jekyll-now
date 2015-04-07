@@ -36,8 +36,7 @@ nopoll-0.2.8.b184
   
 	* 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
 	* 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件，
-
-	生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
+	* 生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
     
 
 3. 用编译好的openssl库来编译Nopoll
@@ -168,4 +167,4 @@ nopoll-0.2.8.b184
 
 附：
 
-编译debug版的openssl :  http://blog.csdn.net/wangxvfeng101/article/details/7261264
+编译debug版的openssl :  [http://blog.csdn.net/wangxvfeng101/article/details/7261264](http://blog.csdn.net/wangxvfeng101/article/details/7261264)
