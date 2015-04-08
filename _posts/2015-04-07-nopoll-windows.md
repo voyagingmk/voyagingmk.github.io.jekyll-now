@@ -113,63 +113,53 @@ published: true
 
 		![1.png](/images/2015.4/3.png)
 
-		- 添加openssl的include、nopoll的src到包含目录；
+		- 添加openssl的include、nopoll的src到包含目录
 
-		- 添加上一步生成的ssl/lib目录 到 库目录；
+		- 添加上一步生成的ssl/lib目录 到 库目录
 	
-		- 执行 生成项目，就得到了libnopoll.lib文件；
+		- 执行 生成项目，就得到了libnopoll.lib文件
 	
 
 4. 测试libnopoll.lib是否可用：
-
-	新建测试项目，一样是	![1.png](/images/2015.4/4.png)
-    
-	添加nopoll官方的example代码，https://dolphin.aspl.es/svn/publico/nopoll/trunk/test/nopoll-regression-listener.c；
-    
-	复制 /test的pem、crt、key文件到工程目录里:
+	- 新建测试项目，一样是	![1.png](/images/2015.4/4.png)
+	- 添加nopoll官方的example代码，[https://dolphin.aspl.es/svn/publico/nopoll/trunk/test/nopoll-regression-listener.c](https://dolphin.aspl.es/svn/publico/nopoll/trunk/test/nopoll-regression-listener.c)
+	- 复制 /test的pem、crt、key文件到工程目录里:
 	
-	![1.png](/images/2015.4/5.png)
-    
-	然后是附加依赖项：
+		![1.png](/images/2015.4/5.png)
+	- 然后是附加依赖项：
 	
-	![1.png](/images/2015.4/6.png)
-    
-	之后就可以编译 运行了：
+		![1.png](/images/2015.4/6.png)
+	- 之后就可以编译 运行了：
 
-	![1.png](/images/2015.4/7.png)
+		![1.png](/images/2015.4/7.png)
     
-	看样子是成功了。
-    
-	最后客户端的例子也试着编译下，工程配置和server的一样
-    
-	！！ 编译时出现error:
+		看样子是成功了。
+	- 最后客户端的例子也试着编译下，工程配置和server的一样，咦！！ 编译时出现各种error:
 
-	![1.png](/images/2015.4/8.png)
-    
-	照着反馈做即可，在文件头添加一个define 
-    
-	```c
-  		#define _CRT_SECURE_NO_WARNINGS
- 	 ```
+		![1.png](/images/2015.4/8.png)
+		
+		照着反馈做即可，在文件头添加一个define 
 
-
-	![1.png](/images/2015.4/9.png)
+		```c
+  			#define _CRT_SECURE_NO_WARNINGS
+ 		 ```
+		![1.png](/images/2015.4/9.png)
 	
-	unlink改成_unlink呗。
+		unlink改成_unlink呗；
 
-   
-	VERSION可能是要自己定义，也定义一个，之后就顺利编译出来了。
+		VERSION可能是要自己定义，也定义一个，之后就顺利编译出来了。
     
-	不过运行的时候又出现报错：
+		不过运行的时候又出现报错：
 
-	![1.png](/images/2015.4/10.png)
+		![1.png](/images/2015.4/10.png)
 
-	问题就是windows下没有linux的diff工具，先把相关的几行代码屏蔽掉先把，再次编译运行：
+		问题就是windows下没有linux的diff工具，先把相关的几行代码屏蔽掉先把，再次编译运行：
 
-	![1.png](/images/2015.4/11.png)
+		![1.png](/images/2015.4/11.png)
     
-	good，客户端和服务端协同工作了。
+		Nice，客户端和服务端协同工作了。
 
-附：
 
-编译debug版的openssl :  [http://blog.csdn.net/wangxvfeng101/article/details/7261264](http://blog.csdn.net/wangxvfeng101/article/details/7261264)
+### 附 ###
+
+- 编译debug版的openssl :  [http://blog.csdn.net/wangxvfeng101/article/details/7261264](http://blog.csdn.net/wangxvfeng101/article/details/7261264)
