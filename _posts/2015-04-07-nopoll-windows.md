@@ -17,7 +17,7 @@ published: true
 
 ### 编译步骤 ###
 
-1. nopoll官网提供了二进制安装包，不过不知为什么无法直接用，所以还是得手动编译个
+1. nopoll官网提供了二进制安装包，不过不知为什么无法直接用（运行时错误，无法debug)，所以还是得手动编译
 2. nopoll依赖openssl，所以先编译openssl：
 	- 下载[http://www.openssl.org/source/openssl-1.0.2a.tar.gz](http://www.openssl.org/source/openssl-1.0.2a.tar.gz)
 	- 安装perl [http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi](http://downloads.activestate.com/ActivePerl/releases/5.20.1.2000/ActivePerl-5.20.1.2000-MSWin32-x64-298557.msi)
