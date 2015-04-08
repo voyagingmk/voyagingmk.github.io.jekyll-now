@@ -6,13 +6,14 @@ published: true
 
 ### 编译环境 ###
 
-windows 7 64位
+- windows 7 64位
 
-VS 2013 Ultimate
+- VS 2013 Ultimate
 
-openssl-1.0.2a
+- openssl-1.0.2a
 
-nopoll-0.2.8.b184
+- nopoll-0.2.8.b184
+
 
 ### 编译步骤 ###
 
@@ -28,12 +29,14 @@ nopoll-0.2.8.b184
 		> nmake -f ms\ntdll.mak
 		> cd out32dll
 		> ..\ms\test
+
 	- 第三步的ms\do_win65a和nmake -f ms\ntdll.mak必须要用vs的控制台程序来执行，否则会出错
-	
+
 		![1.png](/images/2015.4/1.png)
 
+
 	- 编译完成通过后，执行nmake -f ms\ntdll.mak install来生成最终发布文件, 生成位置默认是在usr/local/里，但windows下没有这个目录，所以Perl把ssl生成到当前控制台所在分区的根目录了（如源码在d:/openssl/，则会生成到D:/usr/local/)
-    
+
 
 3. 用编译好的openssl库来编译Nopoll
 
