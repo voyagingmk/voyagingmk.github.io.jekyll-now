@@ -67,6 +67,7 @@ public:
 
 ### 代码（4ms RunTime)：
 
+```c
 	int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
 		int n = obstacleGrid.size();
 		int m = obstacleGrid[0].size();
@@ -99,4 +100,5 @@ public:
 			}
 		return sum[n - 1][m - 1];
 	}
+```
 
