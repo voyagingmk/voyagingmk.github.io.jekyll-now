@@ -1,6 +1,6 @@
 ---
 layout: post
-title: leetcode题解 problem 221 Maximal Square
+title: leetcode题解 problem 152 Maximum Product Subarray
 published: true
 ---
 
