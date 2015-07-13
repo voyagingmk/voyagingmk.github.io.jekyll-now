@@ -2,7 +2,7 @@
 layout: post
 title: windows 7 下编译 nopoll
 published: true
-category: nopoll c c++
+categories: ['nopoll', 'c', 'c++']
 ---
 
 ### 编译环境 ###
