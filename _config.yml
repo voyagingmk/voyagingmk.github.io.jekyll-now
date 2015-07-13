@@ -65,7 +65,6 @@ sass:
 # Use the following plug-ins
 gems:
   - jekyll-sitemap
-  - jekyll-tagging
 
 # Exclude these files from your production _site
 exclude:
