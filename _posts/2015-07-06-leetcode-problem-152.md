@@ -2,6 +2,7 @@
 layout: post
 title: leetcode题解 problem 152 Maximum Product Subarray
 published: true
+tags: ['leetcode']
 ---
 
 > Find the contiguous subarray within an array (containing at least one number) which has the largest product.

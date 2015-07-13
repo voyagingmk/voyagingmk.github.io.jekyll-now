@@ -2,6 +2,7 @@
 layout: post
 title: leetcode题解 problem 62 63 Unique Paths I & II
 published: true
+tags: ['leetcode']
 ---
 
 A robot is located at the top-left corner of a m x n grid (marked 'Start' in the diagram below).

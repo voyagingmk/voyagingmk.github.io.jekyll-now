@@ -2,6 +2,7 @@
 layout: post
 title: leetcode题解 problem 222 Count Complete Tree Nodes 
 published: true
+tags: ['leetcode']
 ---
 
 > Given a complete binary tree, count the number of nodes.

@@ -5,17 +5,18 @@ layout: default
 <ul>
 {% for post in page.posts %}
   <li>
-  	<a href="{{ post.url }}">{{ post.title }}</a>
+  	<h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
     <div class="date">
-    	Written on {{ page.date | date: "%B %e, %Y" }}
+    	Written on {{ post.date | date: "%B %e, %Y" }}
   	</div>
-    <p>
-    Tags: {{ post | tags }}
-    </p>
+    <div>
+    	Tags: {{ post | tags }}
+    </div>
   </li>
 {% endfor %}
 </ul>
 
+<p>All tags:</p>
 <div id="tag-cloud">
   {{ site | tag_cloud }}
 </div>
