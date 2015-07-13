@@ -63,11 +63,13 @@ sass:
   style: :expanded # You might prefer to minify using :compressed
 
 # Use the following plug-ins
-gems: [jekyll-sitemap, jekyll-tagging]
+gems: [jekyll-sitemap]
 
 # Exclude these files from your production _site
 exclude:
-    - Gemfile
     - Gemfile.lock
     - LICENSE
     - README.md
+
+tag_page_layout: tag_page
+tag_page_dir: tag
