@@ -1,1 +1,1 @@
-jekyll serve
+nohup jekyll serve &
