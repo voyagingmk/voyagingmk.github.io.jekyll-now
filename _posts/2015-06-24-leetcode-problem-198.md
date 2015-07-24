@@ -73,3 +73,25 @@ public:
 	}
 };
 ```
+
+又因为，我们只需要求f[n]，并不需要输出整个F数组，那么可以改下代码，降低空间复杂度。
+
+代码如下(leetcode RunTime 0ms)：
+```c
+class Solution {
+public:
+	int rob(vector<int>& nums) {
+		if (nums.size() == 0)
+			return 0;
+		if (nums.size() == 1)
+			return nums[0];
+		int pre = 0, cur = 0, temp = -1;
+		for (int i = 0, size = nums.size(); i < size; ++i){
+			temp = cur;
+			cur = max(nums[i] + pre, cur);
+			pre = temp;
+		}
+		return cur;
+	}
+};
+```
