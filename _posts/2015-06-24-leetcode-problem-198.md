@@ -77,6 +77,8 @@ public:
 又因为，我们只需要求f[n]，并不需要输出整个F数组，那么可以改下代码，降低空间复杂度。
 
 代码如下(leetcode RunTime 0ms)：
+
+
 ```c
 class Solution {
 public:
