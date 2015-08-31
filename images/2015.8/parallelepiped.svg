@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <g>
+  <title>Layer 1</title>
+  <line id="svg_4" y2="403" x2="478.243707" y1="403" x1="76" stroke="#000000" fill="none"/>
+  <line stroke="#000000" id="svg_5" y2="71.619952" x2="77" y1="402" x1="77" fill="none"/>
+  <line stroke="#000000" id="svg_6" y2="206.722769" x2="310.277218" y1="402" x1="77" fill="none"/>
+  <line id="svg_8" y2="367" x2="350.080108" y1="367" x1="194" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" stroke="#000000" fill="none"/>
+  <line id="svg_9" y2="313.5" x2="388.040053" y1="313.5" x1="231.959946" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" stroke="#000000" fill="none"/>
+  <line stroke="#000000" transform="rotate(-4.512892723083496 214.9258270263665,339.5741577148434) " id="svg_11" y2="313.927632" x2="237.735646" y1="365.22072" x1="192.115998" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="none"/>
+  <line id="svg_13" stroke="#000000" transform="rotate(-4.512892723083496 368.99999999999886,340.4999694824225) " y2="314.853444" x2="391.809819" y1="366.146532" x1="346.190171" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="none"/>
+  <line id="svg_14" y2="285.5" x2="440.040061" y1="285.5" x1="283.959953" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" stroke="#000000" fill="none"/>
+  <line id="svg_15" stroke="#000000" transform="rotate(-4.512892723083496 418.9999999999984,313.4999694824224) " y2="287.853444" x2="441.809819" y1="339.146532" x1="396.190171" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="none"/>
+  <line id="svg_16" stroke="#000000" transform="rotate(-4.512892723083496 263.0000000000008,313.4999999999995) " y2="287.853444" x2="285.809819" y1="339.146532" x1="240.190171" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="5,5" stroke-width="2" fill="none"/>
+  <line stroke="#000000" id="svg_17" transform="rotate(23.702646255493164 411.50000000000034,301.5) " y2="279.029097" x2="428.425097" y1="323.970885" x1="394.574896" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="none"/>
+  <line id="svg_18" stroke="#000000" transform="rotate(23.702646255493164 375,353.50003051757807) " y2="331.029112" x2="391.925097" y1="375.9709" x1="358.074896" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="none"/>
+  <line stroke="#000000" id="svg_19" transform="rotate(23.702646255493164 260.0000000000002,298.49999999999994) " y2="274.711475" x2="277.438748" y1="322.288532" x1="242.561239" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="2" fill="none"/>
+  <line id="svg_20" stroke="#000000" transform="rotate(23.702646255493164 221.9999999999998,351.50000000000006) " y2="327.71146" x2="239.438764" y1="375.288517" x1="204.561254" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="5,5" stroke-width="2" fill="none"/>
+  <line id="svg_21" y2="339.5" x2="400.040061" y1="339.5" x1="243.959953" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="5,5" stroke-width="2" stroke="#000000" fill="none"/>
+  <line id="svg_22" y2="84" x2="63" y1="70" x1="77" stroke-linecap="null" stroke-linejoin="null" stroke="#000000" fill="none"/>
+  <line transform="rotate(90 83,76.50000000000001) " stroke="#000000" id="svg_23" y2="83.5" x2="76" y1="69.5" x1="90" stroke-linecap="null" stroke-linejoin="null" fill="none"/>
+  <line id="svg_30" y2="416.75" x2="464.5" y1="402.75" x1="478.5" stroke-linecap="null" stroke-linejoin="null" stroke="#000000" fill="none"/>
+  <line id="svg_31" transform="rotate(90 471.5,395.25000000000006) " stroke="#000000" y2="402.25" x2="464.5" y1="388.25" x1="478.5" stroke-linecap="null" stroke-linejoin="null" fill="none"/>
+  <line id="svg_32" transform="rotate(28.61046028137207 299.9999999999999,210.49999999999997) " stroke="#000000" y2="217.5" x2="293" y1="203.5" x1="307" stroke-linecap="null" stroke-linejoin="null" fill="none"/>
+  <line transform="rotate(-29.167613983154297 305.9999999999999,217.49999999999994) " id="svg_33" stroke="#000000" y2="224.5" x2="299" y1="210.5" x1="313" stroke-linecap="null" stroke-linejoin="null" fill="none"/>
+ </g>
+</svg>
