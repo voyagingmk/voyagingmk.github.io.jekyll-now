@@ -11,7 +11,7 @@ published: true
 
 ## PLU的LU
 
-要理解PLU，得先搞懂LU分解。（这里分享一个外教的讲解视频，简单好理解：[https://www.youtube.com/watch?v=UlWcofkUDDU]() 能翻墙的同学就直接看吧。)
+要理解PLU，得先搞懂LU分解。（这里分享一个外教的讲解视频，简单好理解：[https://www.youtube.com/watch?v=UlWcofkUDDU](https://www.youtube.com/watch?v=UlWcofkUDDU) 能翻墙的同学就直接看吧。)
 
 LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三角矩阵和上三角矩阵。
 
@@ -155,9 +155,43 @@ https://www.youtube.com/watch?v=wTlAUfv_O4s
 
 L、U中没有出现大数，于是认为这样的分解是稳定的。
 
+PA的P，需要对P做一些检测后才可以得到，策略就是：沿着对角线从左上角到右下角遍历A，并检测当前列的最大元素在下方的哪一行（当前行上方的行保持不变），找到后就将当前行和目标行交换，并记录下一个\\(E\_\{i\}\\)。最后按顺序算\\(E\_\{i\}\\)的乘积就得到了P。
+
+## A的行列式
+
+在[<复习向>线性代数之矩阵与行列式(1)](http://yiqizhumeng.com:4000/linear-algebra/)中，已经提到了一条行列式公式：
+
+\\[ det(AB) = det(A)det(B) \\]
+
+而，\\( PA = LU \\)又可以变成 \\( A = P\^\{-1\}LU \\)，所以：
+
+\\[ det(A) = det(P\^\{-1\}LU) = det(P\^\{-1\})det(L)det(U) \\]
+
+可以进一步将这个式子简化：
+
+- L、U矩阵分别是下三角矩阵和上三角矩阵，它们的行列式等于对角线上元素的乘积
+- L矩阵上的元素都为1
+
+于是有：
+
+\\[ det(A) = det(P\^\{-1\})u\_\{11\}u\_\{22\}\\cdots u\_\{nn\} \\]
+
+因为： \\( PP\^\{-1\} = PP\^\{T\} =  1 \\)，\\( det(P\_T) = det(P) \\)，所以问题变成了求det(P)。
+
+P怎么求？首先，P相当于多个\\(E\_i\\)矩阵的乘积，而又有\\( det(E\_i)=\-1 \\)  (行列式的基本性质：交换行列式的两行，行列式变号），所以有：
+
+\\[ P = E\_t\cdots E\_2E\_1 \implies \det(P) = \\prod\^t\_\{i=1\}\det(E\_i)=(-1)\^t \\]
 
 
-已经有人证明了，任何方阵都存在它的PLU分解:[http://arxiv.org/pdf/math/0506382v1.pdf]()。
+于是：
+
+\\[ det(A) = det(P\^\{-1\}LU) = det(P)u\_\{11\}u\_\{22\}\\cdots u\_\{nn\} = (-1)\^\{t\}u\_\{11\}u\_\{22\}\\cdots u\_\{nn\} \\]
+
+## 总结
+
+矩阵的分解(factorization)有很多种，PA=LU只是其中一种，但此类分解法都离不开**高斯消元**这把大杀器。理解好高斯消元是关键。
+
+P.S. 已经有人证明了，任何方阵都存在它的PLU分解:[http://arxiv.org/pdf/math/0506382v1.pdf]()。
 
 
 
