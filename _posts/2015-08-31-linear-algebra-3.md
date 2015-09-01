@@ -58,6 +58,45 @@ LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三
 - 所以， \\( L = E\_\{0\}\^\{-1\}E\_\{1\}\^\{-1\}E\_\{2\}\^\{-1\} \\)
 
 
+要得到最终的L，需要算3个\\(E\_\{x\}\\)矩阵的逆矩阵，看似麻烦，其实很简单，因为\\(E\_\{x\}\\)有这样的性质：
+
+{% assign matE = "1,0,0,0,1,0,0,0,1" | split: ',' %}
+{% assign matE11 = "1,0,0,a,1,0,0,0,1" | split: ',' %}
+{% assign matE12 = "1,0,0,-a,1,0,0,0,1" | split: ',' %}
+
+\\[ {% include render_matrix_raw.html mat = matE11 row = 3 col = 3 %} {% include render_matrix_raw.html mat = matE12 row = 3 col = 3 %} = {% include render_matrix_raw.html mat = matE row = 3 col = 3 %} \\]
+
+{% assign matE21 = "1,0,0,0,1,0,a,0,1" | split: ',' %}
+{% assign matE22 = "1,0,0,0,1,0,-a,0,1" | split: ',' %}
+
+\\[ {% include render_matrix_raw.html mat = matE21 row = 3 col = 3 %} {% include render_matrix_raw.html mat = matE22 row = 3 col = 3 %} = {% include render_matrix_raw.html mat = matE row = 3 col = 3 %} \\]
+
+{% assign matE31 = "1,0,0,0,1,0,0,a,1" | split: ',' %}
+{% assign matE32 = "1,0,0,0,1,0,0,-a,1" | split: ',' %}
+
+\\[ {% include render_matrix_raw.html mat = matE31 row = 3 col = 3 %} {% include render_matrix_raw.html mat = matE32 row = 3 col = 3 %} = {% include render_matrix_raw.html mat = matE row = 3 col = 3 %} \\]
+
+所以：
+
+{% assign matIE1 = "1,0,0,6/9,1,0,0,0,1" | split: ',' %}
+{% assign matIE2 = "1,0,0,0,1,0,3/9,0,1" | split: ',' %}
+{% assign matIE3 = "1,0,0,0,1,0,0,2/1,1" | split: ',' %}
+\\[ L = E\_\{0\}\^\{-1\}E\_\{1\}\^\{-1\}E\_\{2\}\^\{-1\} = {% include render_matrix_raw.html mat = matIE1 row = 3 col = 3 %} {% include render_matrix_raw.html mat = matIE2 row = 3 col = 3 %} {% include render_matrix_raw.html mat = matIE3 row = 3 col = 3 %} \\]
+
+只要搞定右边的3矩阵乘法运算，就能得到L。而又因为：
+
+{% assign matEX1 = "1,0,0,a\_\{1\},1,0,b\_\{1\},c\_\{1\},1" | split: ',' %}
+{% assign matEX2 = "1,0,0,a\_\{2\},1,0,b\_\{2\},c\_\{2\},1" | split: ',' %}
+{% assign matEX3 = "1,0,0,a\_\{1\}+a\_\{2\},1,0,b\_\{1\}+a\_\{2\}c\_\{2\}+b\_\{2\},c\_\{1\}+c\_\{2\},1" | split: ',' %}
+
+
+\\[ {% include render_matrix_raw.html mat = matEX1 row = 3 col = 3 %}{% include render_matrix_raw.html mat = matEX2 row = 3 col = 3 %} = {% include render_matrix_raw.html mat = matEX3 row = 3 col = 3 %}
+\\]
+
+所以，L的结果可以迅速得到：
+{% assign matIE4 = "1,0,0,6/9,1,0,3/9,2/1,1" | split: ',' %}
+
+\\[ L = E\_\{0\}\^\{-1\}E\_\{1\}\^\{-1\}E\_\{2\}\^\{-1\} = {% include render_matrix_raw.html mat = matIE4 row = 3 col = 3 %}  \\]
 
 
 
