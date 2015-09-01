@@ -128,8 +128,6 @@ LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三
 
 从这个例子就可以看出，P左乘A时，改变了A的行的顺序；P右乘A时，改变了A的列的顺序。
 
-https://www.youtube.com/watch?v=wTlAUfv_O4s
-
 
 ## PA = LU？
 
