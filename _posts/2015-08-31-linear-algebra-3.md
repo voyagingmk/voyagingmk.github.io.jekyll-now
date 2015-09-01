@@ -98,6 +98,9 @@ LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三
 
 \\[ L = E\_\{0\}\^\{-1\}E\_\{1\}\^\{-1\}E\_\{2\}\^\{-1\} = {% include render_matrix_raw.html mat = matIE4 row = 3 col = 3 %}  \\]
 
+于是，A的LU分解完成了：
+
+\\[ A = LU = {% include render_matrix_raw.html mat = matIE4 row = 3 col = 3 %} {% include render_matrix_raw.html mat = matA3 row = 3 col = 3 %}  \\]
 
 
 ## PLU的P
@@ -126,6 +129,32 @@ LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三
 从这个例子就可以看出，P左乘A时，改变了A的行的顺序；P右乘A时，改变了A的列的顺序。
 
 https://www.youtube.com/watch?v=wTlAUfv_O4s
+
+
+## PA = LU？
+
+为什么要先对A做P置换后，再做LU分解？这是因为不这样做的话，LU会不稳定(stability)。
+
+举个例子：
+
+{% assign mat22 = "10\^\{-20\},1,1,1" | split: ',' %}
+{% assign mat22L = "1,0,10\^\{20\},1" | split: ',' %}
+{% assign mat22U = "10\^\{-20\},1,0,1-10\^\{20\}" | split: ',' %}
+
+\\[ A = {% include render_matrix_raw.html mat = mat22 row = 2 col = 2 %}  = {% include render_matrix_raw.html mat = mat22L row = 2 col = 2 %}{% include render_matrix_raw.html mat = mat22U row = 2 col = 2 %} = L\_\{0\}U\_\{0\} \\]
+
+直接分解后得到的L、U矩阵，出现了**大数**，程序员读者们肯定会意识到:"大数！这不是要越界的节奏吗！"。所以这是不能接受的。
+
+而神奇的是，对A做一些P置换后，再来LU分解，是可以变稳定的：
+{% assign matP = "0,1,1,0" | split: ',' %}
+{% assign mat22N = "1,1,10\^\{-20\},1" | split: ',' %}
+{% assign mat22L = "1,0,10\^\{-20\},1" | split: ',' %}
+{% assign mat22U = "1,1,0,1-10\^\{-20\}" | split: ',' %}
+
+\\[ PA = {% include render_matrix_raw.html mat = matP row = 2 col = 2 %}{% include render_matrix_raw.html mat = mat22 row = 2 col = 2 %} = {% include render_matrix_raw.html mat = mat22N row = 2 col = 2 %}  = {% include render_matrix_raw.html mat = mat22L row = 2 col = 2 %}{% include render_matrix_raw.html mat = mat22U row = 2 col = 2 %} = L\_\{1\}U\_\{1\} \\]
+
+L、U中没有出现大数，于是认为这样的分解是稳定的。
+
 
 
 已经有人证明了，任何方阵都存在它的PLU分解:[http://arxiv.org/pdf/math/0506382v1.pdf]()。
