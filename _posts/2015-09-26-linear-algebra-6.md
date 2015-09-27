@@ -23,6 +23,10 @@ A的主对角线上元素之和称为A的**迹**(trace)，记为tr(A)，即
 
 \\[ tr(A) = \\lambda \_\{1\} + \\lambda \_\{2\} + \\cdots + \\lambda \_\{n\} \\]
 
+迹还和A的行列式有关系：
+
+\\[ |A| = \\lambda \_\{1\}\\lambda \_\{2\}\\cdots \\lambda \_\{n\} \\]
+
 ## A的全部特征值和特征向量的求法
 
 1. 计算A的特征多项式
@@ -61,3 +65,17 @@ A的主对角线上元素之和称为A的**迹**(trace)，记为tr(A)，即
 又因为\\(Px = x = 1\\cdot x\\)，所以P的一个特征值是1。
 
 但是，P还有其他的特征值。当向量x正交于P的列空间时，有\\(Px = 0 \\)。所以P的另一个特征值为0。
+
+
+## 当A为旋转矩阵Q时
+
+因为旋转矩阵可以改变一个向量的方向，那么这个矩阵是否有特征值？事实是有的，但是是复数。
+
+{% assign Q1 = "cos(90),-sin(90),sin(90),cos(90)" | split: ',' %}
+{% assign Q2 = "0,-1,1,0" | split: ',' %}
+\\[ Q = {% include render_matrix_raw.html mat = Q1 row = 2 col = 2 %} = {% include render_matrix_raw.html mat = Q2 row = 2 col = 2 %} \\]
+
+\\[ |Q| = 0 - (-1) = 1 = \\lambda \_\{1\}\\lambda \_\{2\} \\]
+\\[ tr(Q) = 0 = \\lambda \_\{1\} + \\lambda \_\{2\} \\]
+
+显然，\\( \\lambda \_\{1\}\\lambda \_\{2\}\\)无实数域的解，但是有复数解i和-i。
