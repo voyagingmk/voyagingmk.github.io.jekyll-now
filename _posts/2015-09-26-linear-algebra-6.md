@@ -79,3 +79,30 @@ A的主对角线上元素之和称为A的**迹**(trace)，记为tr(A)，即
 \\[ tr(Q) = 0 = \\lambda \_\{1\} + \\lambda \_\{2\} \\]
 
 显然，\\( \\lambda \_\{1\}\\lambda \_\{2\}\\)无实数域的解，但是有复数解i和-i。
+
+
+## A的对角化，特征值的一种解法
+
+设n阶方阵A存在n个线性无关的特征向量\\(x\_\{i\}\\)，将这n个特征向量组成方阵S(也称为特征向量矩阵），则有：
+
+{% assign S = "x\_\{1\},x\_\{2\},\\cdots ,x\_\{n\}," | split: ',' %}
+{% assign S2 = "\\lambda \_\{1\}x\_\{1\},\\lambda \_\{2\}x\_\{2\},\\cdots ,\\lambda \_\{n\}x\_\{n\}," | split: ',' %}
+{% assign S3 = "\\lambda \_\{1\},0,\\cdots ,0,0,\\lambda \_\{2\},\\cdots ,0,\\vdots ,\\vdots, \\cdots ,\\vdots,0,0,\\cdots ,\\lambda \_\{n\}" | split: ',' %}
+
+\\[ AS = A{% include render_matrix_raw.html mat = S  row = 1 col = 4 %} = {% include render_matrix_raw.html mat = S2 row = 1 col = 4 %} \\] 
+\\[    = {% include render_matrix_raw.html mat = S  row = 1 col = 4 %}{% include render_matrix_raw.html mat = S3  row = 4 col = 4 %} \\]
+\\[ = S\\Lambda \\]
+
+所以有：
+
+\\[ A = S\\Lambda S\^\{-1\} \\]
+
+这个式子称为A的\\(S\\Lambda S\^\{-1\}\\)分解，或特征分解(Eigendecomposition)。
+
+BTW，对于A的幂，有一个性质：
+
+- 如果有 \\( Ax = \\lambda x \\)，则有\\( A\^\{2\}x = AAx = \\lambda Ax = \\lambda \\lambda x = \\lambda \^\{2\}x\\) 
+
+- \\( A\^\{2\} = S\\Lambda S\^\{-1\}S\\Lambda S\^\{-1\} = S\\Lambda \^\{2\}S\^\{-1\} \\)
+
+这个性质说明，A的n次幂的特征值等于\\(\\lambda \^\{n\}\\)，且无论n等于多少(当前n得是正整数），特征向量不变。
