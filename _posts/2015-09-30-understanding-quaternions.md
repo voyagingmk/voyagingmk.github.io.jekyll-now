@@ -25,12 +25,12 @@ tags: ['maths', 'quaternion']
 	- 两复数的商
 - i的幂
 - 复数平面
-	- 旋转轴（Rotors)
+	- 旋转数（Rotors)
 - 四元数
 	- 作为有序数的四元数
 	- 四元数的加减
 	- 四元数的积
-	- 一个真·四元数
+	- 实四元数
 	- 四元数的系数缩放
 	- 纯四元数
 	- 四元数的加法形式
@@ -219,5 +219,13 @@ t刚好是开始的p。如果我们把这些复数放到复数平面上，就得
 
 我们也可以按顺时针方向旋转，只需要把上面的乘数i改成-i。
 
-### 旋转轴（Rotors)
+### 旋转数（Rotors)
+
+我们也可以在复数平面上进行任意的旋转，只需要定义下面这个复数：
+\\[q = cos\\theta +isin\\theta \\]
+
+
+
+Multiplying any complex number by the rotor q produces the general formula:
+
 ## 四元数
