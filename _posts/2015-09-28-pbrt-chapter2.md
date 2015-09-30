@@ -230,3 +230,23 @@ LookAt矩阵的第4列是摄像机在世界坐标系的坐标；第3列是单位
 {% assign S = "xaxis.x,newUp.x,dir.x,pos.x,xaxis.y,newUp.y,dir.y,pos.y,xaxis.z,newUp.z,dir.z,pos.z,0,0,0,1" | split: ',' %}
 
 \\[ {% include render_matrix_raw.html mat = S  row = 4 col = 4 %} \\]
+
+
+### Tranform的应用原理
+
+Tranform对Vector和Point的作用过程，上面已经提到了，就是简单的矩阵相乘。
+
+对Ray和BBox的转换，也不难，就是对Ray的o和d分量分别左乘T、对BBox的8个顶点分别左乘T。
+
+这里要提一下法向量的Tranform。法向量是不能直接T(n)的，这是错误的。
+
+直接贴公式：
+
+\\[ n\\cdot t = n\^\{T\}t = 0 \\]
+\\[ (n\^\{\\prime \})\^\{T\}t\^\{\\prime \}= 0 \\]
+\\[ (Sn)\^\{T\}Mt = 0 \\]
+\\[ n\^\{T\}S\^\{T\}Mt = 0 \\]
+\\[ S\^\{T\}M = I \\]
+\\[ n\^\{\\prime \} = Sn = (M\^\{-1\})\^\{T\}n \\]
+
+M是某种转换，当M对一个面作用时，这个面的法向量要用上面最后那条公式转换。注意到公式里面有一个逆矩阵，所以这就是为什么Transform要存一个逆矩阵。
