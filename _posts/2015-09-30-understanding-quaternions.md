@@ -224,8 +224,16 @@ t刚好是开始的p。如果我们把这些复数放到复数平面上，就得
 我们也可以在复数平面上进行任意的旋转，只需要定义下面这个复数：
 \\[q = cos\\theta +isin\\theta \\]
 
+任意的复数乘以q：
+
+\\[ p = a + bi \\]
+\\[ q = cos\\theta + isin\\theta \\]
+\\[ pq = (a + bi)(cos\\theta + isin\\theta ) \\]
+\\[ a\\prime + b\\prime i = acos\\theta -bsin\\theta + (asin\\theta +bcos\\theta )i \\] 
+
+也可以写成矩阵的形式：
 
 
-Multiplying any complex number by the rotor q produces the general formula:
+这也是一个在复数平面绕原点逆时针旋转任意点的方法。
 
 ## 四元数
