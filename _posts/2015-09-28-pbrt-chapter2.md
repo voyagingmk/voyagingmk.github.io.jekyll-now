@@ -209,3 +209,24 @@ Rotation有一些特性：
 
 
 LookAt转换
+
+LookAt矩阵的第4列是摄像机在世界坐标系的坐标；第3列是单位化的视点朝向向量（摄像机的前方），即视点坐标减去第4列的坐标;第2列是单位化的up向量（摄像机的上方），以世界坐标系表示；第1列是摄像机坐标系的x向量在世界坐标系对应的向量。
+
+第1列的x向量，是用第2列的up向量和第3列的朝向向量进行叉积得到。
+
+设：
+
+- pos是摄像机坐标（世界坐标）
+- up是用户提供的摄像机朝向上方的向量（世界坐标）
+- look是用户提供的摄像机视点的向量（世界坐标）
+
+于是有：
+
+- dir = Normalize(look - pos)，摄像机的朝向向量（世界坐标）
+- xaxis = Normalize(Cross(Normalize(up), dir))，摄像机的x轴单位向量（世界坐标）
+- newUp = Cross(Normalize(dir), xaxis)，新的单位化的up向量（世界坐标）。这里不太明白为什么不直接newUp = Normalize(up)。
+
+
+{% assign S = "xaxis.x,newUp.x,dir.x,pos.x,xaxis.y,newUp.y,dir.y,pos.y,xaxis.z,newUp.z,dir.z,pos.z,0,0,0,1" | split: ',' %}
+
+\\[ {% include render_matrix_raw.html mat = S  row = 4 col = 4 %} \\]
