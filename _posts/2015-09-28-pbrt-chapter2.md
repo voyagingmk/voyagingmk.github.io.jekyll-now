@@ -10,6 +10,8 @@ tags: ['c++', 'pbrt']
 
 本文的cpp代码均来自[https://github.com/mmp/pbrt-v2](https://github.com/mmp/pbrt-v2)，木有修改。只为方便读者阅读。
 
+<!--more-->
+
 ## 正文
 
 一个基本的渲染器，需要实现2点：输入场景数据、输出渲染图像。

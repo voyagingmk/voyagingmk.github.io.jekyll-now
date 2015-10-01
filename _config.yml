@@ -35,6 +35,8 @@ footer-links:
 # You can find your shortname on the Settings page of your Disqus account
 disqus: qiujiawei
 
+excerpt_separator: <!--more-->
+
 # Your website URL (e.g. http://barryclark.github.io or http://www.barryclark.co)
 # Used for Sitemap.xml and your RSS feed
 url: http://www.qiujiawei.com
