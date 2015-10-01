@@ -126,7 +126,7 @@ William Rowan Hamilton Plaque on Broome Bridge on the Royal Canal commemorating 
 
 ### 共轭复数
 
-复数的共轭就是指把复数的虚数部分变成负的。共轭复数的符号是\\(\\bar z\\)或\\(\\z\^\{*\}\\)。
+复数的共轭就是指把复数的虚数部分变成负的。共轭复数的符号是\\(\\bar z\\)或\\(z\^\{*\}\\)。
 
 \\[ z = (a + bi) \\]
 
@@ -229,10 +229,18 @@ t刚好是开始的p。如果我们把这些复数放到复数平面上，就得
 \\[ p = a + bi \\]
 \\[ q = cos\\theta + isin\\theta \\]
 \\[ pq = (a + bi)(cos\\theta + isin\\theta ) \\]
-\\[ a\\prime + b\\prime i = acos\\theta -bsin\\theta + (asin\\theta +bcos\\theta )i \\] 
+\\[ a' + b'i = acos\\theta -bsin\\theta + (asin\\theta +bcos\\theta )i \\] 
 
 也可以写成矩阵的形式：
 
+
+{% assign S1 = "a',-b',b',a'" | split: ',' %}
+
+{% assign S2 = "cos\\theta ,-sin\\theta ,sin\\theta ,cos\\theta " | split: ',' %}
+
+{% assign S3 = "a,-b,b,a" | split: ',' %}
+
+\\[ {% include render_matrix_raw.html mat = S1 row = 2 col = 2 %} = {% include render_matrix_raw.html mat = S2 row = 2 col = 2 %}{% include render_matrix_raw.html mat = S3 row = 2 col = 2 %} \\]
 
 这也是一个在复数平面绕原点逆时针旋转任意点的方法。
 
