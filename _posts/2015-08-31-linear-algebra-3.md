@@ -16,7 +16,7 @@ published: true
 LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三角矩阵和上三角矩阵。
 
 下面手动演示下LU分解过程：
-
+<!--more-->
 设A：
 
 {% assign matA = "9,6,0,6,5,4,3,4,10" | split: ',' %}
