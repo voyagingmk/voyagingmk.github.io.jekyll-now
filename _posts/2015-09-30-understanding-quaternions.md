@@ -735,7 +735,7 @@ SLERP代表**S**pherical **L**inear Int**erp**olation。SLERP可以在2个朝向
 而对于t = 1，有：
 
 
-\\[ q\^\{0\} = exp(1\\log q) = q \\]
+\\[ q\^\{1\} = exp(1\\log q) = q \\]
 
 ### 2个四元数的分数差
 
