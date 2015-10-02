@@ -47,7 +47,7 @@ tags: ['maths', 'quaternion']
 		- 四元数的差
 		- 四元数的指数运算
 		- 2个四元数的分数差
-		- 考虑？
+		- 注意事项
 	- SQUARD
 - 结论
 - 下载Demo
