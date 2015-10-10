@@ -24,6 +24,7 @@ published: true
 {% assign S = "s\_\{x\},0,0,0,0,s\_\{y\},0,0,0,0,t\_\{y\},0,0,0,0,1" | split: ',' %}
 \\[ S = {% include render_matrix_raw.html mat = S row = 4 col = 4 %}  \\]
 
+<!--more-->
 
 所以TRS等于：
 {% assign RS = "r\_\{11\}s\_\{x\},r\_\{12\}s\_\{y\},r\_\{13\}s\_\{z\},0,r\_\{21\}s\_\{x\},r\_\{22\}s\_\{y\},r\_\{23\}s\_\{z\},0,r\_\{31\}s\_\{x\},r\_\{32\}s\_\{y\},r\_\{33\}s\_\{z\},0,0,0,0,1" | split: ',' %}
