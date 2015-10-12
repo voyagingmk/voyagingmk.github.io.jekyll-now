@@ -17,7 +17,9 @@ youtube的比较高清:
 
 <!--more-->
 
-## 傅里叶级数
+## 傅里叶级数 fourier series
+
+### 基础
 
 翻译一下wiki的fourier series：
 
@@ -243,12 +245,27 @@ Re{···}代表取出花括号的复数表达式的实部。
 
 ###大跃进，终极的傅里叶级数的复指数形式
 
-终极的傅里叶级数的复指数形式是(fourier series exponential form)：
+终极的傅里叶级数的复指数形式是(fourier series exponential form  )：
 
-\\[ f(t) = c\_\{0\} + \\sum\_\{k=-\\infty \}\^\{\\infty \}c\_\{k\}e\^\{ik\\omega t\} \\]
+\\[ f(t) = \\sum\_\{k=-\\infty \}\^\{\\infty \}c\_\{k\}e\^\{2\\pi ikt\} \\]
 
-\\[ c\_\{k\} = \\frac \{T\}\{1\}\\int \_\{-\\frac \{2\}\{T\} \}^\{\\frac \{2\}\{T\} \}f(t)e\^\{-ik\\omega t\}dt \\]
+前面的傅里叶级数是finite的，这个是infinite的。
 
+其中的\\(c\_\{k\}\\)有一个专门的notation：\\( \\hat \{f\}(t) \\)，代入后得到：
+
+\\[ \\hat \{f\}(t) = \\int \_\{-\\frac \{1\}\{2\} \}^\{\\frac \{1\}\{2\} \}f(t)e\^\{-2\\pi ikt\}dt \\]
+
+\\[ f(t) = \\sum\_\{k=-\\infty \}\^\{\\infty \}\\hat \{f\}(t)e\^\{2\\pi ikt\} \\]
+
+
+## 傅里叶变换 fourier transform
+
+### 傅里叶积分定理 fourier integrate
+
+若函数f(t)在\\(-\\infty ,+\\infty \\)上的任一有限区间内满足Dirichlet条件，并且在\\(-\\infty ,+\\infty \\)上绝对可积（即积分\\( \\int \_\{-\\infty \}\^\{+\\infty \}|f(t)|dt\\)收敛)，则有：
+\\[ \\frac \{1\}\{2\\pi \}\\int \_\{-\\infty \}\^\{+\\infty \}\\left \[ \\int \_\{-\\infty \}\^\{+\\infty \}f(t)e\^\{-i\\omega t\}dt\\right \]e\^\{i\\omega t\}d\\omega \\]
+
+\\[=\\lbrace \_\{\\frac \{f(t+0)+f(t-0)\}\{2\},当t为f(t)的间断点。\}\^\{f(t), 当t为f(t)的连续点; \} \\]
 
 
 
