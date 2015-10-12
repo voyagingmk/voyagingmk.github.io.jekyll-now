@@ -263,7 +263,30 @@ Re{···}代表取出花括号的复数表达式的实部。
 ### 傅里叶积分定理 fourier integrate
 
 若函数f(t)在\\(-\\infty ,+\\infty \\)上的任一有限区间内满足Dirichlet条件，并且在\\(-\\infty ,+\\infty \\)上绝对可积（即积分\\( \\int \_\{-\\infty \}\^\{+\\infty \}|f(t)|dt\\)收敛)，则有：
-\\[ \\frac \{1\}\{2\\pi \}\\int \_\{-\\infty \}\^\{+\\infty \}\\left \[ \\int \_\{-\\infty \}\^\{+\\infty \}f(t)e\^\{-i\\omega t\}dt\\right \]e\^\{i\\omega t\}d\\omega =  \\begin \{cases\} \\frac \{f(t+0)+f(t-0)\}\{2\},当t为f(t)的间断点。\\\\ f(t), 当t为f(t)的连续点; \\end \{cases\} \\]
+\\[ \\frac \{1\}\{2\\pi \}\\int \_\{-\\infty \}\^\{+\\infty \}\\left \[ \\int \_\{-\\infty \}\^\{+\\infty \}f(t)e\^\{-i\\omega t\}dt\\right \]e\^\{i\\omega t\}d\\omega =  \\begin \{cases\} f(t), 当t为f(t)的连续点; \\\\  \\frac \{f(t+0)+f(t-0)\}\{2\},当t为f(t)的间断点。 \\end \{cases\} \\]
+
+
+令:
+
+\\[ F(\\omega ) = \int \_\{-\\infty \}\^\{+\\infty \}f(t)e\^\{-i\\omega t\}dt \\]
+
+则:
+
+\\[ f(t) = \\frac \{1\}\{2\\pi \}\\int \_\{-\\infty \}\^\{+\\infty \}F(\\omega )e\^\{i\\omega t\}d\\omega \\]
+
+上两式子表明\\( F(\\omega ) 和 f(t) \\)通过指定的积分运算可以相互表示。
+
+第一个式子称为f(t)的傅里叶变换，记为:
+
+\\[ F(\\omega ) = \\mathcal \{F\}\[f(t)\] \\]
+
+函数为\\(F(\\omega ) \\)称为f(t)的**像函数**。
+
+第二个式子称为\\(F(\\omega ) \\)的逆傅里叶变换，记为:
+
+\\[ f(t) = \\mathcal \{F\}\^\{-1\}\[ F(\\omega ) \] \\]
+
+函数f(t)称为为\\(F(\\omega ) \\)的**像原函数**。
 
 
 
