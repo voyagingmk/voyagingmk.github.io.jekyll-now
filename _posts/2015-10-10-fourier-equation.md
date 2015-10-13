@@ -264,7 +264,7 @@ Re{···}代表取出花括号的复数表达式的实部。
 
 ### 傅里叶积分定理 fourier integrate
 
-若函数f(t)在\\(-\\infty ,+\\infty \\)上的任一有限区间内满足Dirichlet条件，并且在\\(-\\infty ,+\\infty \\)上绝对可积（即积分\\( \\int \_\{-\\infty \}\^\{+\\infty \}|f(t)|dt\\)收敛)，则有：
+若函数f(t)在\\(-\\infty ,+\\infty \\)上的任一有限区间内满足Dirichlet条件，并且在\\( \(-\\infty ,+\\infty\) \\)上绝对可积（即积分\\( \\int \_\{-\\infty \}\^\{+\\infty \}|f(t)|dt\\)收敛)，则有：
 \\[ \\frac \{1\}\{2\\pi \}\\int \_\{-\\infty \}\^\{+\\infty \}\\left \[ \\int \_\{-\\infty \}\^\{+\\infty \}f(t)e\^\{-i\\omega t\}dt\\right \]e\^\{i\\omega t\}d\\omega =  \\begin \{cases\} f(t), 当t为f(t)的连续点; \\\\  \\frac \{f(t+0)+f(t-0)\}\{2\},当t为f(t)的间断点。 \\end \{cases\} \\]
 
 
@@ -309,7 +309,7 @@ Re{···}代表取出花括号的复数表达式的实部。
 
 #### 位移性质
 
-设\\( \\mathcal \{F\}\[f(t)\] = F(\\omega )\\)，\\( f(t) = \\mathcal \{F\}\^\{-1\}\[ F(\\omega ) \] \\),则:
+设\\( \\mathcal \{F\}\[f(t)\] = F(\\omega )\\)，\\( f(t) = \\mathcal \{F\}\^\{-1\}\[ F(\\omega ) \] \\)，则:
 
 \\[ \\mathcal \{F\}\[f(t\\pm t\_\{0\})\] = e\^\{\\pm i\\omega t\_\{0\}\}F(\\omega )\\]
 
@@ -320,5 +320,18 @@ Re{···}代表取出花括号的复数表达式的实部。
 
 #### 微分性质
 
+若f(t)在\\( \(-\\infty ,+\\infty\) \\)内连续或只有有限个可去间断点，且：
 
+\\[ \\lim\_\{|t|\\to +\\infty \}f(t) = 0 \\]
 
+\\[ \\mathcal \{F\}\[f(t)\] = F(\\omega )\\]
+
+则：
+
+\\[ \\mathcal \{F\}\[f'(t)\] = i\\omega F(\\omega )\\]
+
+####  像函数的微分性质
+
+设\\( \\mathcal \{F\}\[f(t)\] = F(\\omega )\\)，则:
+
+\\[ \\frac \{d\}\{d\\omega \}F(\\omega ) = -i\\mathcal \{F\}\[tf(t)\] \\]
