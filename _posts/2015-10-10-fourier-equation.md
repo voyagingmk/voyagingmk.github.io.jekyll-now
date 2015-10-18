@@ -398,11 +398,16 @@ wiki:[Digital Signal Processing/Discrete Fourier Transform](https://en.wikibooks
 
 \\[ t\_\{0\} = 0, t\_\{1\} = \\frac \{1\}\{2B\}, t\_\{2\} = \\frac \{2\}\{2B\}, \\cdots , t\_\{N-1\} = \\frac \{N-1\}\{2B\} \\]
 
-所以，f(t)的离散版本就是这个采样点列表\\( f(t\_\{0\}), f(t\_\{1\}),\\cdots , f(t\_\{N-1\}) \\)。
+所以，f(t)的离散版本\\( f\_\{discrete\}(t) \\)就是这个采样点列表\\( f(t\_\{0\}), f(t\_\{1\}),\\cdots , f(t\_\{N-1\}) \\)。
 
 接下来轮到**卷积**[Convolution](https://en.wikipedia.org/wiki/Convolution)登场。
 
-关于卷积这个东西，请阅读的另一篇文章[理解卷积Convolution](http://www.qiujiawei.com/convolution)。
+关于卷积这个东西，请阅读我的另一篇文章[理解卷积Convolution](http://www.qiujiawei.com/convolution)。
+
+
+因为上面得到的\\( f\_\{discrete\}(t) \\)是不连续的，所以不能直接用傅里叶变换把它转换用到频域（标准傅里叶变换是处理连续函数的）。
+
+这时候怎么办呢？试试用卷积公式吧：
 
 
 
