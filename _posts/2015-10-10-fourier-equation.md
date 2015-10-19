@@ -369,11 +369,13 @@ Re{···}代表取出花括号的复数表达式的实部。
 
 wiki:[Digital Signal Processing/Discrete Fourier Transform](https://en.wikibooks.org/wiki/Digital_Signal_Processing/Discrete_Fourier_Transform)。
 
-离散傅里叶变换的标准形式如下:
 
-设在时域上有离散的采样点\\( f = \(f\[0\],f\[1\],\\cdots ,f\[N-1\]\) \\)，f的离散傅里叶变换DFT是频域上离散的时域点\\( f = \(F\[0\],F\[1\],\\cdots ,F\[N-1\]\) \\)，且：
+设在时域上有离散的采样点\\( f = \(f\[0\],f\[1\],\\cdots ,f\[N-1\]\) \\)，对f做离散傅里叶变换(DFT)，可以得到频域上的离散点\\( F = \(F\[0\],F\[1\],\\cdots ,F\[N-1\]\) \\)，且：
 
 \\[ F\[m\] =  \\sum\_\{n=0\}\^\{N-1\}f[n]e\^\{-2\\pi imn/N\}, m = 0,1,\\dots ,N-1 \\]
+
+这个就是DFT的标准公式。
+
 
 解释一下:
 
