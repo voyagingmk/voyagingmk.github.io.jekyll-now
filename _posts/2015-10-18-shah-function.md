@@ -13,6 +13,8 @@ tags: ['math']
 
 \\[ \\int \_\{-\\infty \}\^\{\\infty \}\\delta (t)dt = 1 \\]
 
+<!--more-->
+
 ![8.png](../images/2015.10/8.png)
 
 下面介绍它的一些性质:
