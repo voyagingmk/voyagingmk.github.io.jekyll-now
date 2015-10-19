@@ -83,3 +83,34 @@ tags: ['math']
 这个公式和图片完全对应。
 
 
+下面介绍它的一些性质:
+
+#### 缩放性质
+
+当T = 1（单位周期）时：
+
+\\[ III(t) = \\sum \_\{k=-\\infty \}\^\{\\infty \}\\delta (t - k)\\]
+
+这时再对t缩放a倍:
+
+\\[ III(at) = \\sum \_\{k=-\\infty \}\^\{\\infty \}\\delta (at - k)\\]
+
+现在搬出δ函数的对称性质公式:
+
+\\[ \\delta (at) = \\frac \{1\}\{a\}\\delta (t) \\]
+
+\\[ III(at) = \\sum \_\{k=-\\infty \}\^\{\\infty \}\\delta (at - k) \\]
+\\[ = \\sum \_\{k=-\\infty \}\^\{\\infty \}\\delta (a(t - \\frac \{k\}\{a\})) \\]
+\\[ = \\sum \_\{k=-\\infty \}\^\{\\infty \}\\frac \{1\}\{a\}\\delta (t - \\frac \{k\}\{a\}) \\]
+
+\\[ = \\frac \{1\}\{a\}III\_\{\\frac \{1\}\{a\}\}(t)\\]
+
+也就是:
+
+\\[  III(at)  = \\frac \{1\}\{a\}III\_\{\\frac \{1\}\{a\}\}(t) \\]
+
+\\[  III\_\{a\}(t)  = \\frac \{1\}\{a\}III\_\{\}(\\frac \{t\}\{a\}) \\]
+
+#### 傅里叶变换
+
+\\[  III\_\{a\}(t) = \\frac \{1\}\{T\}\\sum \_\{k=-\\infty \}\^\{\\infty \}e\^\{2\\pi is\\frac \{t\}\{T\}\} \\]
