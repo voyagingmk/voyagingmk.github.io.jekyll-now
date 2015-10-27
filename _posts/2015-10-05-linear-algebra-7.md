@@ -96,3 +96,13 @@ wiki:[https://en.wikipedia.org/wiki/Normal_matrix](https://en.wikipedia.org/wiki
 
 ( \\(A\^\{\*\}\\) 代表A的共轭转置矩阵 )
 
+
+## 双对角矩阵 Bidiagonal matrix
+
+一图以言之:
+
+![10.png](../images/2015.10/10.png)
+
+(from wiki)
+
+wiki:[https://en.wikipedia.org/wiki/Bidiagonal_matrix](https://en.wikipedia.org/wiki/Bidiagonal_matrix)

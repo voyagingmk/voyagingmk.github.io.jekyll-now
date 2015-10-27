@@ -71,9 +71,20 @@ SVD非常强大且实用，因为数学界前辈已经证明任意的一个矩�
 
 右边的东西符合特征分解的定义，所以上述两式子都是特征分解。
 
+## SVD的几何意义以及应用
+
+推荐阅读这篇文章:[http://blog.chinaunix.net/uid-20761674-id-4040274.html](http://blog.chinaunix.net/uid-20761674-id-4040274.html)。
+
+英文原文:[http://www.ams.org/samplings/feature-column/fcarc-svd](http://www.ams.org/samplings/feature-column/fcarc-svd)
+
+不过这文章只讲了和图像有关的应用，实际上，SVD的应用非常广泛，比如机器学习领域也在用。
+
 
 ## SVD的求法
 
+SVD的解法有很多种而且看起来很复杂，比如这篇文章就列举了很多种:[http://www.cs.utexas.edu/users/inderjit/public_papers/HLA_SVD.pdf](http://www.cs.utexas.edu/users/inderjit/public_papers/HLA_SVD.pdf)。
+
+因为矩阵有稠密和稀疏之分，所以针对不同的矩阵就有不同的解法。学习SVD的解法想必是一件艰苦的事情。因为目前还没有深入学习SVD的需求，所以博主就此罢笔。
 
 
 ## 参考资料
