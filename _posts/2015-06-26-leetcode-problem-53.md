@@ -11,14 +11,16 @@ For example, given the array [−2,1,−3,4,−1,2,1,−5,4],
 the contiguous subarray [4,−1,2,1] has the largest sum = 6.
 
 
-```c
+<!--more-->
+
+{% highlight cpp linenos %}
 class Solution {
 public:
 	int maxSubArray(vector<int>& nums) {
         
     }
 };
-```
+{% endhighlight %}
 
 
 ### 题意：
@@ -48,7 +50,7 @@ S(i-1)如果小于等于0，说明S(i-1)对增大S(i)没有意义了，也即说
 ### 代码：
 
 
-```c
+{% highlight cpp linenos %}
 	int maxSubArray(vector<int>& nums) {
 		if (nums.size() == 0)
 			return 0;
@@ -65,11 +67,11 @@ S(i-1)如果小于等于0，说明S(i-1)对增大S(i)没有意义了，也即说
 		}
 		return maxS;
 	}
-```
+{% endhighlight %}
 
 考虑到S(i)数组对于这个题目是多余的，题目只是要求S(i)的max值，那么可以改下代码，把空间复杂度从O(n)降到O(1)。
 
-```c
+{% highlight cpp linenos %}
 	int maxSubArray(vector<int>& nums) {
 		if (nums.size() == 0)
 			return 0;
@@ -86,4 +88,4 @@ S(i-1)如果小于等于0，说明S(i-1)对增大S(i)没有意义了，也即说
 		}
 		return maxS;
 	}
-```
+{% endhighlight %}

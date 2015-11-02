@@ -18,6 +18,8 @@ published: true
 使用的插件：chipmunk(物理引擎) underscore(js增强函数库）
 
 
+<!--more-->
+
 技术实现：
 
 这游戏的技术难点是**电网**的实现。

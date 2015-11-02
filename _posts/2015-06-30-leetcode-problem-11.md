@@ -10,14 +10,16 @@ tags: ['leetcode']
 > Note: You may not slant the container.
 > 
 
-```c
+<!--more-->
+
+{% highlight cpp linenos %}
 class Solution {
 public:
     int maxArea(vector<int>& height) {
         
     }
 };
-```
+{% endhighlight %}
 
 
 ### 题意：
@@ -50,7 +52,7 @@ S(3)的值是以[1,3]为边界的面积:(3-1)*min(4,2) = 4。按照无后效性�
 
 所以可以从两端向中间迭代，直接看代码：
 
-```c
+{% highlight cpp linenos %}
 	int maxArea(vector<int>& height) {
 		if (height.size() == 0 || height.size() == 1)
 			return 0;
@@ -77,5 +79,5 @@ S(3)的值是以[1,3]为边界的面积:(3-1)*min(4,2) = 4。按照无后效性�
 		}
 		return area;
 	}
-```
+{% endhighlight %}
 

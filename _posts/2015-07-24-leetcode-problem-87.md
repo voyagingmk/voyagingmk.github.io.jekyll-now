@@ -11,6 +11,8 @@ tags: ['leetcode']
 
 设状态量res[n][i][j]，(n < len, i <= n, j <= n), 元素是bool值
 
+<!--more-->
+
 res的含义：
 
 **长度为n，以i位置为起点的子串s1[i, i + n], 以j位置为起点的子串s2[i, i + n], res[n][i][j]标志了这2个子串是不是Scramble**
@@ -33,7 +35,7 @@ res的含义：
 
 A1、A2、B1、B2的含义是什么呢？举例说明一下：
 
-```c
+{% highlight cpp linenos %}
 
 great
 rgtae
@@ -63,7 +65,7 @@ res[k][i][j + n - k]   &&      res[n - k][i + k][j]
    B1 = F						   B2 = F
 
 显然 C = A || B = (T && T) || (F && F) = T
-```
+{% endhighlight %}
 
 1. **当(A1 && A2) = T时， s1-left和s2-left互为Scramble， s1-right和s2-right互为Scramble；** 
 
@@ -76,7 +78,7 @@ res[k][i][j + n - k]   &&      res[n - k][i + k][j]
 
 代码如下:
 
-```c
+{% highlight cpp linenos %}
 	bool isScramble(string s1, string s2) {
 		int len = s1.length();
 		if (len != s2.length()){
@@ -110,7 +112,7 @@ res[k][i][j + n - k]   &&      res[n - k][i + k][j]
 		}
 		return result[len - 1][0][0];
 	}
-```
+{% endhighlight %}
 
 
 rumtime 196ms...别人最快有4ms的。应该是4重循环的自底而上的DP计算导致这么慢的，必须全部状态都算出来才可以返回最终结果。

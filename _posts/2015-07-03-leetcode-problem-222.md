@@ -15,13 +15,15 @@ tags: ['leetcode']
 求一颗完全二叉树得节点的数量。
 
 
+<!--more-->
+
 
 ### 题解：
 
 
 看了这道题的discuss，发现一个挺有意思的解决方案（也可能是最快的方案了），这里分析一下。
 
-```c
+{% highlight cpp linenos %}
     int countNodes(TreeNode* root) {
 
         if(!root) return 0;
@@ -38,7 +40,7 @@ tags: ['leetcode']
 
         return 1+countNodes(root->left)+countNodes(root->right);
     }
-```
+{% endhighlight %}
 
 函数内第4、5行，2个while循环，获得了root的最左节点和最右节点的深度，然后判断深度是否一样，一样的话，说明root是一棵满二叉树，于是可以用公式直接返回该子树的节点个数。
 

@@ -24,6 +24,8 @@ tags: ['leetcode']
 给定一个01矩阵，求矩阵里最大的1字正方形的面积
 
 
+<!--more-->
+
 ### 题解：
 
 考虑动态规划来解题。
@@ -55,7 +57,7 @@ else: DP(i,j) = min( DP(i - 1, j), DP(i, j - 1), DP(i - 1, j - 1)) + 1
 
 我的实现代码如下（runtime 12 ms）：
 
-```c
+{% highlight cpp linenos %}
 	int maximalSquare(vector<vector<char>>& matrix) {
 		if (matrix.size() == 0)
 			return 0;
@@ -92,4 +94,4 @@ else: DP(i,j) = min( DP(i - 1, j), DP(i, j - 1), DP(i - 1, j - 1)) + 1
 			}
 		return int(result - '0') * int(result - '0');
 	}
-```
+{% endhighlight %}

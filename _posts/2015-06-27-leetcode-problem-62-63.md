@@ -11,14 +11,16 @@ The robot can only move either down or right at any point in time. The robot is 
 
 How many possible unique paths are there?
 
-```c
+<!--more-->
+
+{% highlight cpp linenos %}
 class Solution {
 public:
 	int uniquePaths(int m, int n) {
 
     }
 };
-```
+{% endhighlight %}
 
 
 ### 题意：
@@ -45,7 +47,7 @@ public:
 
 ### 代码（0ms RunTime)：
 
-```c
+{% highlight cpp linenos %}
 	int uniquePaths(int m, int n) {
 		vector<vector<int>> sum(n);
 		for (int i = 0; i < n; ++i){
@@ -61,14 +63,14 @@ public:
 				sum[i][j] = sum[i - 1][j] + sum[i][j - 1];
 		return sum[n - 1][m - 1];
 	}
-```
+{% endhighlight %}
 
 
 对于Unique Paths II，改变点是，有些格子变成了障碍物。其实也很简单，上面的代码稍微改下就好了。
 
 ### 代码（4ms RunTime)：
 
-```c
+{% highlight cpp linenos %}
 	int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
 		int n = obstacleGrid.size();
 		int m = obstacleGrid[0].size();
@@ -101,5 +103,5 @@ public:
 			}
 		return sum[n - 1][m - 1];
 	}
-```
+{% endhighlight %}
 

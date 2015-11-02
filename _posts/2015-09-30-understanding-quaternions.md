@@ -2,7 +2,7 @@
 layout: post_latex
 title: Understanding Quaternions 中文翻译《理解四元数》
 published: true
-tags: ['maths', 'quaternion']
+tags: ['math', 'quaternion']
 ---
 
 原文地址:[http://www.3dgep.com/understanding-quaternions/](http://www.3dgep.com/understanding-quaternions/)

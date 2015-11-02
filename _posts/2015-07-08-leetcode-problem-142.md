@@ -15,6 +15,8 @@ tags: ['leetcode']
 
 判断一个链表是否有环，有环的话返回环的起始节点，无环的话返回NULL。
 
+<!--more-->
+
 ### 题解：
 
 Linked List Cycle的升级，不仅要判断有无环，还要求入口。很显然可以在Linked List Cycle的基础上来做。
@@ -42,7 +44,7 @@ Linked List Cycle的升级，不仅要判断有无环，还要求入口。很显
 
 ngcl的代码如下：
 
-```c
+{% highlight cpp linenos %}
 	ListNode *detectCycle(ListNode *head) {
 	    if (head == NULL || head->next == NULL)
 	        return NULL;
@@ -65,4 +67,4 @@ ngcl的代码如下：
 	    return NULL;                                 // there has no cycle
 	}
 
-```
+{% endhighlight %}

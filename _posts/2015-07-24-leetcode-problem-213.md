@@ -14,6 +14,8 @@ tags: ['leetcode']
 	
 ["House Robber"](http://www.qiujiawei.com/leetcode-problem-198/)的变种（尼玛又改需求了摔)。改动的地方是，房子分布从一条线变成了一个环，首尾相接了。依然是求最大值。
 
+<!--more-->
+
 ### 题解：
 
 变成环后，其实还是可以用动态规划来解。
@@ -29,7 +31,7 @@ f(n) : 代表窃贼在前n个房子最多能拿到多少钱
 
 代码如下：
 
-```c
+{% highlight cpp linenos %}
 	int rob(vector<int>& nums) {
 		if (nums.size() == 0)
 			return 0;
@@ -49,4 +51,4 @@ f(n) : 代表窃贼在前n个房子最多能拿到多少钱
 		}
 		return max(cur1, cur2);
 	}
-```
+{% endhighlight %}

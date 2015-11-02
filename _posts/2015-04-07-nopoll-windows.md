@@ -5,7 +5,7 @@ published: true
 tags: ['nopoll']
 ---
 
-### 编译环境 ###
+### 编译环境
 
 - windows 7 64位
 
@@ -16,8 +16,10 @@ tags: ['nopoll']
 - nopoll-0.2.8.b184
 
 
-### 编译步骤 ###
+### 编译步骤
 
+
+<!--more-->
 
 1. nopoll官网提供了二进制安装包，不过不知为什么无法直接用（运行时错误，无法debug)，所以还是得手动编译<
 2. nopoll依赖openssl，所以先编译openssl：
@@ -46,7 +48,7 @@ tags: ['nopoll']
     - 添加 nopoll-0.2.8.b184/src目录的源码文件到工程
     - 这里要改下nopoll_config.h（此文件应该是自动生成的，我们要手动修改一个出来）
 
-      ```c
+      {% highlight cpp linenos %}
       /*
       * Nopoll Library nopoll_config.h
       * Platform dependant definitions.
@@ -108,7 +110,7 @@ tags: ['nopoll']
       #define NOPOLL_64BIT_PLATFORM (1)
       /* @} */
       #endif
-      ```
+      {% endhighlight %}
     - 配置编译环境
 
 		![1.png](/images/2015.4/2.png)
@@ -142,9 +144,9 @@ tags: ['nopoll']
 		
 		照着反馈做即可，在文件头添加一个define 
 
-		```c
+		{% highlight cpp linenos %}
   			#define _CRT_SECURE_NO_WARNINGS
- 		 ```
+ 		 {% endhighlight %}
 		![1.png](/images/2015.4/9.png)
 	
 		unlink改成_unlink呗；

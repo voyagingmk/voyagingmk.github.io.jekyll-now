@@ -15,6 +15,8 @@ tags: ['leetcode']
 
 求数组里最大的连续子序列的乘积。
 
+<!--more-->
+
 ### 题解：
 
 Maximum Subarray的变形，把求和改成求积了。且有负数。
@@ -27,11 +29,11 @@ DP[i] = max( DP[i - 1] * nums[i], nums[i] )
 
 正确的方程是，记录2个DP数组，一个记乘积最大值，一个记乘积最小值，然后综合2个DP数组的结果，就可以得到真正的最大值。
 
-```c
+{% highlight cpp linenos %}
 	DP_max[i] = max( DP_min[i - 1] * nums[i], DP_max[i - 1] * nums[i], nums[i])
 
 	DP_min[i] = min( DP_min[i - 1] * nums[i], DP_max[i - 1] * nums[i], nums[i])
-```
+{% endhighlight %}
 
 按这个方程组来做的话，需要O(n)的空间，考虑到题目只要求输出最大值，那么可以优化到O(1)的空间消耗。
 
@@ -39,7 +41,7 @@ DP[i] = max( DP[i - 1] * nums[i], nums[i] )
 
 下面是我的代码：（runtime 8 ms）
 
-```c
+{% highlight cpp linenos %}
 	int maxProduct(vector<int>& nums) {
 		if (nums.size() == 0)
 			return 0;
@@ -56,4 +58,4 @@ DP[i] = max( DP[i - 1] * nums[i], nums[i] )
 		}
 		return dp_max;
 	}
-```
+{% endhighlight %}

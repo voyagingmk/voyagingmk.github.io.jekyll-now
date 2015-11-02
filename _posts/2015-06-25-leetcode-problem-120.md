@@ -23,14 +23,16 @@ Note:
 
 Bonus point if you are able to do this using only O(n) extra space, where n is the total number of rows in the triangle.
 
-```c
+<!--more-->
+
+{% highlight cpp linenos %}
 class Solution {
 public:
     int minimumTotal(vector<vector<int>>& triangle) {
         
     }
 };
-```
+{% endhighlight %}
 
 
 ### 题意：
@@ -58,7 +60,7 @@ public:
 ### 代码：
 
 
-```c
+{% highlight cpp linenos %}
 	int minimumTotal(vector<vector<int>>& triangle) {
 		if (triangle.size() == 0)
 			return 0;
@@ -89,4 +91,4 @@ public:
 		}
 		return result;
  	}
-```
+{% endhighlight %}

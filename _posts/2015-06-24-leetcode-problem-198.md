@@ -9,13 +9,15 @@ tags: ['leetcode']
 > 
 > Given a list of non-negative integers representing the amount of money of each house, determine the maximum amount of money you can rob tonight without alerting the police.
 
-```c
+<!--more-->
+
+{% highlight cpp linenos %}
 class Solution {
 public:
     int rob(vector<int>& nums) {
     }
 };
-```
+{% endhighlight %}
 
 
 ### 题意：
@@ -55,7 +57,7 @@ f(3) = max(nums[1], nums[0] + nums[2]) = max( **max(nums[0], nums[1])**, nums[0]
 
 代码如下(leetcode RunTime 0ms)：
 
-```c
+{% highlight cpp linenos %}
 class Solution {
 public:
 	int rob(vector<int>& nums) {
@@ -72,14 +74,14 @@ public:
 		return f[nums.size()];
 	}
 };
-```
+{% endhighlight %}
 
 又因为，我们只需要求f[n]，并不需要输出整个F数组，那么可以改下代码，降低空间复杂度。
 
 代码如下(leetcode RunTime 0ms)：
 
 
-```c
+{% highlight cpp linenos %}
 class Solution {
 public:
 	int rob(vector<int>& nums) {
@@ -96,4 +98,4 @@ public:
 		return cur;
 	}
 };
-```
+{% endhighlight %}

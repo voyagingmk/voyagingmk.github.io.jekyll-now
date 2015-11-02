@@ -19,6 +19,8 @@ tags: ['leetcode']
 
 有N个加油站，连成环形，每个加油站有gas[i]的油，从第i个加油站到第i+1个加油站需要消耗cost[i]的油。现在有一辆车，它有无限大的油箱，但是是空的。求问这辆车应该从哪个加油站出发，才可以跑一遍所有的加油站，返回该加油站的序号，如果不存在这样的起点，返回-1。
 
+<!--more-->
+
 ### 题解：
 
 
@@ -71,7 +73,7 @@ right和left的关系为：
 		当sum < 0时，说明start的gas已经少到不能走到end了，但又因为start必然是路径的起点，于是start还可以尝试往左挪，start减一，并执行 sum += gas(start) - cost(start)。（也就是把start的左边的加油站合并到start）
 
 
-```c
+{% highlight cpp linenos %}
 	int canCompleteCircuit(vector<int> &gas, vector<int> &cost) {
 		int start = gas.size() - 1;
 		int end = 0;
@@ -90,6 +92,6 @@ right和left的关系为：
 			return start;
 		return -1;
 	}
-```
+{% endhighlight %}
 	
 	
