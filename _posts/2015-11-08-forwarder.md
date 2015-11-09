@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: 开发一个消息转发程序 forwarder
-published: true
+published: false
 tags: ['c++']
 ---
 
@@ -86,7 +86,7 @@ Notw：这部分会在开发过程中逐步更新。
 
 目标平台当然是*nix(主要是CentOS、Ubuntu、Debian)。若有余力再考虑跨mac和windows。
 
-毕竟是要造轮子，估计不会用高层次的第三方库。
+毕竟是要造轮子，估计不会用高层次的第三方库。(encrypt很可能就要找现成的库了)
 
 
 
