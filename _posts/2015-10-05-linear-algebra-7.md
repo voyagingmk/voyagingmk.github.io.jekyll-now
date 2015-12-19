@@ -38,7 +38,7 @@ wiki: [https://en.wikipedia.org/wiki/Adjugate_matrix](https://en.wikipedia.org/w
 > In linear algebra, the adjugate, classical adjoint, or adjunct of a square matrix is the transpose of its cofactor matrix.
 > The adjugate has sometimes been called the "adjoint", but today the "adjoint" of a matrix normally refers to its corresponding adjoint operator, which is its conjugate transpose.
 
-注意：伴随矩阵在我大学的课本里用的记号是A\^\{*\}，然而wiki是用adj(A)来表示伴随矩阵。
+注意：伴随矩阵在我大学的课本里用的记号是A\^\{*\}，然而wiki是用adj(A)来表示伴随矩阵，A\^\{*\}表示的是共轭转置矩阵( conjugate transpose)。
 
 公式：
 
