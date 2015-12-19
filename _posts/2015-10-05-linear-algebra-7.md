@@ -11,6 +11,42 @@ published: true
 
 <!--more-->
 
+## 余子式、代数余子式、代数余子式矩阵 Minor、Cofactor、Cofactor Matrix
+
+wiki: [https://en.wikipedia.org/wiki/Minor_(linear_algebra)](https://en.wikipedia.org/wiki/Minor_(linear_algebra))
+
+在wiki中**余子式**被叫做minor。minor不是一个独立的概念，当把一个方阵A中的第i行、第j列去掉后，剩余的元素组成的n-1阶方阵的行列式值，就是Minor。
+
+Minor的记号是: \\( M\_\{ij\} \\)，是一个行列式值。
+而Cofactor(中文是叫代数余子式？)的记号是: \\( C\_\{ij\} \\)，公式是:\\( C\_\{ij\} = (-1)\^\{i+j\}M\_\{ij\} \\)
+
+(个人建议，一切记法以wiki为准，抛弃国内中文教材的记法和中英对应关系吧，太容易混乱了)
+
+余子式矩阵Cofactor Matrix的定义：
+
+由方阵A的所有代数余子式\\( C\_\{ij\} \\)组成的矩阵叫做余子式矩阵，记为C，公式为：
+
+{% assign Cofactor = "C\_\{11\},C\_\{12\},\\ldots,C\_\{1n\},C\_\{21\},C\_\{22\},\\ldots,C\_\{2n\},\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,C\_\{n1\},C\_\{n2\},\\ldots ,C\_\{nn\}" | split: ',' %}
+
+\\[ C = {% include render_matrix_raw.html mat = Cofactor row = 4 col = 4 %}  \\]
+
+
+## 伴随矩阵 Adjugate Matrix
+
+wiki: [https://en.wikipedia.org/wiki/Adjugate_matrix](https://en.wikipedia.org/wiki/Adjugate_matrix)
+
+> In linear algebra, the adjugate, classical adjoint, or adjunct of a square matrix is the transpose of its cofactor matrix.
+> The adjugate has sometimes been called the "adjoint", but today the "adjoint" of a matrix normally refers to its corresponding adjoint operator, which is its conjugate transpose.
+
+注意：伴随矩阵在我大学的课本里用的记号是A\^\{*\}，然而wiki是用adj(A)来表示伴随矩阵。
+
+公式：
+
+\\[ adj(A) = C\^\{T\} \\]
+
+从公式可以发现，伴随矩阵就是代数余子式矩阵的转置。
+
+
 ## 共轭(转置)矩阵 Conjugate Transpose Matrix
 
 公式上的定义：
