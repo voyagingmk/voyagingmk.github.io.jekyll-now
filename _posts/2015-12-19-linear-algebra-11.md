@@ -82,6 +82,8 @@ L是下三角矩阵。
 
 \\[ A = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %} = {% include render_matrix_raw.html mat = matL1 row = 3 col = 3 %}{% include render_matrix_raw.html mat = matL2 row = 3 col = 3 %} \\]
 
+根据上文的公式，有：
+
 {% assign matA21 = "15,-5" | split: ',' %}
 {% assign matA21_ = "3,-1" | split: ',' %}
 
