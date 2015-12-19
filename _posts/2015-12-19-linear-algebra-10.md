@@ -14,7 +14,9 @@ published: true
 然后对A'进行高斯消元，也就是通过row operation不断对A'做变换，直到A'的左边的A变成单位矩阵时，A'的右边部分就是A的逆矩阵了。
 要注意的是，A不一定有逆矩阵，当A没有逆矩阵时，这个高斯消元过程中肯定会出现A的某row全是0的情况。
 
-举例说明（例子：
+<!--more-->
+
+举例说明：
 
 设A：
 
@@ -124,31 +126,31 @@ published: true
 \\[ A = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %} \\]
 
 {% assign detA11 = "5,3,0,8" | split: ',' %}
-\\[ A\_\{11\} = (-1)\^\{1+1\}{% include render_det_raw.html mat = detA11 row = 2 col = 2 %} = 40 \\]
+\\( A\_\{11\} = (-1)\^\{1+1\}{% include render_det_raw.html mat = detA11 row = 2 col = 2 %} = 40 \\)
 
 {% assign detA12 = "2,3,1,8" | split: ',' %}
-\\[ A\_\{12\} = (-1)\^\{1+2\}{% include render_det_raw.html mat = detA12 row = 2 col = 2 %} = -13\\]
+\\( A\_\{12\} = (-1)\^\{1+2\}{% include render_det_raw.html mat = detA12 row = 2 col = 2 %} = -13\\)
 
 {% assign detA13 = "2,5,1,0" | split: ',' %}
-\\[ A\_\{13\} = (-1)\^\{1+3\}{% include render_det_raw.html mat = detA13 row = 2 col = 2 %} = -5\\]
+\\( A\_\{13\} = (-1)\^\{1+3\}{% include render_det_raw.html mat = detA13 row = 2 col = 2 %} = -5 \\)
 
 {% assign detA21 = "2,3,0,8" | split: ',' %}
-\\[ A\_\{21\} = (-1)\^\{2+1\}{% include render_det_raw.html mat = detA21 row = 2 col = 2 %} = -16\\]
+\\( A\_\{21\} = (-1)\^\{2+1\}{% include render_det_raw.html mat = detA21 row = 2 col = 2 %} = -16 \\)
 
 {% assign detA22 = "1,3,1,8" | split: ',' %}
-\\[ A\_\{22\} = (-1)\^\{2+2\}{% include render_det_raw.html mat = detA22 row = 2 col = 2 %} = 5 \\]
+\\( A\_\{22\} = (-1)\^\{2+2\}{% include render_det_raw.html mat = detA22 row = 2 col = 2 %} = 5  \\)
 
 {% assign detA23 = "1,2,1,0" | split: ',' %}
-\\[ A\_\{23\} = (-1)\^\{2+3\}{% include render_det_raw.html mat = detA23 row = 2 col = 2 %} = 2 \\]
+\\( A\_\{23\} = (-1)\^\{2+3\}{% include render_det_raw.html mat = detA23 row = 2 col = 2 %} = 2  \\)
 
 {% assign detA31 = "2,3,5,3" | split: ',' %}
-\\[ A\_\{31\} = (-1)\^\{3+1\}{% include render_det_raw.html mat = detA31 row = 2 col = 2 %} = -9 \\]
+\\( A\_\{31\} = (-1)\^\{3+1\}{% include render_det_raw.html mat = detA31 row = 2 col = 2 %} = -9  \\)
 
 {% assign detA32 = "1,3,2,3" | split: ',' %}
-\\[ A\_\{32\} = (-1)\^\{3+2\}{% include render_det_raw.html mat = detA32 row = 2 col = 2 %} = 3 \\]
+\\( A\_\{32\} = (-1)\^\{3+2\}{% include render_det_raw.html mat = detA32 row = 2 col = 2 %} = 3  \\)
 
 {% assign detA33 = "1,2,2,5" | split: ',' %}
-\\[ A\_\{33\} = (-1)\^\{3+3\}{% include render_det_raw.html mat = detA33 row = 2 col = 2 %} = 1 \\]
+\\( A\_\{33\} = (-1)\^\{3+3\}{% include render_det_raw.html mat = detA33 row = 2 col = 2 %} = 1  \\)
 
 于是:
 
