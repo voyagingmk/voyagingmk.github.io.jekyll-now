@@ -88,35 +88,35 @@ published: true
 
 {% assign AA = "A\_\{11\},A\_\{12\},\\ldots,A\_\{1n\},A\_\{21\},A\_\{22\},\\ldots,A\_\{2n\},\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,A\_\{n1\},A\_\{n2\},\\ldots ,A\_\{nn\}" | split: ',' %}
 
-\\[ (A\^\{*\}) \^\{T\} = {% include render_matrix_raw.html mat = AA row = 4 col = 4 %}  \\]
+\\[ (adj(A)) \^\{T\} = {% include render_matrix_raw.html mat = AA row = 4 col = 4 %}  \\]
 
 {% assign AA2 = "A\_\{11\},A\_\{21\},\\ldots,A\_\{n1\},A\_\{12\},A\_\{22\},\\ldots ,A\_\{n2\},\\vdots \ \ \ \ ,\\vdots  \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,A\_\{1n\},A\_\{2n\},\\ldots ,A\_\{nn\}" | split: ',' %}
 
-\\[ A\^\{*\} = {% include render_matrix_raw.html mat = AA2 row = 4 col = 4 %}  \\]
+\\[ adj(A) = {% include render_matrix_raw.html mat = AA2 row = 4 col = 4 %}  \\]
 
-\\(A\^\{*\} \\)称为伴随矩阵。
+adj(A)称为伴随矩阵。
 
-利用上面2条定理，计算\\(AA\^\{*\}\\):
+利用上面2条定理，计算\\(Aadj(A)\\):
 
 
 {% assign aa = "a\_\{11\},a\_\{12\},\\ldots,a\_\{1n\},a\_\{21\},a\_\{22\},\\ldots,a\_\{2n\},\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,a\_\{n1\},a\_\{n2\},\\ldots ,a\_\{nn\}" | split: ',' %}
 
 
-\\[ AA\^\{*\} = {% include render_matrix_raw.html mat = aa row = 4 col = 4 %}{% include render_matrix_raw.html mat = AA2 row = 4 col = 4 %}\\]
+\\[ Aadj(A) = {% include render_matrix_raw.html mat = aa row = 4 col = 4 %}{% include render_matrix_raw.html mat = AA2 row = 4 col = 4 %}\\]
 
 {% assign AE = "|A|,0,\\ldots,0,0,|A|,\\ldots,0,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,\\vdots \ \ \ \ ,0,0,\\ldots ,|A|" | split: ',' %}
 
 \\[  = {% include render_matrix_raw.html mat = AE row = 4 col = 4 %}  = |A|E \\]
 
 即:
-\\[ AA\^\{*\}  = |A|E \\]
+\\[ Aadj(A)  = |A|E \\]
 
 从而有：
 
-\\[ A\^\{-1\}  = \\frac \{1\}\{|A|\}A\^\{*\} \\]
+\\[ A\^\{-1\}  = \\frac \{1\}\{|A|\}adj(A) \\]
 
 
-因为用这条公式求逆矩阵要计算\\( A\^\{*\}  \\)和|A|，这个计算太慢了。所以可以认为这个解法对阶数<=3的矩阵才实用。
+因为用这条公式求逆矩阵要计算adj(A)和|A|，这个计算太慢了。所以可以认为这个解法对阶数<=3的矩阵才实用。
 
 现在用伴随矩阵求逆法来求第一节中的A的逆矩阵：
 
@@ -157,13 +157,13 @@ published: true
 {% assign AStar1 = "A\_\{11\},A\_\{21\},A\_\{31\},A\_\{12\},A\_\{22\},A\_\{32\},A\_\{13\},A\_\{23\},A\_\{33\}" | split: ',' %}
 {% assign AStar = "40,-16,-9,-13,5,3,-5,2,1" | split: ',' %}
 
-\\[ A\^\{*\} = {% include render_matrix_raw.html mat = AStar1 row = 3 col = 3 %} = {% include render_matrix_raw.html mat = AStar row = 3 col = 3 %} \\]
+\\[ adj(A) = {% include render_matrix_raw.html mat = AStar1 row = 3 col = 3 %} = {% include render_matrix_raw.html mat = AStar row = 3 col = 3 %} \\]
 
 \\[ |A| =  a\_\{31\}A\_\{31\} + a\_\{32\}A\_\{32\} + a\_\{33\}A\_\{33\} = 1*(-9) + 0*3 + 8*1 = -1 \\]
 
 {% assign AInv = "-40,16,9,13,-5,-3,5,-2,-1" | split: ',' %}
 
-\\[ A\^\{-1\}  = \\frac \{1\}\{|A|\}A\^\{*\} = {% include render_matrix_raw.html mat = AInv row = 3 col = 3 %}   \\]
+\\[ A\^\{-1\}  = \\frac \{1\}\{|A|\}adj(A) = {% include render_matrix_raw.html mat = AInv row = 3 col = 3 %}   \\]
 
 ## 参考资料
 
