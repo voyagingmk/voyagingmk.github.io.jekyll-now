@@ -162,6 +162,8 @@ published: true
 {% assign AInv = "-40,16,9,13,-5,-3,5,-2,-1" | split: ',' %}
 
 \\[ A\^\{-1\}  = \\frac \{1\}\{|A|\}A\^\{*\} = {% include render_matrix_raw.html mat = AInv row = 3 col = 3 %}   \\]
+
 ## 参考资料
 
 [Inverse of a matrix by Gauss-Jordan elimination](http://www.mathportal.org/linear-algebra/matrices/gauss-jordan.php)
+[Determinant and Inverse of Matrices](http://www.sosmath.com/matrix/inverse/inverse.html)
