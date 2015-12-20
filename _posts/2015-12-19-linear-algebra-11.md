@@ -101,13 +101,13 @@ L是下三角矩阵。
 \\[ {% include render_matrix_raw.html mat = matA22 row = 2 col = 2 %} - {% include render_matrix_raw.html mat = matA21_  row = 2 col = 1 %}{% include render_matrix_raw.html mat = matA21_ row = 1 col = 2 %} =  {% include render_matrix_raw.html mat = matL22 row = 2 col = 2 %}  {% include render_matrix_raw.html mat = matL22_ row = 2 col = 2 %} \\]
 
 {% assign matB22 = "9,3,3,10" | split: ',' %}
-\\[ {% include render_matrix_raw.html mat = matA22 row = 2 col = 2 %} = {% include render_matrix_raw.html mat = matL22 row = 2 col = 2 %}  {% include render_matrix_raw.html mat = matL22_ row = 2 col = 2 %} \\]
+\\[ {% include render_matrix_raw.html mat = matB22 row = 2 col = 2 %} = {% include render_matrix_raw.html mat = matL22 row = 2 col = 2 %}  {% include render_matrix_raw.html mat = matL22_ row = 2 col = 2 %} \\]
 
 (注意，这里已经是n-1阶的Cholesky分解)
 
 \\[ l\_\{22\} = \\sqrt \{ 9 \} = 3 \\]
 \\[ l\_\{32\} = \\frac \{1\}\{3\}3 = 1 \\]
-\\[ 10 = 1 + l\_\{33\}\^\{2\} \\]
+\\[ 10 = l\_\{32\}\^\{2\} + l\_\{33\}\^\{2\} = 1 + l\_\{33\}\^\{2\} \\]
 \\[ l\_\{33\} = \\sqrt \{10 - 1\} = 3 \\]
 
 综上：
