@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: 线性代数之奇异值分解 SVD Decomposition
+title: 线性代数之奇异值(SVD)分解 
 tags: ['matrix','linear algebra']
 published: true
 ---
