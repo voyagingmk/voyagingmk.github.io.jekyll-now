@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: <复习向>线性代数之矩阵与行列式(3)
+title: <复习向>线性代数之PLU分解
 tags: ['matrix','linear algebra']
 published: true
 ---
@@ -16,7 +16,9 @@ published: true
 LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三角矩阵和上三角矩阵。
 
 下面手动演示下LU分解过程：
+
 <!--more-->
+
 设A：
 
 {% assign matA = "9,6,0,6,5,4,3,4,10" | split: ',' %}
@@ -141,7 +143,7 @@ LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三
 
 \\[ A = {% include render_matrix_raw.html mat = mat22 row = 2 col = 2 %}  = {% include render_matrix_raw.html mat = mat22L row = 2 col = 2 %}{% include render_matrix_raw.html mat = mat22U row = 2 col = 2 %} = L\_\{0\}U\_\{0\} \\]
 
-直接分解后得到的L、U矩阵，出现了**大数**，程序员读者们肯定会意识到:"大数！这不是要越界的节奏吗！"。所以这是不能接受的。
+直接分解后得到的L、U矩阵，出现了**大数**。所以这是不能接受的。
 
 而神奇的是，对A做一些P置换后，再来LU分解，是可以变稳定的：
 {% assign matP = "0,1,1,0" | split: ',' %}
@@ -153,7 +155,7 @@ LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三
 
 L、U中没有出现大数，于是认为这样的分解是稳定的。
 
-PA的P，需要对P做一些检测后才可以得到，策略就是：沿着对角线从左上角到右下角遍历A，并检测当前列的最大元素在下方的哪一行（当前行上方的行保持不变），找到后就将当前行和目标行交换，并记录下一个\\(E\_\{i\}\\)。最后按顺序算\\(E\_\{i\}\\)的乘积就得到了P。
+PA的P，需要对A做一些检测后才可以得到，策略就是：**沿着对角线从左上角到右下角遍历A，并检测当前列的最大元素在下方的哪一行（当前行上方的行保持不变），找到后就将当前行和目标行交换，并记录下一个\\(P\_\{i\}\\)。最后按顺序算\\(P\_\{i\}\\)的乘积就得到了P。**
 
 ## A的行列式
 
@@ -168,13 +170,13 @@ PA的P，需要对P做一些检测后才可以得到，策略就是：沿着对�
 可以进一步将这个式子简化：
 
 - L、U矩阵分别是下三角矩阵和上三角矩阵，它们的行列式等于对角线上元素的乘积
-- L矩阵上的元素都为1
+- L矩阵对角线上的元素都为1
 
 于是有：
 
 \\[ det(A) = det(P\^\{-1\})u\_\{11\}u\_\{22\}\\cdots u\_\{nn\} \\]
 
-因为： \\( PP\^\{-1\} = PP\^\{T\} =  1 \\)，\\( det(P\_T) = det(P) \\)，所以问题变成了求det(P)。
+因为： \\( PP\^\{-1\} = PP\^\{T\} =  1 \\)，\\( det(P\^\{T\}) = det(P) \\)，所以问题变成了求det(P)。
 
 P怎么求？首先，P相当于多个\\(E\_i\\)矩阵的乘积，而又有\\( det(E\_i)=\-1 \\)  (行列式的基本性质：交换行列式的两行，行列式变号），所以有：
 
