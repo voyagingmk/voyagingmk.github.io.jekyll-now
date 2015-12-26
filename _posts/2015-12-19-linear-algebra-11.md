@@ -11,6 +11,7 @@ published: true
 
 设A是一个n阶厄米特正定矩阵(Hermitian positive-definite matrix)。
 
+
 Cholesky分解的目标是把A变成:
 
 \\[ A = LL\^\{T\} \\]
@@ -116,3 +117,5 @@ L是下三角矩阵。
 {% assign matL2 = "5,3,-1,0,3,1,0,0,3" | split: ',' %}
 
 \\[ A = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %} = {% include render_matrix_raw.html mat = matL1 row = 3 col = 3 %}{% include render_matrix_raw.html mat = matL2 row = 3 col = 3 %} \\]
+
+## 参考资料
