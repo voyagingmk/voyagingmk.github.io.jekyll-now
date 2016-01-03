@@ -17,7 +17,9 @@ published: true
 
 
 标准正交向量组成的矩阵是：
+
 <!--more-->
+
 {% assign matA = "q\_\{1\},\\cdots,q\_\{n\}" | split: ',' %}
 \\( Q = \\) \\( {% include render_matrix_raw.html mat = matA row = 1 col = 3 %} \\)
 
