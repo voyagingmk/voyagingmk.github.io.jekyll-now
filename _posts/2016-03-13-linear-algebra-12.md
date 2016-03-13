@@ -171,7 +171,9 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 
 B解决了，求A：
 
-\\[ A = -1 - \\frac \{B\}\{NearZ\}  = -1 - \\frac \{2*FarZ*NearZ\}\{NearZ*(NearZ - FarZ)\} = -1 - \\frac \{2*FarZ\}\{(NearZ - FarZ)\}  \\]
+\\[ A = -1 - \\frac \{B\}\{NearZ\}  = -1 - \\frac \{2*FarZ*NearZ\}\{NearZ*(NearZ - FarZ)\} \\]
+
+\\[ A = -1 - \\frac \{2*FarZ\}\{(NearZ - FarZ)\}  \\]
 
 \\[ A =\\frac \{-NearZ + FarZ -2*FarZ\}\{(NearZ - FarZ)\}\\]
 
