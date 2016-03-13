@@ -39,3 +39,15 @@ published: true
 </div>
 
 [演示程序来源：http://webglfundamentals.org/webgl/lessons/webgl-3d-perspective.html](http://webglfundamentals.org/webgl/lessons/webgl-3d-perspective.html)
+
+从摄像机位置（一个点）观察视平面的话，是长这样子的：
+
+![1.png](../images/2016.3/1.png)
+
+(图片来自www.ogldev.org)
+
+y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平面height，其实也就是ar=屏幕width/屏幕height，因为大部分屏幕都是宽屏，所以ar的值一般是大于1的。当屏幕宽高一致时，视平面才是上面这幅图的样子。
+
+现在，换成侧视角来观察这个视锥体(yz平面)：
+
+![2.png](../images/2016.3/2.png)
