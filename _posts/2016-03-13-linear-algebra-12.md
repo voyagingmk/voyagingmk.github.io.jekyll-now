@@ -200,7 +200,26 @@ B解决了，求A：
 \\[ M = {% include render_matrix_raw.html mat = matM3 row = 4 col = 4 %} \\]
 
 
+再对比下superbible7中构造透视矩阵的代码：
 
+```c
+static inline mat4 perspective(float fovy, float aspect, float n, float f)
+{
+    float q = 1.0f / tan(radians(0.5f * fovy));
+    float A = q / aspect;
+    float B = (n + f) / (n - f);
+    float C = (2.0f * n * f) / (n - f);
 
+    mat4 result;
+
+    result[0] = vec4(A, 0.0f, 0.0f, 0.0f);
+    result[1] = vec4(0.0f, q, 0.0f, 0.0f);
+    result[2] = vec4(0.0f, 0.0f, B, -1.0f);
+    result[3] = vec4(0.0f, 0.0f, C, 0.0f);
+
+    return result;
+}
+```
+仔细观察，发现有2处不同：一是这个函数构造的矩阵是列主导的矩阵；二是上面的M的row4中的1，在这里变成了-1。
 
 
