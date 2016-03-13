@@ -119,7 +119,7 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 
 \\[ ax = \\frac \{ x \} \{ ar * z * tan(\\frac \{\alpha \} \{ 2 \} ) \} \\]
 
-观察等式，可以发现等式右边有个多余的z。OpenGL中对这个问题的处理是，在变换过程中强(偷)制(偷)插入一个步骤：把矩阵相乘的结果值再统一除以z！这么做之后，事情就简单了，上面的等式可以推出：
+观察等式，可以发现等式右边有个多余的z。OpenGL中对这个问题的处理是，在变换过程中强(偷)制(偷)插入一个步骤：把矩阵相乘的结果值再统一除以z（Divide z技术）！这么做之后，事情就简单了，上面的等式可以推出：
 
 \\[ a = \\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \}  \\]
 
@@ -134,3 +134,68 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 \\[ M = {% include render_matrix_raw.html mat = matM2 row = 4 col = 4 %} \\]
 
 到了这里，其实透视变换问题已经解决大半了，因为\\(x\_\{p\}\\)和\\(y\_\{p\}\\)都可以算了，并且可以规范化到[-1,1]范围。剩下的问题是\\(z\_\{p\}\\)，即顶点的深度信息。
+
+前面提到的Divide z技术会导致一个问题：z分量在转换过程中会因为Divide z技术而导致变成1。针对这个问题，OpenGL的解决方案是，把V的z值复制覆盖到w上，从而把原始z值保存起来，同时Divide z仅对x、y、z有效（跳过w）。
+
+因此，M的后两行也可以得到了：
+
+{% assign matM2 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,0,0,0,0,1,0" | split: ',' %}
+
+\\[ M = {% include render_matrix_raw.html mat = matM2 row = 4 col = 4 %} \\]
+
+然而，事情还没有结束。现在用这个新的M去做透视变换后，得不到规范化的z分量。规范化的，可以使得后续的渲染步骤不需要知道near Z和far Z。为了完成这个事情，需要对M做改进，着手点就是row 3，全为0的第三行。
+
+再阐述一下问题：我们需要求出row3=(i,j,k,l)，使得row3和V做点积运算能得到规范化的\\(z\_\{p\}\\)。用公式表示：
+
+\\[z\_\{p\} = Az + B , z\_\{p\}\\in [-1,1] \\]
+
+再考虑上divide z技术，上式变成：
+
+\\[z\_\{p\} = A + \\frac \{B\}\{z\} , z\_\{p\}\\in [-1,1] \\]
+
+把公式中的A、B求出来，代入row3，就能解决问题。
+
+因为当z等于near Z时，\\(z\_\{p\}\\)必然等于-1；当z等于far Z时，\\(z\_\{p\}\\)必然等于1。因此得到：
+
+\\[ A + \\frac \{B\}\{NearZ\} = -1 \\]
+
+\\[ A = -1 - \\frac \{B\}\{NearZ\} \\]
+
+\\[ A + \\frac \{B\}\{FarZ\} = 1 \\]
+
+\\[ \\frac \{B\}\{FarZ\} -1 - \\frac \{B\}\{NearZ\} = 1 \\]
+
+\\[ \\frac \{B*NearZ - B*FarZ\}\{FarZ*NearZ\} = 2 \\]
+
+\\[ B = \\frac \{2*FarZ*NearZ\}\{NearZ - FarZ\}  \\]
+
+B解决了，求A：
+
+\\[ A = -1 - \\frac \{B\}\{NearZ\}  = -1 - \\frac \{2*FarZ*NearZ\}\{NearZ*(NearZ - FarZ)\} = -1 - \\frac \{2*FarZ\}\{(NearZ - FarZ)\}  \\]
+
+\\[ A =\\frac \{-NearZ + FarZ -2*FarZ\}\{(NearZ - FarZ)\}\\]
+
+\\[ A = \\frac \{-NearZ - FarZ\}\{(NearZ - FarZ)\} \\]
+
+有了A、B后，就可以求row3了:
+
+\\[ ix +jy +kz +lw = Az + B \\]
+
+显然，可让i = j = 0，那么上式变成:
+
+\\[ kz + lw = Az + B \\]
+
+因为V的w分量必然是1，所以可以得知：k = A，l = B。
+
+代入M，得：
+
+
+{% assign matM3 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{-NearZ - FarZ\}\{(NearZ - FarZ)\},\\frac \{2*FarZ*NearZ\}\{NearZ - FarZ\},0,0,1,0" | split: ',' %}
+
+\\[ M = {% include render_matrix_raw.html mat = matM3 row = 4 col = 4 %} \\]
+
+
+
+
+
+
