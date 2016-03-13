@@ -121,3 +121,13 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 观察等式，可以发现等式右边有个多余的z。OpenGL中对这个问题的处理是，在变换过程中强(偷)制(偷)插入一个步骤：把矩阵相乘的结果值再统一除以z！这么做之后，事情就简单了，上面的等式可以推出：
 
 \\[ a = \\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \}  \\]
+
+对于M矩阵的f，用同样的做法可以得到:
+
+\\[ f = \\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \}   \\]
+
+从而得到了M的前两行的值：
+
+{% assign matM2 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,i,j,k,l,m,n,o,p" | split: ',' %}
+
+\\[ M = {% include render_matrix_raw.html mat = matM2 row = 4 col = 4 %} \\]
