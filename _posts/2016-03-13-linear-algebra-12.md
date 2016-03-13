@@ -86,7 +86,7 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 
 {% assign matPM = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p" | split: ',' %}
 
-\\[ Perspective Matrix = PM = {% include render_matrix_raw.html mat = matPM row = 4 col = 4 %} \\]
+\\[ Perspective Matrix = M = {% include render_matrix_raw.html mat = matPM row = 4 col = 4 %} \\]
 
 被转换的顶点的坐标(矩阵)是：
 
@@ -98,4 +98,26 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 
 {% assign matV2 = "x\_\{p\} ,y\_\{p\} ,z\_\{p\} ,w\_\{p\} " | split: ',' %}
 
-\\[ V = {% include render_matrix_raw.html mat = matV2 row = 4 col = 1 %} \\]
+\\[ V\_\{p\} = {% include render_matrix_raw.html mat = matV2 row = 4 col = 1 %} \\]
+
+转换过程:
+
+\\[ MV = V\_\{p\} \\]
+
+\\[ {% include render_matrix_raw.html mat = matPM row = 4 col = 4 %} {% include render_matrix_raw.html mat = matV row = 4 col = 1 %}  = {% include render_matrix_raw.html mat = matV2 row = 4 col = 1 %} \\]
+
+从以上等式可以得到:
+
+\\[ ax + by + cz + dw = x\_\{p\} = \\frac \{ x \} \{ ar * z * tan(\\frac \{\alpha \} \{ 2 \} ) \} \\]
+
+这是M矩阵第一行和V的点积等式。求解这个等式的话，会发现可以让b=0、c=0，从而等式简化成:
+
+\\[ ax + cz = \\frac \{ x \} \{ ar * z * tan(\\frac \{\alpha \} \{ 2 \} ) \} \\]
+
+这样做后就有了个问题：找不到可以代入a、c的常量值。其中比较多余的cz，如果干掉的话，意味着c等于0，等式进而变成:
+
+\\[ ax = \\frac \{ x \} \{ ar * z * tan(\\frac \{\alpha \} \{ 2 \} ) \} \\]
+
+观察等式，可以发现等式右边有个多余的z。OpenGL中对这个问题的处理是，在变换过程中强(偷)制(偷)插入一个步骤：把矩阵相乘的结果值再统一除以z！这么做之后，事情就简单了，上面的等式可以推出：
+
+\\[ a = \\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \}  \\]
