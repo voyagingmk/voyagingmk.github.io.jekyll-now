@@ -22,6 +22,18 @@ published: true
 
 # 视锥体 Frustum
 
+视锥体，指的是一个有限的椎体空间，处于这个视锥体里的对象，才是“可见”的对象，可见的对象会被渲染到“视平面”上（三维到二维的投影）。视锥体有4个参数：
+
+- aspect ratio，简称ar，ar = 视平面width/视平面height
+- （vertical）field of view，简称fov，指yz平面的视角大小，即下文的\\( \alpha \\)角。
+- near Z Plane，简称near面，是一个平行于xy平面的面，世界坐标系下是一个浮点值，可以用来裁剪太靠近摄像机的物体
+- far Z Plane，简称far面，含义类似near面，可以用来裁剪太远离摄像机的物体
+
+
+视平面可以认为是视锥体的near面；far面相对来说并没有那么重要，因为我们知道人眼的“视锥体”是没有far面的（比如裸眼可以看到月亮星星，far面其实是无限远的），在图形学中，far面主要是用来裁剪太过遥远的物体、提高渲染效率的。
+
+下面这个是我找到的一个视锥体的演示程序，非常直观地展示了视锥体的作用：
+
 <div>
   <iframe class="webgl_example" style="width: 400px; height: 600px;" src="http://webglfundamentals.org/webgl/frustum-diagram.html"></iframe>
 </div>
