@@ -159,32 +159,32 @@ y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平�
 
 \\[z\_\{p\} = A + \\frac \{B\}\{-z\} , z\_\{p\}\\in [-1,1] \\]
 
-把公式中的A、B求出来，代入row3，就能解决问题。
+思路非常明确了：把公式中的A、B求出来，代入row3，就能解决问题。
 
 因为当z等于near Z时，\\(z\_\{p\}\\)必然等于1；当z等于far Z时，\\(z\_\{p\}\\)必然等于-1 (Note：这里用的是右手坐标系）。因此得到：
 
 
-\\[ A + \\frac \{B\}\{NearZ\} = 1 \\]
+\\[ A + \\frac \{B\}\{-NearZ\} = 1 \\]
 
-\\[ A = 1 - \\frac \{B\}\{NearZ\} \\]
+\\[ A = 1 - \\frac \{B\}\{-NearZ\} = 1 + \\frac \{B\}\{NearZ\}  \\]
 
 接着：
 
-\\[ A + \\frac \{B\}\{FarZ\} = -1 \\]
+\\[ A + \\frac \{B\}\{-FarZ\} = -1 \\]
 
-\\[ \\frac \{B\}\{FarZ\} + 1 - \\frac \{B\}\{NearZ\} = -1 \\]
+\\[ 1 + \\frac \{B\}\{NearZ\} - \\frac \{B\}\{FarZ\} = -1 \\]
 
-\\[ \\frac \{B*NearZ - B*FarZ\}\{FarZ*NearZ\} = -2 \\]
+\\[ \\frac \{B*FarZ - B*NearZ\}\{NearZ*FarZ\} = -2 \\]
 
-\\[ B = \\frac \{-2*FarZ*NearZ\}\{NearZ - FarZ\}  \\]
+\\[ B = \\frac \{-2*NearZ*FarZ\}\{FarZ - NearZ\} = \\frac \{2*NearZ*FarZ\}\{NearZ - FarZ\}  \\]
 
 B解决了，求A：
 
-\\[ A = 1 - \\frac \{B\}\{NearZ\}  = 1 - \\frac \{-2*FarZ*NearZ\}\{NearZ*(NearZ - FarZ)\} \\]
+\\[ A = 1 + \\frac \{B\}\{NearZ\}  = 1 + \\frac \{2*FarZ*NearZ\}\{NearZ*(NearZ - FarZ)\} \\]
 
-\\[ A = 1 - \\frac \{-2*FarZ\}\{NearZ - FarZ\}  \\]
+\\[ A = 1 + \\frac \{2*FarZ\}\{NearZ - FarZ\}  \\]
 
-\\[ A =\\frac \{NearZ - FarZ +2*FarZ\}\{NearZ - FarZ\}\\]
+\\[ A =\\frac \{NearZ - FarZ + 2*FarZ\}\{NearZ - FarZ\}\\]
 
 \\[ A = \\frac \{NearZ + FarZ\}\{NearZ - FarZ\} \\]
 
@@ -201,7 +201,7 @@ B解决了，求A：
 代入M，得到最终完善的M：
 
 
-{% assign matM3 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{NearZ + FarZ\}\{NearZ - FarZ\},\\frac \{-2*FarZ*NearZ\}\{NearZ - FarZ\},0,0,1,0" | split: ',' %}
+{% assign matM3 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{NearZ + FarZ\}\{NearZ - FarZ\},\\frac \{2*FarZ*NearZ\}\{NearZ - FarZ\},0,0,-1,0" | split: ',' %}
 
 \\[ M = {% include render_matrix_raw.html mat = matM3 row = 4 col = 4 %} \\]
 
@@ -226,6 +226,7 @@ static inline mat4 perspective(float fovy, float aspect, float n, float f)
     return result;
 }
 ```
-仔细观察，发现有2处不同：一是这个函数构造的矩阵是列主导的矩阵；二是上面的M的row4中的1，在这里变成了-1，同时上文的B在这里被取反了(那个float C)。第二个不同点暂时原因未知。
+仔细观察，发现有1处不同：这个函数构造的矩阵是列主导的矩阵。其中元素的取值和本文的推导完全一致！
+
 
 
