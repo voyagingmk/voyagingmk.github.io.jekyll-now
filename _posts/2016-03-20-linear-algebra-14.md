@@ -73,7 +73,39 @@ published: true
 \\[ \\vec v\_\{\\parallel \} = (\\vec v\\cdot \\vec n) \\vec n \\]
 
 
-- 上一步已经解决了\\( \\vec v\_\{\\parallel \} \\)，剩下的就是求\\( \\vec v'\_\{\\perp \} \\)。求\\( \\vec v'\_\{\\perp \} \\)之前需要先求出\\( \\vec v\_\{\\perp \} \\)，显然\\( \\vec v\_\{\\perp \} = v - \\vec v\_\{\\parallel\} \\) 
+- 上一步已经解决了\\( \\vec v\_\{\\parallel \} \\)，剩下的就是求\\( \\vec v'\_\{\\perp \} \\)。求\\( \\vec v'\_\{\\perp \} \\)之前需要先求出\\( \\vec v\_\{\\perp \} \\)，而显然\\( \\vec v\_\{\\perp \} = v - \\vec v\_\{\\parallel\} \\) 
 
 
 - 接着，需要计算一个新的向量\\(\\vec w \\)，\\( \\vec w = \\vec n \\times \\vec v\_\{\\perp \} \\) （注意叉乘的顺序不能错），所以\\(\\vec w \\)是一个垂直于\\(  \\vec n \\)、\\( \\vec v\_\{\\perp \} \\)所构成平面的向量。
+
+- 把\\( \\vec v\_\{\\perp \}\\)、\\(\\vec w \\) 分别当做是\\(  \\vec n \\)、\\( \\vec v\_\{\\perp \} \\)平面的x、y轴(2D坐标系)，那么\\( \\vec v'\_\{\\perp \} \\)的含义就是指\\( \\vec v\_\{\\perp \} \\)在这个2D坐标系下旋转\\(\\theta \\)度。从而得到等式：
+
+\\[ \\vec v'\_\{\\perp \} =  cos\\theta \\vec v\_\{\\perp \} + sin\\theta \\vec w \\]
+
+
+好了，所有变量都得到了，总结下最终的公式：
+
+\\( \\vec v\_\{\\parallel \} = (\\vec v\\cdot \\vec n) \\vec n \\)
+
+\\( \\vec v\_\{\\perp \} = \\vec v - \\vec v\_\{\\parallel\} = \\vec v -  (\\vec v\\cdot \\vec n) \\vec n \\) 
+
+\\( \\vec w = \\vec n \\times \\vec v\_\{\\perp \} \\) 
+
+\\( = \\vec n \\times (\\vec v - \\vec v\_\{\\parallel\}) \\) 
+
+\\( = \\vec n \\times \\vec v - \\vec n \\times \\vec v\_\{\\parallel\}) \\) 
+
+\\( = \\vec n \\times \\vec v \\) 
+
+
+\\( \\vec v'\_\{\\perp \} =  cos\\theta \\vec v\_\{\\perp \} + sin\\theta \\vec w \\)
+
+
+\\( =  cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v)  \\)
+
+
+\\( \\vec v' = \\vec v'\_\{\\perp \} + \\vec v\_\{\\parallel \} \\)
+
+\\( = cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) + (\\vec v\\cdot \\vec n) \\vec n \\)
+
+
