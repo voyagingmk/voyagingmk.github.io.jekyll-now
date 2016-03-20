@@ -133,11 +133,6 @@ published: true
 
 最终的旋转矩阵为:
 
-{% assign R = "
-n\_\{x\}\^\{2\}(1-cos\\theta )+cos\\theta ,  n\_\{x\}n\_\{y\}(1-cos\\theta )+n\_\{z\}sin\\theta ,  n\_\{x\}n\_\{z\}(1-cos\\theta )-n\_\{y\}sin\\theta , 0,
-n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta , 0,
-n\_\{x\}n\_\{z\}(1-cos\\theta )+n\_\{y\}sin\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )-n\_\{x\}sin\\theta ,n\_\{z\}\^\{2\}(1-cos\\theta )+cos\\theta , 0,
-0,0,0,1
-" | split: ',' %}
+{% assign R = "n\_\{x\}\^\{2\}(1-cos\\theta )+cos\\theta ,  n\_\{x\}n\_\{y\}(1-cos\\theta )+n\_\{z\}sin\\theta ,  n\_\{x\}n\_\{z\}(1-cos\\theta )-n\_\{y\}sin\\theta ,0,     n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta ,0,    n\_\{x\}n\_\{z\}(1-cos\\theta )+n\_\{y\}sin\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )-n\_\{x\}sin\\theta ,n\_\{z\}\^\{2\}(1-cos\\theta )+cos\\theta ,0,   0,0,0,1" | split: ',' %}
 
-\\[ R(\\vec n, \\theta ) = {% include render_matrix_raw.html mat = R row = 4 col = 4 %} \^\{T\} \\]
+\\[ R(\\vec n, \\theta ) = {% include render_matrix_raw.html mat = R row = 4 col = 4 %} \\]
