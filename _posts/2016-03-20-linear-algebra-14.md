@@ -119,12 +119,25 @@ published: true
 
 {% assign x = "n\_\{x\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{x\}n\_\{y\}(1-cos\\theta )+n\_\{z\}sin\\theta ,n\_\{x\}n\_\{z\}(1-cos\\theta )-n\_\{y\}sin\\theta " | split: ',' %}
 
-{% assign y = ",n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta " | split: ',' %}
+{% assign y = "n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta " | split: ',' %}
 
 {% assign z = "n\_\{x\}n\_\{z\}(1-cos\\theta )+n\_\{y\}sin\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )-n\_\{x\}sin\\theta ,n\_\{z\}\^\{2\}(1-cos\\theta )+cos\\theta " | split: ',' %}
 
-\\[ v\_\{x\}' = {% include render_matrix_raw.html mat = x row = 3 col = 1 %} \\]
 
-\\[ v\_\{y\}' = {% include render_matrix_raw.html mat = y row = 3 col = 1 %} \\]
+\\[ v\_\{x\}' = {% include render_matrix_raw.html mat = x row = 3 col = 1 %} \^\{T\} \\]
 
-\\[ v\_\{z\}' = {% include render_matrix_raw.html mat = z row = 3 col = 1 %} \\]
+\\[ v\_\{y\}' = {% include render_matrix_raw.html mat = y row = 3 col = 1 %} \^\{T\} \\]
+
+\\[ v\_\{z\}' = {% include render_matrix_raw.html mat = z row = 3 col = 1 %} \^\{T\} \\]
+
+
+最终的旋转矩阵为:
+
+{% assign R = "
+n\_\{x\}\^\{2\}(1-cos\\theta )+cos\\theta ,  n\_\{x\}n\_\{y\}(1-cos\\theta )+n\_\{z\}sin\\theta ,  n\_\{x\}n\_\{z\}(1-cos\\theta )-n\_\{y\}sin\\theta , 0,
+n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta , 0,
+n\_\{x\}n\_\{z\}(1-cos\\theta )+n\_\{y\}sin\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )-n\_\{x\}sin\\theta ,n\_\{z\}\^\{2\}(1-cos\\theta )+cos\\theta , 0,
+0,0,0,1
+" | split: ',' %}
+
+\\[ R(\\vec n, \\theta ) = {% include render_matrix_raw.html mat = R row = 4 col = 4 %} \^\{T\} \\]
