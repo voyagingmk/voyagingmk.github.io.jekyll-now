@@ -108,4 +108,23 @@ published: true
 
 \\( = cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) + (\\vec v\\cdot \\vec n) \\vec n \\)
 
+加粗并居中：
 
+**\\[ \\vec v' = cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) + (\\vec v\\cdot \\vec n) \\vec n \\]**
+
+这就是绕任意轴的旋转公式了。
+
+接下来是把这个公式转换成矩阵的形式。方法是，把\\(v\_\{x\} = (1,0,0) \\)、\\(v\_\{y\} = (0,1,0) \\)、\\(v\_\{z\} = (0,0,1) \\)，分别代入上面的公式，分别得到：
+
+
+{% assign x = "n\_\{x\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{x\}n\_\{y\}(1-cos\\theta )+n\_\{z\}sin\\theta ,n\_\{x\}n\_\{z\}(1-cos\\theta )-n\_\{y\}sin\\theta " | split: ',' %}
+
+{% assign y = ",n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta " | split: ',' %}
+
+{% assign z = "n\_\{x\}n\_\{z\}(1-cos\\theta )+n\_\{y\}sin\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )-n\_\{x\}sin\\theta ,n\_\{z\}\^\{2\}(1-cos\\theta )+cos\\theta " | split: ',' %}
+
+\\[ v\_\{x\}' = {% include render_matrix_raw.html mat = x row = 3 col = 1 %} \\]
+
+\\[ v\_\{y\}' = {% include render_matrix_raw.html mat = y row = 3 col = 1 %} \\]
+
+\\[ v\_\{z\}' = {% include render_matrix_raw.html mat = z row = 3 col = 1 %} \\]
