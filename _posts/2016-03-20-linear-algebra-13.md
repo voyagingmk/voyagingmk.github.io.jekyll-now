@@ -54,3 +54,45 @@ published: true
 \\[ M = {% include render_matrix_raw.html mat = matM row = 4 col = 4 %} \\]
 
 
+拿这个M和单位矩阵I对比下：
+
+{% assign matI = "1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1" | split: ',' %}
+
+\\[ I = {% include render_matrix_raw.html mat = matI row = 4 col = 4 %} \\]
+
+可以发现，单位矩阵I相当于是把观察者放在世界空间的原点。因为I的\\(\\vec r\\)、\\(\\vec u\\)、\\(\\vec f\\)已经是规范化、正交化的，且和世界坐标系一致。
+
+所以上面的M可以理解为：M等于M乘以I。含义是，把世界坐标系变换到观察者坐标系。也即相当于调整了对world的观察角度。
+
+
+到了这里，事情还没完，因为这个M并不能体现出观察者的**位置**，为什么呢？因为\\(\\vec r\\)、\\(\\vec u\\)、\\(\\vec f\\)是规范化的向量，长度都为1，并不包含位置信息。
+
+和单位矩阵I对比的话就清楚了，单位矩阵I之所以不需要位置信息，是因为单位矩阵I已经隐含了一个信息：观察位置就在(0,0,0)。
+
+观察位置，上面已经定义过了，它就是eye向量。
+
+把观察者放到eye位置，反过来想，相当于是把被观察的东西偏移-eye的距离。实际上，我们正在构造的Lookat矩阵，不是要作用到观察者身上，而是要作用到被观察者（world）身上的。
+
+因此，现在可以根据eye向量构造一个移动矩阵T(Translate)了：
+
+
+{% assign matT = "1,0,0,-eye\_\{x\},0,1,0,-eye\_\{y\},0,0,1,-eye\_\{z\},0,0,0,1" | split: ',' %}
+
+\\[ T = {% include render_matrix_raw.html mat = matT row = 4 col = 4 %} \\]
+
+然后把M和T合并，即得到了Lookat矩阵：
+
+
+\\[ Lookat = MT \\]
+
+\\[ = {% include render_matrix_raw.html mat = matM row = 4 col = 4 %}{% include render_matrix_raw.html mat = matT row = 4 col = 4 %} \\]
+
+{% assign matL =  "r\_\{x\},r\_\{y\},r\_\{z\},-r\_\{x\}eye\_\{x\}-r\_\{y\}eye\_\{y\}-r\_\{z\}eye\_\{z\}, u\_\{x\},u\_\{y\},u\_\{z\},-u\_\{x\}eye\_\{x\}-u\_\{y\}eye\_\{y\}-u\_\{z\}eye\_\{z\}, f\_\{x\},f\_\{y\},f\_\{z\},-f\_\{x\}eye\_\{x\}-f\_\{y\}eye\_\{y\}-f\_\{z\}eye\_\{z\}, 0,0,0,1" | split: ',' %}
+
+\\[ = {% include render_matrix_raw.html mat = matL row = 4 col = 4 %} \\]
+
+简化下：
+
+{% assign matL2 =  "r\_\{x\},r\_\{y\},r\_\{z\},-(\\vec r\\cdot \\overrightarrow \{eye\}), u\_\{x\},u\_\{y\},u\_\{z\},-(\\vec u\\cdot \\overrightarrow \{eye\}), f\_\{x\},f\_\{y\},f\_\{z\},-(\\vec f\\cdot \\overrightarrow \{eye\}), 0,0,0,1" | split: ',' %}
+
+\\[ Lookat = {% include render_matrix_raw.html mat = matL2 row = 4 col = 4 %} \\]
