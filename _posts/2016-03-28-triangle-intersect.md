@@ -5,6 +5,8 @@ tags: ['matrix','linear algebra']
 published: true
 ---
 
+本文可认为是《PBRT》3.6节的公式推导笔记。
+
 <!--more-->
 
 ### Step1 抽象化问题
@@ -80,10 +82,16 @@ published: true
 
 克拉默(Cramer)法则：
 
-若系数行列式 \\( D\\neq 0 \\)，则方程组有唯一解，其解为：
+> 若系数行列式 \\( D\\neq 0 \\)，则方程组有唯一解，其解为：
 \\[ x\_\{j\} = \\dfrac \{D\_\{j\}\} \{D\} \\]
 
-\\( D\_\{j\} \\)是将系数行列式D中第j列的元素\\( a\_\{1j\},a\_\{2j\},\cdots a\_\{nj\} \\)对应地换成方程组右端的常数项\\( b\_\{1j\},b\_\{2j\},\cdots b\_\{nj\} \\)，而其余各列保持不变得到的行列式。
+> \\( D\_\{j\} \\)是将系数行列式D中第j列的元素\\( a\_\{1j\},a\_\{2j\},\cdots a\_\{nj\} \\)对应地换成方程组右端的常数项\\( b\_\{1j\},b\_\{2j\},\cdots b\_\{nj\} \\)，而其余各列保持不变得到的行列式。
+
+对应到上面的方程，系数行列式D等于：
+
+\\[ D = {% include render_det_raw.html mat = A row = 1 col = 3 %} \\]
+
+而方程右边的常数项为\\(\\vec s\\)。
 
 
 所以上面的方程的各个未知数的值为：
@@ -106,11 +114,64 @@ published: true
 
 \\[ {% include render_matrix_raw.html mat = B row = 3 col = 1 %} = \\frac \{ 1 \} \{ {% include render_det_raw.html mat = A row = 1 col = 3 %} \} \\left\[ \begin{matrix} {% include render_det_raw.html mat = D1 row = 1 col = 3 %}  \\\ {% include render_det_raw.html mat = D2 row = 1 col = 3 %}  \\\ {% include render_det_raw.html mat = D3 row = 1 col = 3 %}  \\\  \end{matrix} \\right\]    \\]
 
+然后再使用另一杀招——**向量的混合积**[Scalar Triple Product](http://mathworld.wolfram.com/ScalarTripleProduct.html)，从而再次将上式简化。
+
+向量的混合积公式：
+
+\\[ [\\vec a,\\vec b, \\vec c] = \\vec a\\cdot (\\vec b \\times \\vec c) \\]
+
+\\[ = \\vec b\\cdot (\\vec c \\times \\vec a) = \\vec b\\cdot (-\\vec a \\times \\vec c) \\]
+
+\\[ = \\vec c\\cdot (\\vec a \\times \\vec b) \\]
+
+\\[ = det(\\vec a \ \\vec b \ \\vec c) = |\\vec a \ \\vec b \ \\vec c| \\]
+
+因此有：
+
+\\[ |-\\vec d \ \\vec e\_\{1\} \ \\vec e\_\{2\}| = -(-\\vec d) \\times \\vec e\_\{2\})\\cdot \\vec e\_\{1\} = (\\vec d \\times \\vec e\_\{2\})\\cdot \\vec e\_\{1\} \\]
+
+\\[ |\\vec s \ \\vec e\_\{1\} \ \\vec e\_\{2\}| = (\\vec s \\times \\vec e\_\{1\})\\cdot \\vec e\_\{2\} \\]
+
+\\[ |-\\vec d \ \\vec s \ \\vec e\_\{2\}| = (\\vec d \\times \\vec e\_\{2\})\\cdot \\vec s \\]
+
+\\[ |-\\vec d \ \\vec e\_\{1\} \ \\vec s| = (\\vec s \\times \\vec e\_\{1\})\\cdot \\vec d \\]
+
+再代入到前面的方程，得到：
+
+{% assign M2 = "(\\vec s \\times \\vec e\_\{1\})\\cdot \\vec e\_\{2\}, (\\vec d \\times \\vec e\_\{2\})\\cdot \\vec s, (\\vec s \\times \\vec e\_\{1\})\\cdot \\vec d" | split: ',' %}
 
 
-http://mathworld.wolfram.com/ScalarTripleProduct.html
+\\[ {% include render_matrix_raw.html mat = B row = 3 col = 1 %} = \\frac \{ 1 \} \{ (\\vec d \\times \\vec e\_\{2\})\\cdot \\vec e\_\{1\} \} {% include render_matrix_raw.html mat = M2 row = 3 col = 1 %}  \\]
+
+再设：
+
+\\[ \\vec s\_\{1\} = \\vec d \\times \\vec e\_\{2\} \\]
+
+\\[ \\vec s\_\{2\} = \\vec s \\times \\vec e\_\{1\} \\]
+
+就得到最终的等式了：
+
+{% assign M3 = "\\vec s\_\{2\}\\cdot \\vec e\_\{2\}, \\vec s\_\{1\}\\cdot \\vec s, \\vec s\_\{2\}\\cdot \\vec d" | split: ',' %}
 
 
-http://mathworld.wolfram.com/CrossProduct.html
+\\[ {% include render_matrix_raw.html mat = B row = 3 col = 1 %} = \\frac \{ 1 \} \{ \\vec s\_\{1\} \\cdot \\vec e\_\{1\} \} {% include render_matrix_raw.html mat = M3 row = 3 col = 1 %}  \\]
 
-https://en.wikipedia.org/wiki/Triple_product
+推导到了这里就结束了。现在来分析下这个最终等式的特点：
+
+- \\(\\vec d 、\  \\vec s 、\  \\vec e\_\{1\} 、\  \\vec e\_\{2\} \\) 是需要先求出来的，不过也是非常容易计算的(向量加减法)。
+
+- 接着就是算\\( \\vec s\_\{1\} 、\   \\vec s\_\{2\} \\)，无法避免的2次叉积运算。算完后，就得到了等式右边所有变量的值了
+
+- 最后就是4次向量点积运算，1次求倒数运算，3次乘法运算，就分别得到了\\( t 、\ b\_\{1\} 、\ b\_\{2\} \\)的值。
+
+
+
+## 总结
+
+在上面的推导过程中，用到了矩阵、行列式、向量叉积、向量混合积等诸多概念，只为了得到相交点的坐标，确实复杂了点。
+
+其中的**向量的混合积**，可以参考以下网页来理解：
+
+[http://mathworld.wolfram.com/CrossProduct.html](http://mathworld.wolfram.com/CrossProduct.html)
+
+[https://en.wikipedia.org/wiki/Triple_product](https://en.wikipedia.org/wiki/Triple_product)
