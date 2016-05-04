@@ -142,3 +142,34 @@ wiki:[https://en.wikipedia.org/wiki/Normal_matrix](https://en.wikipedia.org/wiki
 (from wiki)
 
 wiki:[https://en.wikipedia.org/wiki/Bidiagonal_matrix](https://en.wikipedia.org/wiki/Bidiagonal_matrix)
+
+
+## 格拉姆矩阵 Gramian matrix
+
+设矩阵X：
+
+{% assign X = "\\vec X\_\{1\},\\vec X\_\{2\},\\cdots ,\\vec X\_\{n\}" | split: ',' %}
+
+\\[ X = {% include render_matrix_raw.html mat = X row = 1 col = 4 %}  \\]
+
+则Gramian matrix为：
+
+\\[ G = X\^\{T\}X \\]
+
+性质：
+
+- G是positive semi-definite matrix正半定矩阵
+
+- G的行列式非0时，X是线性无关的（充分必要）（可用来判定X是否线性无关，很重要）
+
+
+## 协方差矩阵 Covariance matrix （或离差矩阵dispersion matrix）
+
+先给出协方差(covariance)公式：
+
+\\[ cov(X,Y) = \\frac \{ \\sum \^\{n\} \_\{i=1\}(X\_\{i\} - \\overline \{X\})(Y\_\{i\} - \\overline \{Y\}) \}\{n-1\} = E[(X - E[X])(Y - E[Y])] \\]
+
+协方差是一个测量2个变量关联性程度的方法。当变量数目多于2时，任意2个变量之间的协方差的集合就构成了协方差矩阵C：
+
+\\[ C = \\Sigma \_\{ij\} = cov(X\_\{i\},X\_\{j\}) = E[(X\_\{i\} - E[X\_\{i\}])(X\_\{j\}s - E[X\_\{j\}])]  \\]
+
