@@ -171,5 +171,5 @@ wiki:[https://en.wikipedia.org/wiki/Bidiagonal_matrix](https://en.wikipedia.org/
 
 协方差是一个测量2个变量关联性程度的方法。当变量数目多于2时，任意2个变量之间的协方差的集合就构成了协方差矩阵C：
 
-\\[ C = \\Sigma \_\{ij\} = cov(X\_\{i\},X\_\{j\}) = E[(X\_\{i\} - E[X\_\{i\}])(X\_\{j\}s - E[X\_\{j\}])]  \\]
+\\[ C = \\Sigma \_\{ij\} = cov(X\_\{i\},X\_\{j\}) = E[(X\_\{i\} - E[X\_\{i\}])(X\_\{j\} - E[X\_\{j\}])]  \\]
 
