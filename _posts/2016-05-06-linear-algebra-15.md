@@ -58,19 +58,19 @@ published: true
 
 开根号是不必要的，我们可以换成下面这个指标：
 
-\\[ |\\vec e|\^\{2} = \\sum \^\{n\}\_\{i=1\}e\_\{i\}\^\{2} = \\vec e\\vec e = e\^\{T\}e \\]
+\\[ |\\vec e|\^\{2} = \\sum \^\{n\}\_\{i=1\}e\_\{i\}\^\{2} = \\vec e\\vec e = \\vec e\^\{T\}\\vec e \\]
 
-**小结一下：当\\( e\^\{T\}e \\)取得最小值时，\\(\\vec a\\)能取得最优解。**
+**小结一下：当\\( \\vec e\^\{T\}\\vec e \\)取得最小值时，\\(\\vec a\\)能取得最优解。**
 
 继续推导。
 
 由上文可知：
 
-\\( e = \\vec y - X\\vec a \\)
+\\( \\vec e = \\vec y - X\\vec a \\)
 
-\\( e\^\{T\} = (\\vec y - X\\vec a)\^\{T\} \\)
+\\( \\vec e\^\{T\} = (\\vec y - X\\vec a)\^\{T\} \\)
 
-\\( e\^\{T\}e = (\\vec y - X\\vec a)\^\{T\}(\\vec y - X\\vec a)  \\)
+\\( \\vec e\^\{T\}\\vec e = (\\vec y - X\\vec a)\^\{T\}(\\vec y - X\\vec a)  \\)
 
 \\( = (\\vec y\^\{T\} - \\vec a\^\{T\}X\^\{T\})(\\vec y - X\\vec a)  \\)
 
@@ -94,4 +94,19 @@ published: true
 
 所以上面的e的方程可变为：
 
-\\( e = \\vec y\^\{T\}\\vec y - 2\\vec y\^\{T\}X\\vec a + \\vec a\^\{T\}X\^\{T\}X\\vec a \\)
+\\( \\vec e = \\vec y\^\{T\}\\vec y - 2\\vec y\^\{T\}X\\vec a + \\vec a\^\{T\}X\^\{T\}X\\vec a \\)
+
+如何让这个\\( \\vec e \\)取得最小值？此时需要使用新的招数：矩阵微分。
+
+先介绍下矩阵微分公式：
+
+设：
+
+\\[ \\vec y = A\\vec x \\]
+
+y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x是一个\\(1 \\times 1\\)的矩阵。
+
+则有：
+
+\\[ \\frac \{\\partial \\vec y\}\{\\partial \\vec x\} = A \\]
+
