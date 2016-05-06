@@ -9,7 +9,7 @@ published: true
 
 <!--more-->
 
-最近在学习ML(machine learning)，注意到了一个有趣的东西：(最小二乘估计)[https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)]。
+最近在学习ML(machine learning)，注意到了一个有趣的东西：[Least Squares Estimator](https://en.wikipedia.org/wiki/Linear_least_squares_\(mathematics\))。
 
 先从简单说起吧。看下面的式子：
 
@@ -96,12 +96,12 @@ published: true
 
 \\[ \\vec e\^\{T\}\\vec e = \\vec y\^\{T\}\\vec y - 2\\vec y\^\{T\}X\\vec a + \\vec a\^\{T\}X\^\{T\}X\\vec a \\]
 
-如何让\\( \\vec e\^\{T\}\\vec e \\)取得最小值？此时需要使用新的招数：矩阵微分。
+如何让\\( \\vec e\^\{T\}\\vec e \\)取得最小值？此时需要使用新的招数：**矩阵微分**。
 
 
 ## 矩阵微分
 
-介绍下矩阵微分公式：
+矩阵微分公式：
 
 设：
 
@@ -183,3 +183,10 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 \\(  \\vec a = (X\^\{T\}X)\^\{-1\}X\^\{T\}\\vec y  \\)
 
 这个东西就是所谓的**最小二乘估计(Least Squares Estimator)**了。
+
+
+## 参考资料
+
+[https://economictheoryblog.com/2015/02/19/ols_estimator/](https://economictheoryblog.com/2015/02/19/ols_estimator/)
+
+[http://www.atmos.washington.edu/~dennis/MatrixCalculus.pdf](http://www.atmos.washington.edu/~dennis/MatrixCalculus.pdf)
