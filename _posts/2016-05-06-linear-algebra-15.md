@@ -98,15 +98,56 @@ published: true
 
 如何让这个\\( \\vec e \\)取得最小值？此时需要使用新的招数：矩阵微分。
 
-先介绍下矩阵微分公式：
+
+## 矩阵微分
+
+介绍下矩阵微分公式：
 
 设：
 
 \\[ \\vec y = A\\vec x \\]
 
-y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x是一个\\(1 \\times 1\\)的矩阵。
+y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x是一个\\(n \\times 1\\)的矩阵。
 
 则有：
 
-\\[ \\frac \{\\partial \\vec y\}\{\\partial \\vec x\} = A \\]
+\\[ \\frac \{\\partial \\vec y\}\{\\partial \\vec x\} = A \\]  (公式1)
+
+这是如何得到的呢？实际上超级简单，上面这个式子指的是，\\(\\vec y \\)的每一个分量对\\(\\vec x \\)的每一个分量的微分，结果显然就是一个\\(m \\times n\\)矩阵。
+
+扩展公式：
+
+设：
+
+\\[ \\alpha = \\vec y\^\{T\}A\\vec x \\]
+
+则有：
+
+\\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec x\} = \\vec y\^\{T\}A  (公式2) \\]
+
+
+\\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec y\} = \\vec x\^\{T\}A\^\{T\}  (公式3) \\]
+
+
+设：
+
+\\[ \\alpha = \\vec x\^\{T\}A\\vec x \\]
+
+且A是对称矩阵，
+
+则有：
+
+\\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec x\} = 2\\vec x\^\{T\}A  (公式4) \\]
+
+
+
+
+## 应用矩阵微分公式
+
+
+再来看下刚才的\\(\\vec e\\)方程：
+
+\\( \\vec e = \\vec y\^\{T\}\\vec y - 2\\vec y\^\{T\}X\\vec a + \\vec a\^\{T\}X\^\{T\}X\\vec a \\)
+
+使用(公式3)，有：
 
