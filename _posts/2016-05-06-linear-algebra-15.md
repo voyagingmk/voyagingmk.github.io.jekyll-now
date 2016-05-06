@@ -7,8 +7,6 @@ published: true
 
 
 
-<!--more-->
-
 最近在学习ML(machine learning)，注意到了一个有趣的东西：[Least Squares Estimator](https://en.wikipedia.org/wiki/Linear_least_squares_\(mathematics\))。
 
 先从简单说起吧。看下面的式子：
@@ -20,6 +18,10 @@ published: true
 1. 假设x是一个统计变量（预先就知道的），譬如，x代表人的年龄。
 
 2. 假设y是关于x的一个label量（预先就知道的），譬如，y代表的是年龄为x时的人的智商。
+
+
+<!--more-->
+
 
 3. 假设y和x存在线性关系，那么可以有 y = ax。这个式子表明年龄为x时，智商为ax。
 
