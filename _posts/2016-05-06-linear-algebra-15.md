@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: 最小二乘估计(Least Squares Estimator)的公式的推导
-tags: ['matrix',  'linear algebra',  'Least Squares']
+tags: ['matrix','linear algebra','Least Squares']
 published: true
 ---
 
@@ -42,11 +42,11 @@ published: true
 \\[ \\vec y = X\\vec a + \\vec e \\]
 
 
-{% assign A =  "a\_\{1\},  a\_\{2\},  \\vdots ,  a\_\{k\}" | split: ',  ' %}
-{% assign Y =  "y\_\{1\},  y\_\{2\},  \\vdots ,  y\_\{n\}" | split: ',  ' %}
-{% assign E =  "e\_\{1\},  e\_\{2\},  \\vdots ,  e\_\{n\}" | split: ',  ' %}
+{% assign A =  "a\_\{1\},  a\_\{2\},  \\vdots ,  a\_\{k\}" | split: ',' %}
+{% assign Y =  "y\_\{1\},  y\_\{2\},  \\vdots ,  y\_\{n\}" | split: ',' %}
+{% assign E =  "e\_\{1\},  e\_\{2\},  \\vdots ,  e\_\{n\}" | split: ',' %}
 
-{% assign X =  "x\_\{11\},  x\_\{12\},  \\cdots ,  x\_\{1k\},     x\_\{21\},  x\_\{22\},  \\cdots ,  x\_\{2k\},     \\vdots ,  \\vdots ,  \\ddots ,  \\vdots ,    x\_\{n1\},  x\_\{n2\},  \\cdots ,  x\_\{nk\}" | split: ',  ' %}
+{% assign X =  "x\_\{11\},  x\_\{12\},  \\cdots ,  x\_\{1k\},     x\_\{21\},  x\_\{22\},  \\cdots ,  x\_\{2k\},     \\vdots ,  \\vdots ,  \\ddots ,  \\vdots ,    x\_\{n1\},  x\_\{n2\},  \\cdots ,  x\_\{nk\}" | split: ',' %}
 
 
 \\[ {% include render_matrix_raw.html mat = Y  row = 4 col = 1 %} = {% include render_matrix_raw.html mat = X row = 4 col = 4 %}{% include render_matrix_raw.html mat = A  row = 4 col = 1 %} + {% include render_matrix_raw.html mat = E  row = 4 col = 1 %} \\]
