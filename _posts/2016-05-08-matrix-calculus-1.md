@@ -187,7 +187,7 @@ published: true
 
 ## 性质6
 
-\\[ \\nabla \_\{ A\}tr(AXBX\^\{T\}C) = A\^\{T\}C\^\{T\}XB\^\{T\} + CAXB \\]
+\\[ \\nabla \_\{ X\}tr(AXBX\^\{T\}C) = A\^\{T\}C\^\{T\}XB\^\{T\} + CAXB \\]
 
 类似性质3的证明过程，只是复杂一些。设:
 
@@ -236,5 +236,34 @@ published: true
 \\[ \\frac \{ \\partial tr(AXBX\^\{T\}C) \}\{ \\partial X \} = U = A\^\{T\}C\^\{T\}XB\^\{T\} + CAXB \\]
 
 
+在wiki[Matrix Calculus](https://en.wikipedia.org/wiki/Matrix_calculus)还给出了用性质5公式：\\( \\nabla \_\{ X\}tr(X) = tr(\\nabla \_\{ X\}X) \\)推导性质6。为了方便，把图也贴进来吧：
+
+![https://upload.wikimedia.org/math/c/6/1/c61612bff41e8572a97d977871ce2be2.png](https://upload.wikimedia.org/math/c/6/1/c61612bff41e8572a97d977871ce2be2.png)
+
+![https://upload.wikimedia.org/math/1/e/7/1e761891d19891ff75670424341b8425.png](https://upload.wikimedia.org/math/1/e/7/1e761891d19891ff75670424341b8425.png)
+
+它最后得到的式子和我的推导似乎不一样，但其实是一样的，用trace的性质1\\( tr(A) = tr(A\^\{T\}) \\)可以转换得到。
 
 
+## 性质7
+
+
+\\[ \\nabla \_\{ X\}tr(XBX\^\{T\}C) = C\^\{T\}XB\^\{T\} + CXB \\]
+
+证明：把性质6的A设为单位矩阵E，得到：
+
+
+\\[ \\nabla \_\{ X\}tr(EXBX\^\{T\}C) = E\^\{T\}C\^\{T\}XB\^\{T\} + CEXB \\]
+
+化简得到：
+
+
+\\[ \\nabla \_\{ X\}tr(XBX\^\{T\}C) = C\^\{T\}XB\^\{T\} + CXB \\]
+
+
+
+## 参考资料
+
+
+
+[http://www.tc.umn.edu/~nydic001/docs/unpubs/Schonemann_Trace_Derivatives_Presentation.pdf](http://www.tc.umn.edu/~nydic001/docs/unpubs/Schonemann_Trace_Derivatives_Presentation.pdf)
