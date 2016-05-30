@@ -21,6 +21,7 @@ published: true
 
 4. \\( (A \^\{+\}A)\^\{*\} = A \^\{+\}A \\)
 
+这四个条件(性质)蕴含了一个事情：\\(AA \^\{+\} \\)必然是一个无限接近单位矩阵I、但又不是I的矩阵。
 
 伪逆矩阵\\( A \^\{+\} \\)的极限形式定义：
 
@@ -95,5 +96,9 @@ published: true
 
 这个等式才是合理的。
 
+
+# 参考资料
+
+[Moore–Penrose pseudoinverse](https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse#Singular_value_decomposition_.28SVD.29)
 
 
