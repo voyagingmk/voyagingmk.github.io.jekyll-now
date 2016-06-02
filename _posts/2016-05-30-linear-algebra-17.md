@@ -35,7 +35,27 @@ PCA(Principal Component Analysis)的主要应用场景是：在大数据集中�
 
 \\[  E[\\vec x] =  \\overline \{x\} \\]
 
-### 方差
+有时候也用\\( \\mu \\)来指代Mean。
+
+### 方差和协方差
+
+方差:
+
+\\[ Var(\\vec x) = E[ (\\vec x - E[\\vec x])\^\{2 \} ] = E[ (\\vec x - E[\\vec x])(\\vec x -  E[\\vec x]) ]  \\]
+
+协方差:
+
+\\[ Cov(\\vec x, \\vec y) = E[ (\\vec x -  E[\\vec x])(\\vec y -  E[\\vec y]) ] \\]
+
+可以发现方差是协方差的特殊情况:
+
+\\[ Var(\\vec x) = Cov(\\vec x, \\vec x) \\]
+
+### 协方差矩阵
+
+在[线性代数之各种各样的矩阵](http://daobiao.win:4000/linear-algebra-7/)最后面已经提到了协方差矩阵(Covariance matrix):
 
 
-\\ Var(\\vec x) = E[()]
+{% assign C =  "E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{n\} - \\mu\_\{n\})],           E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{n\} - \\mu\_\{n\})],  \\vdots , \\vdots ,  \\ddots , \\vdots ,        E[(\\vec x\_\{n\} - \\mu\_\{n\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{n\} - \\mu\_\{n\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{n\} - \\mu\_\{n\})(\\vec x\_\{n\} - \\mu\_\{n\})]" | split: ',' %}
+
+\\[ C = {% include render_matrix_raw.html mat = C  row = 4 col = 4 %}  \\]

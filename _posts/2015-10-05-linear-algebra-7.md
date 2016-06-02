@@ -187,3 +187,5 @@ wiki:[https://en.wikipedia.org/wiki/Bidiagonal_matrix](https://en.wikipedia.org/
 
 ![https://upload.wikimedia.org/math/5/8/5/58572fa5b05e778f5a5eff9ec1b3ddb6.png](https://upload.wikimedia.org/math/5/8/5/58572fa5b05e778f5a5eff9ec1b3ddb6.png)
 
+(图片来源：wikipedia)
+
