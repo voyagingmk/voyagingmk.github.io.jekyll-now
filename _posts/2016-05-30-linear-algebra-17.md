@@ -76,6 +76,31 @@ PCA(Principal Component Analysis)的主要应用场景是：在大数据集中�
 
 代入上式，得到：
 
-{% assign C3 =  "\\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{n\},           \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{n\},  \\vdots , \\vdots ,  \\ddots , \\vdots ,       \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{m\}" | split: ',' %}
+{% assign C3 =  "\\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{m\},           \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{m\},  \\vdots , \\vdots ,  \\ddots , \\vdots ,       \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{m\}" | split: ',' %}
 
 \\[ C = \\frac \{1\}\{n\}{% include render_matrix_raw.html mat = C3  row = 4 col = 4 %}  \\]
+
+再设一个矩阵X：
+
+{% assign X1  =  "\\vec x\_\{1\}, \\vec x\_\{2\}, \\vdots , \\vec x\_\{m\}" | split: ',' %}
+{% assign X2  =  "\\vec x\_\{1\}, \\vec x\_\{2\}, \\cdots , \\vec x\_\{m\}" | split: ',' %}
+
+\\[ X = {% include render_matrix_raw.html mat = X1  row = 4 col =1 %}  \\]
+
+
+\\[ X\^\{T\} = {% include render_matrix_raw.html mat = X2  row = 1 col = 4 %}  \\]
+
+于是有：
+
+\\[ C = \\frac \{1\}\{n\}XX\^\{T\} \\]
+
+
+总结下，对符合均匀分布的、且均值等于0的(\\vec x\_\{i\}, 1\\leq i \\leq n\\)，它的协方差矩阵如下：
+
+\\[ X\^\{T\} = {% include render_matrix_raw.html mat = X2  row = 1 col = 4 %}  \\]
+
+\\[ C = \\frac \{1\}\{n\}XX\^\{T\} \\]
+
+
+
+
