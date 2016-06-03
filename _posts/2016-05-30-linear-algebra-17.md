@@ -56,6 +56,26 @@ PCA(Principal Component Analysis)的主要应用场景是：在大数据集中�
 在[线性代数之各种各样的矩阵](http://daobiao.win:4000/linear-algebra-7/)最后面已经提到了协方差矩阵(Covariance matrix):
 
 
-{% assign C =  "E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{n\} - \\mu\_\{n\})],           E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{n\} - \\mu\_\{n\})],  \\vdots , \\vdots ,  \\ddots , \\vdots ,        E[(\\vec x\_\{n\} - \\mu\_\{n\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{n\} - \\mu\_\{n\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{n\} - \\mu\_\{n\})(\\vec x\_\{n\} - \\mu\_\{n\})]" | split: ',' %}
+{% assign C =  "E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{1\} - \\mu\_\{1\})(\\vec x\_\{m\} - \\mu\_\{m\})],           E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{2\} - \\mu\_\{2\})(\\vec x\_\{m\} - \\mu\_\{m\})],  \\vdots , \\vdots ,  \\ddots , \\vdots ,        E[(\\vec x\_\{m\} - \\mu\_\{m\})(\\vec x\_\{1\} - \\mu\_\{1\})],  E[(\\vec x\_\{m\} - \\mu\_\{m\})(\\vec x\_\{2\} - \\mu\_\{2\})],  \\cdots , E[(\\vec x\_\{m\} - \\mu\_\{m\})(\\vec x\_\{m\} - \\mu\_\{m\})]" | split: ',' %}
 
 \\[ C = {% include render_matrix_raw.html mat = C  row = 4 col = 4 %}  \\]
+
+
+### 当Mean等于0时的情况
+
+当Mean等于0时，上面的协方差矩阵变成：
+
+
+{% assign C2 =  "E[\\vec x\_\{1\}\\vec x\_\{1\}],  E[\\vec x\_\{1\} \\vec x\_\{2\}],  \\cdots , E[\\vec x\_\{1\}\\vec x\_\{m\}],           E[\\vec x\_\{2\}\\vec x\_\{1\}],  E[\\vec x\_\{2\}\\vec x\_\{2\}],  \\cdots , E[\\vec x\_\{2\}\\vec x\_\{m\}],  \\vdots , \\vdots ,  \\ddots , \\vdots ,        E[\\vec x\_\{m\}\\vec x\_\{1\}],  E[\\vec x\_\{m\}\\vec x\_\{2\}],  \\cdots , E[\\vec x\_\{m\}\\vec x\_\{m\}]" | split: ',' %}
+
+\\[ C = {% include render_matrix_raw.html mat = C2  row = 4 col = 4 %}  \\]
+
+再假设\\( \\vec x \\)每个分量的取值是均匀分布的，那么根据上面的定义，有：
+
+\\[E[\\vec x\_\{a\}\\vec x\_\{b\}] = \\frac \{1\}\{n\}\\sum \_\{i=1\}\^\{n\} \\vec x\_\{ai\}\\vec x\_\{bi\} , 1 \\leq a\\leq m, 1 \\leq b\\leq m  \\]
+
+代入上式，得到：
+
+{% assign C3 =  "\\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{1\}\\vec x\_\{n\},           \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{2\}\\vec x\_\{n\},  \\vdots , \\vdots ,  \\ddots , \\vdots ,       \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{1\},  \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{2\},  \\cdots , \\sum \_\{i=1\}\^\{n\} \\vec x\_\{m\}\\vec x\_\{m\}" | split: ',' %}
+
+\\[ C = \\frac \{1\}\{n\}{% include render_matrix_raw.html mat = C3  row = 4 col = 4 %}  \\]
