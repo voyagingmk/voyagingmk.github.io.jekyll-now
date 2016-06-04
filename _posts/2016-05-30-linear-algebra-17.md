@@ -95,7 +95,7 @@ PCA(Principal Component Analysis)的主要应用场景是：在大数据集中�
 \\[ C = \\frac \{1\}\{n\}XX\^\{T\} \\]
 
 
-**总结下**，对符合均匀分布的、且均值等于0的\\(\\vec x\_\{i, 1\\leq i \\leq n\}\\)，它的协方差矩阵如下：
+**总结下**，对符合均匀分布的、且均值等于0的\\(\\vec x\_\{i, 1\\leq i \\leq m\}\\)，它的协方差矩阵如下：
 
 \\[ X\^\{T\} = {% include render_matrix_raw.html mat = X2  row = 1 col = 4 %}  \\]
 
