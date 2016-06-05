@@ -13,17 +13,19 @@ PCA(Principal Component Analysis)的主要应用场景是：在大数据集中�
 
 # Part I
 
-设向量\\( \\vec x \\)的每个分量分别记录了某一个特征的信息，且共有n个分量(特征)；那么m个不同的\\( \\vec x \\)就组成了一个\\(m\\times n \\)的矩阵\\( X \\)：
+设向量\\( \\vec x \\)表示对某个特征的n次采样(测量), 那么如果有m个不同的特征，就组成了一个\\(m\\times n \\)的矩阵\\( X \\)：
 
 {% assign X =  "\\vec x\_\{1\},  \\vec x\_\{2\},  \\vdots , \\vec x\_\{m\}" | split: ',' %}
 
 \\[ X = {% include render_matrix_raw.html mat = X  row = 4 col = 1 %}  \\]
 
-然后问题来了：\\( \\vec x \\)的每个分量之间是否是**相互独立(independant)**的？如果是，那么说明这n个特征是良好的，可以直接拿去应用到任务中(譬如基于这些特征做一个分类器)；如果不是，那么就说明有特征是多余的，譬如\\( x\^\{(k)\} \\)、\\( x\^\{(k+1)\} \\)分别用米和英尺记录了同一个特征，虽然数值不一样，然而并没有什么卵用。
+然后问题来了：每个特征之间是否是**相互独立(independant)**的？如果是，那么说明这m个特征是良好的，可以直接拿去应用到任务中(譬如基于这些特征做一个分类器)；如果不是，那么就说明有特征是多余的，譬如\\(  \\vec x\_\{a\} \\)、\\(  \\vec x\_\{b\} \\)分别用米和英尺记录了同一个特征，虽然数值不一样，然而并没有什么卵用。
 
 量化特征与特征之间的关系的最好办法是用**方差**([Variance](https://en.wikipedia.org/wiki/Variance))和**协方差**([Covariance](https://en.wikipedia.org/wiki/Covariance))，这2者又共同涉及到了更基础的概念**数学期望**([Expected Value](https://en.wikipedia.org/wiki/Expected_value))和**均值**([Mean](https://en.wikipedia.org/wiki/Mean))。先简单过一遍这4个东西的公式。
 
 ### 数学期望和均值
+
+数学期望公式：
 
 \\[ E[\\vec x] = \\sum \_\{i=1\}\^\{n\}x\_\{i}p\_\{i\} \\]
 
@@ -102,5 +104,14 @@ PCA(Principal Component Analysis)的主要应用场景是：在大数据集中�
 \\[ C = \\frac \{1\}\{n\}XX\^\{T\} \\]
 
 
+# PART II
 
-嘿嘿嘿
+根据上面得到的协方差矩阵的公式，可以知道：
+
+- C是一个对称方阵
+
+- C的对角线上的元素分别代表了对某个特征的n次测量的方差
+
+- C的非对角线上的元素代表了任意2个特征之间的协方差
+
+
