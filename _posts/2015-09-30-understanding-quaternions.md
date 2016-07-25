@@ -632,26 +632,26 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 首先计算:
 
-\\[ q =  [cos\\theta ,  sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}i + \\frac \{\\sqrt \{2\}\}\{2\}k)] \\]
+\\[ q =  [cos\\theta ,  sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
 
-\\[ q\^\{-1\} =  [cos\\theta ,  -sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}i + \\frac \{\\sqrt \{2\}\}\{2\}k)] \\]
+\\[ q\^\{-1\} =  [cos\\theta ,  -sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
 
 (译注：这里\\(q\^\{-1\}=q\^\{*\}\\)是因为q是单位四元数)
 
 再代入\\(\\theta = 45\^\{\\circ \} \\)，得到：
 
-\\[ q\^\{-1\} =  [\\frac \{\\sqrt \{2\}\}\{2\},  -\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}i + \\frac \{\\sqrt \{2\}\}\{2\}k)] \\]
+\\[ q\^\{-1\} =  [\\frac \{\\sqrt \{2\}\}\{2\},  -\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
 
-\\[ \\frac \{1\}\{2\}[\\sqrt \{2\}, -i-k] \\]
+\\[ \\frac \{1\}\{2\}[\\sqrt \{2\}, -\\mathbf \{i\}-\\mathbf \{k\}] \\]
 
 
 现在，把前面算出来的qp再次拿出来：
 
-\\[ qp = [-1, \\sqrt \{2\}i + j] \\]
-\\[ qpq\^\{-1\}  = [-1, \\sqrt \{2\}i + j]\\frac \{1\}\{2\}[\\sqrt \{2\}, -i-k] \\]
-\\[ = \\frac \{1\}\{2\}[-\\sqrt \{2\}-(\\sqrt \{2\}i+j)\\cdot (-i-k), i+k+\\sqrt \{2\}(\\sqrt \{2\}i+j)-i+\\sqrt \{2\}j+k] \\]
-\\[ = \\frac \{1\}\{2\}[-\\sqrt \{2\}+\\sqrt \{2\},i+k+2i+\\sqrt \{2\}j-i+\\sqrt \{2\}j+k] \\]
-\\[ = [0,i+\\sqrt \{2\}j+k] \\]
+\\[ qp = [-1, \\sqrt \{2\}\\mathbf \{i\} + \\mathbf \{j\}] \\]
+\\[ qpq\^\{-1\}  = [-1, \\sqrt \{2\}\\mathbf \{i\} + \\mathbf \{j\}]\\frac \{1\}\{2\}[\\sqrt \{2\}, -\\mathbf \{i\}-\\mathbf \{k\}] \\]
+\\[ = \\frac \{1\}\{2\}[-\\sqrt \{2\}-(\\sqrt \{2\}\\mathbf \{i\}+\\mathbf \{j\})\\cdot (-\\mathbf \{i\}-\\mathbf \{k\}), \\mathbf \{i\}+\\mathbf \{k\}+\\sqrt \{2\}(\\sqrt \{2\}\\mathbf \{i\}+\\mathbf \{j\})-\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}+\\mathbf \{k\}] \\]
+\\[ = \\frac \{1\}\{2\}[-\\sqrt \{2\}+\\sqrt \{2\},\\mathbf \{i\}+\\mathbf \{k\}+2\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}-\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}+\\mathbf \{k\}] \\]
+\\[ = [0,\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}+\\mathbf \{k\}] \\]
 
 这下是纯四元数了，并且它的范数是：
 
@@ -666,7 +666,7 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 所以我们可以看到，这个结果是一个纯四元数，并且原四元数的向量的范数也保持住了。但是还有一个问题：向量被旋转了90度而不是45度。这刚好是我们需要的度数的两倍！为了正确地让一个向量绕某个轴向量旋转某个角度，我们必须以目标角度的一半来计算。因此，我们构造了下面的四元数：
 
-\\[ q = [cos\\frac \{1\}\{2\}\\theta ,sin\\frac \{1\}\{2\}\\theta \\hat \{v\}] \\]
+\\[ q = [cos\\frac \{1\}\{2\}\\theta ,sin\\frac \{1\}\{2\}\\theta \\mathbf \{ \\hat \{v\} \}] \\]
 
 这就是**旋转四元数**的一般形式！
 
@@ -712,16 +712,16 @@ SLERP代表**S**pherical **L**inear Int**erp**olation。SLERP可以在2个朝向
 
 其中，(纯)四元数的exp函数的公式是：
 
-\\[ e\^\{q\} = exp(q) = exp([0,\\theta \\hat \{v\}]) \\]
-\\[ = [cos\\theta ,sin\\theta \\hat \{v\} ] \\]
+\\[ e\^\{q\} = exp(q) = exp([0,\\theta \\mathbf \{ \\hat \{v\} \}]) \\]
+\\[ = [cos\\theta ,sin\\theta \\mathbf \{ \\hat \{v\} \} ] \\]
 
 
 (纯)四元数的对数公式是：
 
-\\[ \\log q = \\log (cos\\theta + sin \\theta \\hat \{v\}) \\]
-\\[ = \\log (exp(\\theta \\hat \{v\} )) \\]
-\\[ = \\theta \\hat \{v\} \\]
-\\[ = [0, \\theta \\hat \{v\}] \\]
+\\[ \\log q = \\log (cos\\theta + sin \\theta \\mathbf \{ \\hat \{v\} \}) \\]
+\\[ = \\log (exp(\\theta \\mathbf \{ \\hat \{v\} \} )) \\]
+\\[ = \\theta \\mathbf \{ \\hat \{v\} \} \\]
+\\[ = [0, \\theta \\mathbf \{ \\hat \{v\} \}] \\]
 
 
 (译注：上述的2次公式推导，其实省略了很多证明过程。具体可以参考：[http://bpeers.com/blog/?itemid=861](http://bpeers.com/blog/?itemid=861),[http://bpeers.com/blog/?itemid=863](http://bpeers.com/blog/?itemid=863),[http://bpeers.com/blog/?itemid=866](http://bpeers.com/blog/?itemid=866), [http://bpeers.com/blog/?itemid=1001](http://bpeers.com/blog/?itemid=1001) )
@@ -729,9 +729,9 @@ SLERP代表**S**pherical **L**inear Int**erp**olation。SLERP可以在2个朝向
 对于t = 0，我们有：
 
 \\[ q\^\{0\} = exp(0\\log q) \\]
-\\[ = exp([cos(0), sin(0)\\hat \{v\}]) \\]
-\\[ = exp([1,0]) \\]
-\\[ = [1,0] \\]
+\\[ = exp([cos(0), sin(0)\\mathbf \{ \\hat \{v\} \}]) \\]
+\\[ = exp([1,\\mathbf \{0\}]) \\]
+\\[ = [1,\\mathbf \{0\}] \\]
 
 而对于t = 1，有：
 
