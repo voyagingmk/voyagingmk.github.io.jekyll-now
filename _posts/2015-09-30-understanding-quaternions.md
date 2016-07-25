@@ -455,8 +455,8 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 \\[  qq\^\{*\} = [s,\\mathbf \{v\}][s,-\\mathbf \{v\}] \\]
 \\[ = [s\^\{2\} - \\mathbf \{v\}\\cdot (-\\mathbf \{v\}),-s\\mathbf \{v\}+s\\mathbf \{v\}+\\mathbf \{v\}\\times (-\\mathbf \{v\})] \\]
-\\[ = [s\^\{2\} + \\mathbf \{v\}\\cdot \\mathbf \{v\},0] \\]
-\\[ = [s\^\{2\} + \\mathbf \{v\}\^\{2\},0] \\]
+\\[ = [s\^\{2\} + \\mathbf \{v\}\\cdot \\mathbf \{v\}, \\mathbf \{0\}] \\]
+\\[ = [s\^\{2\} + \\mathbf \{v\}\^\{2\}, \\mathbf \{0\}] \\]
 
 
 
@@ -611,13 +611,13 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 然后算qp：
 
 \\[ p' = qp \\]
-\\[ = [cos\\theta ,sin\\theta \\hat \{v\}] [0, \\mathbf \{p\} ]  \\]
-\\[ [-sin\\theta \\hat \{v\}\\cdot \\mathbf \{p\}, cos\\theta \\mathbf \{p\}+sin\\theta \\hat \{v\}\\times \\mathbf \{p\}] \\]
+\\[ = [cos\\theta ,sin\\theta \\mathbf \{ \\hat \{v\} \}] [0, \\mathbf \{p\} ]  \\]
+\\[ [-sin\\theta \\hat \{v\}\\cdot \\mathbf \{p\}, cos\\theta \\mathbf \{p\}+sin\\theta \\mathbf \{ \\hat \{v\} \}\\times \\mathbf \{p\}] \\]
 
-代入我们设定的\\(\\hat \{v\}, \\mathbf \{p\}\\)，以及\\(\\theta = 45\^\{\\circ \} \\)，得到：
+代入我们设定的\\( \\mathbf \{ \\hat \{v\} \}, \\mathbf \{p\}\\)，以及\\(\\theta = 45\^\{\\circ \} \\)，得到：
 
-\\[ p' = [-\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}i + \\frac \{\\sqrt \{2\}\}\{2\}k)\\cdot (2i), \\frac \{\\sqrt \{2\}\}\{2\}2i+\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}i + \\frac \{\\sqrt \{2\}\}\{2\}k)\\times 2i] \\]
-\\[ = [-1, \\sqrt \{2\}i + j] \\]
+\\[ p' = [-\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\}  + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\} )\\cdot (2\\mathbf \{i\} ), \\frac \{\\sqrt \{2\}\}\{2\}2\\mathbf \{i\} +\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\}  + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\} )\\times 2\\mathbf \{i\} ] \\]
+\\[ = [-1, \\sqrt \{2\}\\mathbf \{i\}  + \\mathbf \{j\} ] \\]
 注意，算出来的结果已经不是纯四元数了，并且，它并没有旋转45度、范数也不再是2(反而变小了，变成\\(\\sqrt \{3\}\\))
 
 我们可以用图像展示旋转过程：
