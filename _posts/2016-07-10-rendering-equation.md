@@ -199,3 +199,22 @@ E = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 注意上面两个图中，横轴是指波长，纵轴是指每单位纳米(10纳米一个单位)的波长的功率（能量）。
 
 SPD曲线都是用[Spectroradiometers](https://en.wikipedia.org/wiki/Spectroradiometer) 这种专门仪器测量的。
+
+SPD一般用符号P(λ)表示。
+
+
+## XYZ 三色刺激值(tristimulus vlaues)
+
+![14.png](../images/2016.7/14.png)
+
+关于各种CIE颜色表示之间的转换，请访问：
+
+[Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
+
+通过SPD计算XYZ：
+
+[Computing XYZ From Spectral Data](http://www.brucelindbloom.com/index.html?Eqn_Spect_to_XYZ.html)
+
+XYZ转换到RGB：
+
+[XYZ to RGB](http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_RGB.html)
