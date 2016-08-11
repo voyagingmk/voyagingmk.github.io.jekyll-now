@@ -258,6 +258,8 @@ E = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 ![18.png](../images/2016.7/18.png)
 
+[https://en.wikipedia.org/wiki/Rendering_equation](https://en.wikipedia.org/wiki/Rendering_equation)
+
 各个组成元素的解释：
 
 - **λ** 指代波长为λ的光
