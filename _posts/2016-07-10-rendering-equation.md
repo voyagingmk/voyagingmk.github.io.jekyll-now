@@ -20,6 +20,10 @@ published: true
 - 光谱 Spectrum
 - 光谱功率分布(SPD, spectral power distribution)
 - XYZ 和 RGB 两种CIE颜色系统以及它们之间、它们和SPD之间的转换
+- 辐射通量(Flux)
+- 立体角(Solid Angle)
+- 辐射密度(Irradiance)
+- 辐射亮度(Radiance)
 
 ## 光谱 Spectrum
 
@@ -102,7 +106,7 @@ SPD一般用符号P(λ)表示。
 
 ![4.png](../images/2016.7/4.png)
 
-## 辐射密度(Irradiance) 和 辐射照度(Radiant Exitence)
+## 辐射密度(Irradiance)  (或称辐射照度(Radiant Exitence))
 
 辐射密度也叫辐射照度。定义了辐射通量后，就可以定义辐射照度了，辐射照度指的是单位面积**进入**的辐射通量，单位是\\(W/m\^\{2\}\\)。根据这个定义用符号E表示。
 
