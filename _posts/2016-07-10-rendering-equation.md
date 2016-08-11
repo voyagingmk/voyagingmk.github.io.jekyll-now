@@ -10,6 +10,90 @@ published: true
 
 # 基础概念
 
+
+## 辐射度学 Radiometry 
+
+辐射度学是指测量电磁辐射(包括可见光)的一系列技术，它是和观察者无关的。而近似的光度学(photometric)，是观察者相关的。这里我所说的观察者无关，是指测量值和人眼并无关系，是绝对值。
+
+基于辐射度学来做渲染，还需要了解另外几个概念：
+
+- 光谱 Spectrum
+- 光谱功率分布(SPD, spectral power distribution)
+- XYZ 和 RGB 两种CIE颜色系统以及它们之间、它们和SPD之间的转换
+
+## 光谱 Spectrum
+
+现实中大部分光源（非直接光源也算），发射出的光都是复合光，即是由不同波长的色光混合而成的。 光谱就是指所有光波的**分布**。光谱图如下：
+
+![11.png](../images/2016.7/11.png)
+
+其中波长在 390 nm 到700 nm之间的光波称为可见光。
+
+## 光谱功率分布[spectral power distribution](https://en.wikipedia.org/wiki/Spectral_power_distribution)
+
+光谱功率分布描述的是这样一件事情：对于一个直接或间接光源物体，它发射出的复合光中各个波长的色光分别有多少能量，或者说，这个光源的能量是如何分布到各个波长的光波的？
+
+譬如，水银灯的光主成分是波长为404.7, 407.8, 435.8, 546.1, 577.0, 579.0纳米的光波（见下图）。这意味着能量分布非常不平衡，主要集中在这几个波长上了，相当于离散了。
+
+![12.png](../images/2016.7/12.png)
+
+上图就是水银灯的SPD曲线了。
+
+而白炽灯的SPD曲线是这样子的：
+
+![13.png](../images/2016.7/13.png)
+
+注意上面两个图中，横轴是指波长，纵轴是指每单位纳米(10纳米一个单位)的波长的功率（能量）。
+
+SPD曲线都是用[Spectroradiometers](https://en.wikipedia.org/wiki/Spectroradiometer) 这种专门仪器测量的。
+
+SPD一般用符号P(λ)表示。
+
+
+## XYZ 三色刺激值(tristimulus vlaues)
+
+
+![14.png](../images/2016.7/14.png)
+
+(CIE标准观察者颜色匹配函数)(The CIE standard observer color matching functions)
+
+看到CIE standard observer字眼时，其实指的就是上面这个图。这个图是通过测量获得的，好处是这个图相当于一个数据表，当需要把SPD曲线转换成XYZ三刺激值时，就可以用这个图做。
+
+那么如何转换呢？公式如下：
+
+
+![15.png](../images/2016.7/15.png)
+
+
+这里面用到了积分，但因为匹配函数是非数学描述的（上面的图的3条曲线），所以这个公式不可用，然而可以另辟蹊径，用采样和线性叠加的方法计算XYZ：
+
+![16.png](../images/2016.7/16.png)
+
+
+这里的下标i代表第几个刻度的采样。采样间隔(spacing)一般是1到20纳米，采样空间(span)是整个可见光波段，这个波段的具体值取决于实际需求和SPD曲线。
+
+
+[通过SPD计算XYZ：Computing XYZ From Spectral Data](http://www.brucelindbloom.com/index.html?Eqn_Spect_to_XYZ.html)
+
+
+## XYZ和RGB之间的互相转换
+
+公式是：
+
+![17.png](../images/2016.7/17.png)
+
+看公式可以知道，XYZ和RGB之间可以线性转换得到，这就很实用了。
+
+另外，此图的转换矩阵M是测量获得的，不用去纠结是怎么来的。
+
+[XYZ to RGB](http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_RGB.html)
+
+
+关于各种CIE颜色表示之间的转换，请访问：
+
+[Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
+
+
 ## 辐射通量(Flux)
 
 辐射通量(Radiant Flux)，指的是单位时间到达一块平面(或一个局部空间区域)的能量总和。单位是焦耳每秒(joules/second,，J/s)，或瓦特(watts，W)。符号是\\(\\Phi \\)。
@@ -163,58 +247,3 @@ E = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 \\[ = L\_\{i\} (p,\\theta ,\\phi ) π  \\]
 
-
-# 辐射度学 Radiometry 
-
-辐射度学是指测量电磁辐射(包括可见光)的一系列技术，它是和观察者无关的。而近似的光度学(photometric)，是观察者相关的。这里我所说的观察者无关，是指测量值和人眼并无关系，是绝对值。
-
-基于辐射度学来做渲染，还需要了解另外几个概念：
-
-- 光谱 Spectrum
-- 光谱功率分布(SPD, spectral power distribution)
-- XYZ 和 RGB 两种CIE颜色系统以及它们之间、它们和SPD之间的转换
-
-## 光谱 Spectrum
-
-现实中大部分光源（非直接光源也算），发射出的光都是复合光，即是由不同波长的色光混合而成的。 光谱就是指所有光波的**分布**。光谱图如下：
-
-![11.png](../images/2016.7/11.png)
-
-其中波长在 390 nm 到700 nm之间的光波称为可见光。
-
-## 光谱功率分布[spectral power distribution](https://en.wikipedia.org/wiki/Spectral_power_distribution)
-
-光谱功率分布描述的是这样一件事情：对于一个直接或间接光源物体，它发射出的复合光中各个波长的色光分别有多少能量，或者说，这个光源的能量是如何分布到各个波长的光波的？
-
-譬如，水银灯的光主成分是波长为404.7, 407.8, 435.8, 546.1, 577.0, 579.0纳米的光波（见下图）。这意味着能量分布非常不平衡，主要集中在这几个波长上了，相当于离散了。
-
-![12.png](../images/2016.7/12.png)
-
-上图就是水银灯的SPD曲线了。
-
-而白炽灯的SPD曲线是这样子的：
-
-![13.png](../images/2016.7/13.png)
-
-注意上面两个图中，横轴是指波长，纵轴是指每单位纳米(10纳米一个单位)的波长的功率（能量）。
-
-SPD曲线都是用[Spectroradiometers](https://en.wikipedia.org/wiki/Spectroradiometer) 这种专门仪器测量的。
-
-SPD一般用符号P(λ)表示。
-
-
-## XYZ 三色刺激值(tristimulus vlaues)
-
-![14.png](../images/2016.7/14.png)
-
-关于各种CIE颜色表示之间的转换，请访问：
-
-[Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
-
-通过SPD计算XYZ：
-
-[Computing XYZ From Spectral Data](http://www.brucelindbloom.com/index.html?Eqn_Spect_to_XYZ.html)
-
-XYZ转换到RGB：
-
-[XYZ to RGB](http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_RGB.html)
