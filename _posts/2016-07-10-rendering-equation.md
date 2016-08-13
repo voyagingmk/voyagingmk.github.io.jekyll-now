@@ -161,15 +161,30 @@ SPD一般用符号P(λ)表示。
 
 辐射亮度是指辐射通量与单位面积(注意，是与光线方向正交的那块)单位立体角的比值。符号为L。定义式如下：
 
-\\[ L = \\frac \{ d\\Phi \}\{ d\\omega dA\^\{\\perp \} \} \\]
+\\[ L = \\frac \{ d\\Phi \}\{ d\\omega dA\^\{\\perp \} \} = \\frac \{ d\\Phi \}\{ d\\omega dA cos\theta  \} \\]
 
 或：
 
-\\[ L = \\frac \{ I \}\{  dA\^\{\\perp \} \}  \\]
+\\[ L = \\frac \{ \\Phi \}\{ \\omega A\^\{\\perp \} \} \\]
+
 
 物理含义如下图所示：
 
 ![7.png](../images/2016.7/7.png)
+
+辐射密度E和辐射亮度L的关系是"总体"和"个体"的区别，可以对比下两者的公式来理解：
+
+
+\\[ E = \frac \{ \\Phi \}\{ A \}  \\]
+
+\\[ L = \\frac \{ \\Phi \}\{ \\omega A\^\{\\perp \} \} \\]
+
+E是指进入目标区域的总辐射通量与目标区域总面积的比值；而L是指进入目标区域的总辐射通量与目标区域总面积、**总的入射立体角**的比值，也就是说L是比E多除了立体角。直观图示如下：
+
+
+
+![19.png](../images/2016.7/19.png)
+
 
 注意：在计算机图形学中，辐射亮度比起上面其他物理量，都重要地得多。
 
@@ -201,16 +216,17 @@ SPD一般用符号P(λ)表示。
 \\[ L = \\frac \{ d\\Phi \}\{ d\\omega dA\^\{\\perp \} \} \\]
 
 
-\\[ E = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \} \\]
+\\[ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \} \\]
 
 所以有：
 
 \\[ d\\Phi = L d\\omega dA\^\{\\perp \} \\]
 
 \\[ 
-E = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
+dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 = \\frac \{  L d\\omega dA\^\{\\perp \}  cos\\theta  \}\{ dA\^\{\\perp \}  \}  
 = L d\\omega cos\\theta \\]
+
 
 对上式做整个半球的积分，就得到了：
 
@@ -224,6 +240,8 @@ E = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 如果把式子中的\\(d\\omega \\)替换成球形角(Sphere Angle)，则得到：
 
+
+\\[ d\\omega = sin\\theta d\\theta d\\phi \\]
 
 \\[ E(p, n) = \\int \_\{\\Omega \} L\_\{i\} (p,\\omega ) |cos\\theta |sin\\theta d\\theta d\\phi \\]
 
