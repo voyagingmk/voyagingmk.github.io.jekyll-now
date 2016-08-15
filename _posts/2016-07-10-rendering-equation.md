@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: 渲染基础理论的介绍
+title: 渲染基础理论的介绍(1)
 tags: ['math', 'computer graphics' ]
 published: true
 ---
