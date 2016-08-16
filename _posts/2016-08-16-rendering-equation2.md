@@ -31,21 +31,23 @@ const Float CIE_lambda[nCIESamples] = {
 	825, 826, 827, 828, 829, 830
 };
 
-hat(x)函数
+//下面三个数组的元素的取值范围是[0.0, 2.0]
+
+//hat(x)函数
 extern const Float CIE_X[nCIESamples] = {
     0.0001299000f,   0.0001458470f,   0.0001638021f,   0.0001840037f,
  	······
  	0.000001439440f, 0.000001341977f, 0.000001251141f
 };
 
-hat(y)函数
+//hat(y)函数
 extern const Float CIE_Y[nCIESamples] = {
 	0.000003917000f,0.000004393581f,  0.000004929604f, 0.000005532136f,
     ······
     0.0000005198080f, 0.0000004846123f, 0.0000004518100f
 };
 
-hat(z)函数
+//hat(z)函数
 extern const Float CIE_Z[nCIESamples] = {
 	0.0006061000f, 0.0006808792f, 0.0007651456f, 0.0008600124f,
     ······
@@ -100,12 +102,16 @@ static RGBSpectrum FromSampled(const Float *lambda, const Float *v, int n) {
 
 可以把这个函数分成3部分来阅读理解。
 
-part I是其中最关键的，这个for循环计算出了xyz各个分量的值，循环次数和nCIESamples一致，每次循环需要执行一个InterpolateSpectrumSamples函数得到一个val值，再把这个val值分别和CIE_X、CIE_Y、CIE_Z相乘，并累加到xyz数组里。这个步骤其实就是下面的公式：
+part I是其中最关键的，这个for循环计算出了xyz各个分量的值，循环次数和nCIESamples一致，每次循环需要执行一个InterpolateSpectrumSamples函数得到一个val值(这个val是波长!)，再把这个val值分别和CIE_X、CIE_Y、CIE_Z相乘，并累加到xyz数组里。这个步骤其实就是下面的公式：
 
 ![16.png](../images/2016.7/16.png)
 
 
 InterpolateSpectrumSamples做的事情也不复杂。因为SPD的n值和nCIESamples不一定一样，也就是说不可能SPD和XYZ表的切片刚好一致，所以必然要做线性插值，从而把SPD切片数据转换成可用数据。具体转换过程看pbrt-v3源码即可。
+
+part II是把xyz规范化(Normalize)的过程。CIE_Y_integral是一个定值，它等于CIE_Y数组所有元素之和，也就是CIE_Y函数的积分；CIE_Y_integral * nCIESamples相当于X+Y+Z。part II对应的是下面的公式：
+
+
 
 ## 参考资料
 

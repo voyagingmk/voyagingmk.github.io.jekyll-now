@@ -86,16 +86,14 @@ SPD一般用符号P(λ)表示。
 
 ![17.png](../images/2016.7/17.png)
 
-看公式可以知道，XYZ和RGB之间可以线性转换得到，这就很实用了。
+(此矩阵只适用于sRGB)
 
-另外，此图的转换矩阵M是测量获得的，不用去纠结是怎么来的。
+得到的RGB并不是最终我们需要的RGB，还需要对这3个分量分别用下面的公式做一次换转：
 
-[XYZ to RGB](http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_RGB.html)
+![21.png](../images/2016.7/21.png)
 
+对于右边的输入值XYZ，也是有要求的，这是因为左边的\\(RGB\_\{linear\} \\)的取值范围是[0,1]，所以右边的XYZ也需要做规范化。在我的下一篇文章中会介绍这部分。
 
-关于各种CIE颜色表示之间的转换，请访问：
-
-[Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
 
 
 ## 辐射通量(Flux)
@@ -323,4 +321,12 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 整个渲染方程可以说就是在求出射方向到底有多少辐射通量（为什么不是L？因为被渲染区域的面积一般都限定为单位面积，即等于1，所以L相当于\\(\\Phi \\) )，辐射通量一旦确定就可以知道这个被渲染区域的颜色。
 
 基于光线追踪的离线渲染中，是可以直接基于上面的渲染方程去做工程实现的。（相比而言，实时渲染更多的是用各种trick技术来近似渲染方程。）
+
+
+# 备注
+
+本文章中的RGB一词都特指sRGB。
+
+
+[Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
 
