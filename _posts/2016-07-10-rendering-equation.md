@@ -94,7 +94,7 @@ SPD一般用符号P(λ)表示。
 
 对于右边的输入值XYZ，也是有要求的，这是因为左边的\\(RGB\_\{linear\} \\)的取值范围是[0,1]，所以右边的XYZ也需要做规范化。在我的下一篇文章中会介绍这部分。
 
-
+[https://en.wikipedia.org/wiki/SRGB](https://en.wikipedia.org/wiki/SRGB)
 
 ## 辐射通量(Flux)
 
@@ -330,3 +330,5 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 [Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
 
+
+[RGB/XYZ Matrices](http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html)
