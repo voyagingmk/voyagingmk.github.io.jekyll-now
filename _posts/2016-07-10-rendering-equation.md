@@ -82,6 +82,8 @@ SPD一般用符号P(λ)表示。
 
 ## XYZ和RGB之间的互相转换
 
+### XYZ到sRGB
+
 公式是：
 
 ![17.png](../images/2016.7/17.png)
@@ -93,6 +95,16 @@ SPD一般用符号P(λ)表示。
 ![21.png](../images/2016.7/21.png)
 
 对于右边的输入值XYZ，也是有要求的，这是因为左边的\\(RGB\_\{linear\} \\)的取值范围是[0,1]，所以右边的XYZ也需要做规范化。在我的下一篇文章中会介绍这部分。
+
+
+### sRGB到XYZ
+
+公式如下：
+
+![22.png](../images/2016.7/22.png)
+
+![23.png](../images/2016.7/23.png)
+
 
 [https://en.wikipedia.org/wiki/SRGB](https://en.wikipedia.org/wiki/SRGB)
 
