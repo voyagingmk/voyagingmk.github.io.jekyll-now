@@ -135,7 +135,39 @@ inline void XYZToRGB(const Float xyz[3], Float rgb[3]) {
 
 ```
 
-注意，这里得到的RGB是线性空间的RGB，并没有做gamma校正。
+注意，这里得到的RGB是线性空间的RGB，并没有做gamma校正。gamma校正的公式如下:
+
+![21.png](../images/2016.7/21.png)
+
+gamma校正应放在【线性空间】到【非线性空间】的转换时做，也就是最后输出时。
+
+```c
+
+//gamma校正
+inline Float GammaCorrect(Float value) {
+    if (value <= 0.0031308f) return 12.92f * value;
+    return 1.055f * std::pow(value, (Float)(1.f / 2.4f)) - 0.055f;
+}
+
+
+//Clamp函数
+template <typename T, typename U, typename V>
+inline T Clamp(T val, U low, V high) {
+    if (val < low)
+        return low;
+    else if (val > high)
+        return high;
+    else
+        return val;
+}
+
+
+//RGB_linear转成sRGB
+r = (uint8_t) Clamp(255.f * GammaCorrect(r) + 0.5f, 0.f, 255.f);
+g = (uint8_t) Clamp(255.f * GammaCorrect(g) + 0.5f, 0.f, 255.f);
+b = (uint8_t) Clamp(255.f * GammaCorrect(b) + 0.5f, 0.f, 255.f);
+
+```
 
 ## 参考资料
 
