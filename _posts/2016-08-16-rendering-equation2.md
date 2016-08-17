@@ -133,10 +133,9 @@ inline void XYZToRGB(const Float xyz[3], Float rgb[3]) {
     rgb[2] = 0.055648f * xyz[0] - 0.204043f * xyz[1] + 1.057311f * xyz[2];
 }
 
-注意，这里得到的RGB是线性空间的RGB，并没有做gamma校正。
-
 ```
 
+注意，这里得到的RGB是线性空间的RGB，并没有做gamma校正。
 
 ## 参考资料
 
