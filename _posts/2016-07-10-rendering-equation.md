@@ -342,7 +342,9 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 基于光线追踪的离线渲染中，是可以直接基于上面的渲染方程去做工程实现的。（相比而言，实时渲染更多的是用各种trick技术来近似渲染方程。）
 
 
-# 备注
+# 参考资料
+
+[http://www.poynton.com/PDFs/GammaFAQ.pdf](http://www.poynton.com/PDFs/GammaFAQ.pdf)
 
 
 [Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)
