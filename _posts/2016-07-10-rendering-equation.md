@@ -82,31 +82,38 @@ SPD一般用符号P(λ)表示。
 
 ## XYZ和RGB之间的互相转换
 
-### XYZ到sRGB
+### XYZ到RGB
 
 公式是：
 
 ![17.png](../images/2016.7/17.png)
 
-(此矩阵只适用于sRGB)
+(此矩阵只适用于 [sRGB](https://en.wikipedia.org/wiki/SRGB) 定义中的RGB)
 
-得到的RGB并不是最终我们需要的RGB，还需要对这3个分量分别用下面的公式做一次换转：
+(对于右边的输入值XYZ，也是有要求的，这是因为左边的\\(RGB\_\{linear\} \\)的取值范围是[0,1]，所以右边的XYZ也需要做规范化。在我的下一篇文章中会介绍这部分。)
+
+
+得到的\\(RGB\_\{linear\} \\)是线性空间的，在渲染器中可以直接使用。\\(RGB\_\{linear\} \\)各个分量的取值范围都是[0.0, 1.0]，写入位图时需要乘以255并取整。
+
+顺带一提的是，这个得到的\\(RGB\_\{linear\} \\)需要做一个gamma校正才能变成sRGB。公式如下：
 
 ![21.png](../images/2016.7/21.png)
 
-对于右边的输入值XYZ，也是有要求的，这是因为左边的\\(RGB\_\{linear\} \\)的取值范围是[0,1]，所以右边的XYZ也需要做规范化。在我的下一篇文章中会介绍这部分。
+对于渲染器来说并不需要做gamma校正，所以可跳过这个步骤。
 
 
-### sRGB到XYZ
+### RGB到XYZ
 
-公式如下：
+
+当输入的RGB是sRGB时，需要做逆gamma校正，公式如下：
 
 ![22.png](../images/2016.7/22.png)
+
+得到线性空间的RGB值后，就可以用下面的公式转换到XYZ空间：
 
 ![23.png](../images/2016.7/23.png)
 
 
-[https://en.wikipedia.org/wiki/SRGB](https://en.wikipedia.org/wiki/SRGB)
 
 ## 辐射通量(Flux)
 
@@ -336,8 +343,6 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 
 # 备注
-
-本文章中的RGB一词都特指sRGB。
 
 
 [Useful Color Equations](http://www.brucelindbloom.com/index.html?Equations.html)

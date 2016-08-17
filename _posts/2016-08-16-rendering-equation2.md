@@ -56,7 +56,7 @@ extern const Float CIE_Z[nCIESamples] = {
 
 ```
 
-因为\\( \\hat \{x\}(\\lambda ) 、 \\hat \{y\}(\\lambda ) 、 \\hat \{z\}(\\lambda )\\)是常量（和万有引力常数一样的常数）,所以上面的4个数组只需要制作一次就行了，然后可以把它们硬编码到你的程序里(pbrt-v3就是这么干的)。
+因为\\( \\hat \{x\}(\\lambda ) 、 \\hat \{y\}(\\lambda ) 、 \\hat \{z\}(\\lambda )\\)是常量（和万有引力常数一样的常数）,所以上面的4个数组只需要制作一次就行了，然后可以把它们硬编码到你的程序里(pbrt就是这么干的)。
 
 ## SPD数据源
 
@@ -74,26 +74,27 @@ Float SPD[n]  = [
 
 ## 从SPD转换到XYZ到RGB
 
-先贴上pbrt-v3的实现代码：
+先贴上pbrt的实现代码：
 
 ```c
-
-static RGBSpectrum FromSampled(const Float *lambda, const Float *v, int n) {
+//pbrt-v2
+static RGBSpectrum FromSampled(const float *lambda, const float *v, int n) {
     //part I
-    Float xyz[3] = {0, 0, 0};
+    float xyz[3] = { 0, 0, 0 };
+    float yint = 0.f;
     for (int i = 0; i < nCIESamples; ++i) {
-        Float val = InterpolateSpectrumSamples(lambda, v, n, CIE_lambda[i]);
+        yint += CIE_Y[i];
+        float val = InterpolateSpectrumSamples(lambda, v, n,
+                                               CIE_lambda[i]);
         xyz[0] += val * CIE_X[i];
         xyz[1] += val * CIE_Y[i];
         xyz[2] += val * CIE_Z[i];
     }
     //part II
-    Float scale = Float(CIE_lambda[nCIESamples - 1] - CIE_lambda[0]) /
-                  Float(CIE_Y_integral * nCIESamples);
-    xyz[0] *= scale;
-    xyz[1] *= scale;
-    xyz[2] *= scale;
-    //part II
+    xyz[0] /= yint;
+    xyz[1] /= yint;
+    xyz[2] /= yint;
+    //part III
     return FromXYZ(xyz);
 }
 
@@ -104,15 +105,39 @@ static RGBSpectrum FromSampled(const Float *lambda, const Float *v, int n) {
 
 part I是其中最关键的，这个for循环计算出了xyz各个分量的值，循环次数和nCIESamples一致，每次循环需要执行一个InterpolateSpectrumSamples函数得到一个val值(这个val是波长!)，再把这个val值分别和CIE_X、CIE_Y、CIE_Z相乘，并累加到xyz数组里。这个步骤其实就是下面的公式：
 
+![15.png](../images/2016.7/15.png)
+
+的离散版本:
+
 ![16.png](../images/2016.7/16.png)
 
 
-InterpolateSpectrumSamples做的事情也不复杂。因为SPD的n值和nCIESamples不一定一样，也就是说不可能SPD和XYZ表的切片刚好一致，所以必然要做线性插值，从而把SPD切片数据转换成可用数据。具体转换过程看pbrt-v3源码即可。
+InterpolateSpectrumSamples做的事情也不复杂。因为SPD的n值和nCIESamples不一定一样，也就是说不可能SPD和XYZ表的切片刚好一致，所以必然要做线性插值，从而把SPD切片数据转换成可用数据。具体转换过程看pbrt源码即可。
 
-part II是把xyz规范化(Normalize)的过程。CIE_Y_integral是一个定值，它等于CIE_Y数组所有元素之和，也就是CIE_Y函数的积分；CIE_Y_integral * nCIESamples相当于X+Y+Z。part II对应的是下面的公式：
+part II是把xyz规范化(Normalize)的过程。part I 加上 part II总的公式如下：
 
+![24.png](../images/2016.7/24.png)
+
+part III做的事情就是把XYZ转换成RGB，公式在上一篇文章已经给出了：
+
+
+![17.png](../images/2016.7/17.png)
+
+对应的代码如下：
+
+```c
+
+inline void XYZToRGB(const Float xyz[3], Float rgb[3]) {
+    rgb[0] = 3.240479f * xyz[0] - 1.537150f * xyz[1] - 0.498535f * xyz[2];
+    rgb[1] = -0.969256f * xyz[0] + 1.875991f * xyz[1] + 0.041556f * xyz[2];
+    rgb[2] = 0.055648f * xyz[0] - 0.204043f * xyz[1] + 1.057311f * xyz[2];
+}
+
+注意，这里得到的RGB是线性空间的RGB，并没有做gamma校正。
+
+```
 
 
 ## 参考资料
 
-github上的pbrt-v3源码
+pbrt源码
