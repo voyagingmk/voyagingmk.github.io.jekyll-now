@@ -344,6 +344,10 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 # 参考资料
 
+[http://blog.csdn.net/candycat1992/article/details/46228771](http://blog.csdn.net/candycat1992/article/details/46228771)
+
+[http://www.poynton.com/GammaFAQ.html](http://www.poynton.com/GammaFAQ.html)
+
 [http://www.poynton.com/PDFs/GammaFAQ.pdf](http://www.poynton.com/PDFs/GammaFAQ.pdf)
 
 
