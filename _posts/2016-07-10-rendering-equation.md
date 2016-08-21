@@ -283,6 +283,8 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 \\[ = L\_\{i\} (p,\\theta ,\\phi ) π  \\]
 
+注意，这个简化公式在渲染中很重要。因为当计算一个点到摄像机的Radiance，第一步就是先求这个点的入射E（求E的过程可以很复杂），当求出E之后，就可以认为这个点对任意方向的出射Radiance是均等的，也就是\\( L = \\frac \{E\}\{\\pi \} \\)。
+
 
 # 渲染方程 Rendering Equation
 
