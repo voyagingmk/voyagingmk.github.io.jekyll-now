@@ -18,6 +18,24 @@ published: true
 
 继续观察上面的公式，里面还有一个极其重要的参数：pdf(probability distribution function，概率分布函数)。
 
+## pdf和pmf
+
+- pmf(probability mass function)，指的是**离散的**随机变量的概率分布函数
+- pdf(probability distribution function)， 指的是**连续的**随机变量的概率分布函数
+
+离散的随机变量X的数学期望为：
+
+\\[E[X] = \\sum \^\{N\}\_\{i=1\}X\_\{i\}pmf(X\_\{i\}) \\]
+
+连续的随机变量X的数学期望为：
+
+\\[E[X] = \\int \^\{\\infty \}\_\{-\\infty \}Xpdf(X) \\]
+
+可以说pdf和pmf是同个东西，只不过用的场合不一样。
+
+在实际应用场合，随机变量X不能直接用，而是对X做一个转换，变成F(X)，但这时候要注意F(X)的pdf不等于X的pdf。
+
+
 这个pdf的参数是\\( X\_\{i\} \\)，返回值是概率，即表示一个样本\\( X\_\{i\} \\)出现的概率，所有样本的出现概率之和(概率的积分)应等于1。要注意的是，pdf的存在说明有可能每个\\( X\_\{i\} \\)的概率都是各不相同的。
 
 
@@ -41,3 +59,5 @@ published: true
 
 
 [http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-in-practice/monte-carlo-integration](http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-in-practice/monte-carlo-integration)
+
+[http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-mathematical-foundations/expected-value-of-the-function-of-a-random-variable](http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-mathematical-foundations/expected-value-of-the-function-of-a-random-variable)
