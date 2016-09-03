@@ -31,11 +31,11 @@ published: true
 
 离散的随机变量X的数学期望为：
 
-\\[E[X] = \\sum \^\{N\}\_\{i=1\}X\_\{i\}pmf(X\_\{i\}) \\]
+\\[E[X] = \\sum \_\{ x\_\{i\} \}pmf(x\_\{i\})x\_\{i\} \\]
 
 连续的随机变量X的数学期望为：
 
-\\[E[X] = \\int \^\{\\infty \}\_\{-\\infty \}Xpdf(X) \\]
+\\[E[X] = \\int \^\{\\infty \}\_\{-\\infty \}pdf(x)xdx \\]
 
 pdf和pmf名字接近，含义也是接近。pdf、pmf函数的参数都是样本值x，返回值是概率，即表示一个样本出现的概率，所有样本的出现概率之和(概率的积分)应等于1。要注意的是，pdf、pmf的存在说明有可能每个样本的出现概率都是各不相同的。
 
@@ -89,8 +89,35 @@ pmf的简单例子就是**基于均匀分布的离散的随机变量X**，此时
 
 ## 蒙特·卡罗积分的数学期望等于理想积分？
 
+对于下面的\\(F\\)和\\(F\^\{N\}\\)：
 
-## 在图形学中的应用
+\\[ F = \\int \_\{a\}\^\{b\}f(x)dx \\]
+
+\\[ F\^\{N\} = \\frac \{1\}\{N\}\\sum \_\{i=1\}\^\{N\}\\frac \{f(X\_\{i\})\}\{ pdf(X\_\{i\}) \} \\]
+
+是否随着N变大，\\(F\^\{N\}\\)会逼近\\(F\\)？即\\(F\^\{N\}\\)的数学期望是否等于\\(F\\)?[Monte Carlo Methods in Practice](http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-in-practice/monte-carlo-integration)文章中给出了推导过程：
+
+![2.png](../images/2016.8/2.png)
+
+第二行到第三行是最不好理解的。因为这里其实用到了新的知识点：[Law of the unconscious statistician](https://en.wikipedia.org/wiki/Law_of_the_unconscious_statistician)(简称：LOTUS)。LOTUS的应用情景是，已知随机变量X的概率分布，但不知道f(x)的分布，此时用LOTUS公式能计算出函数f(x)的数学期望。LOTUS的公式如下：
+
+f(x)是离散函数时:
+
+\\[ E[f(X)] = \\sum \_\{x\_\{i\}\}f(x\_\{i\})pmf(x\_\{i\}) \\]
+
+f(x)是连续函数时:
+
+\\[ E[f(X)] = \\int \_\{-\\infty \}\^\{\\infty\}f(x)pdf(x)dx \\]
+
+(建议对比第二小节开头的两条公式来理解)
+
+有了LOTUS公式，再来看第二行到第三行的转换，就好理解了：
+
+\\[ E[ \\frac \{f(X\_\{i\})\}\{pdf(X\_\{i\})\} ] = E[ \\frac \{f(x)\}\{pdf(x)\} ] =\\int \_\{-\\infty \}\^\{\\infty\}\\frac \{f(x)\}\{pdf(x)\}pdf(x)dx \\]
+
+\\[ =\\int \_\{-\\infty \}\^\{\\infty\}f(x)dx \\]
+
+## 蒙特·卡罗积分在图形学中的应用
 
 经过上一小节对pmf、pdf的介绍和举例后，可以知道蒙特·卡罗积分公式是确实有用的，但在图形学中有什么地方会用到呢？
 
