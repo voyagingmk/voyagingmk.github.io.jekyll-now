@@ -2,7 +2,7 @@
 layout: post_latex
 title: 渲染基础理论的介绍(3)——提升真实感的渲染方法
 tags: ['computer graphics']
-published: true
+published: false
 ---
 
 

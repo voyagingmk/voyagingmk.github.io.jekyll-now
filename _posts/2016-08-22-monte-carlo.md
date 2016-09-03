@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: 蒙特·卡罗(Monte Carlo)积分和其在图形学中的应用
+title: 蒙特·卡罗(Monte Carlo)积分详解
 tags: ['math' ]
 published: true
 ---
@@ -117,24 +117,9 @@ f(x)是连续函数时:
 
 \\[ =\\int \_\{-\\infty \}\^\{\\infty\}f(x)dx \\]
 
-## 蒙特·卡罗积分在图形学中的应用
 
-经过上一小节对pmf、pdf的介绍和举例后，可以知道蒙特·卡罗积分公式是确实有用的，但在图形学中有什么地方会用到呢？
-
-第一个用到的地方是**计算着色点的间接光照**。
-
-
-
-
-\\( p(θ,ϕ)\\) 被称为联合概率分布(joint probability distribution)。
-
-[边缘分布(marginal distribution)](https://en.wikipedia.org/wiki/Marginal_distribution)
-
-[累积分布函数CDF(Cumulative distribution function)](https://en.wikipedia.org/wiki/Cumulative_distribution_function)
 
 # 参考资料
-
-[http://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation](http://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation)
 
 
 [http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-in-practice/monte-carlo-integration](http://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-in-practice/monte-carlo-integration)
