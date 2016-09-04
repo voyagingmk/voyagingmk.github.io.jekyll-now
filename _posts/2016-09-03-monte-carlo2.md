@@ -74,8 +74,46 @@ published: true
 
 \\[ p(ϕ) =\\frac \{p(θ,ϕ)\}\{p(θ)\} =  \\frac \{ \\frac \{sin\\theta\}\{2π\}  \}\{ sin\\theta \}  = \\frac \{1\}\{2π\} \\]
 
+\\[ F\^\{N\} = \\frac \{1\}\{N\}\\sum \_\{i=1\}\^\{N\}\\frac \{f(X\_\{i\})\}\{ pdf(X\_\{i\}) \} \\]
 
-[累积分布函数CDF(Cumulative distribution function)](https://en.wikipedia.org/wiki/Cumulative_distribution_function)
+到了这里，事情还没完，还有2个东西要学习：
+
+[CDF, Cumulative distribution function](https://en.wikipedia.org/wiki/Cumulative_distribution_function) 和 [Inverse transform sampling](https://en.wikipedia.org/wiki/Inverse_transform_sampling)。
+
+## CDF 累积分布函数
+
+公式如下：
+
+\\[ CDF(x) = P(X \\leq x ) \\]
+
+大写X是指随机变量，小写x指的是参数，P是概率函数，因此CDF(x)的含义是，**随机变量X的值小于等于x的概率**。
+
+对于连续随机变量X，CDF可以用积分形式表示：
+
+\\[ CDF(s) = \\int \_\{-\\infty \}\^\{s\}pdf(x)dx \\]
+
+从基本定义延伸出来的公式：
+
+\\[ P(a < x \\leq b) = CDF(b) - CDF(a) = \\int \_\{ a \}\^\{b\}pdf(x)dx  \\]
+
+
+CDF的性质：
+
+\\[ \\lim \_\{x\\to -\\infty \}CDF(x) = 0 \\]
+
+
+\\[ \\lim \_\{x\\to +\\infty \}CDF(x) = 1 \\]
+
+实例，取值范围是[0,1]的随机变量X的CDF：
+
+
+![5.png](../images/2016.8/5.png)
+
+
+
+## Inverse transform sampling 逆采样方法
+
+
 
 # 参考资料
 
