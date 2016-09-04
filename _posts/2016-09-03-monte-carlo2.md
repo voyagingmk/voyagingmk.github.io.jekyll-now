@@ -74,8 +74,6 @@ published: true
 
 \\[ p(ϕ) =\\frac \{p(θ,ϕ)\}\{p(θ)\} =  \\frac \{ \\frac \{sin\\theta\}\{2π\}  \}\{ sin\\theta \}  = \\frac \{1\}\{2π\} \\]
 
-\\[ F\^\{N\} = \\frac \{1\}\{N\}\\sum \_\{i=1\}\^\{N\}\\frac \{f(X\_\{i\})\}\{ pdf(X\_\{i\}) \} \\]
-
 到了这里，事情还没完，还有2个东西要学习：
 
 [CDF, Cumulative distribution function](https://en.wikipedia.org/wiki/Cumulative_distribution_function) 和 [Inverse transform sampling](https://en.wikipedia.org/wiki/Inverse_transform_sampling)。
@@ -84,7 +82,7 @@ published: true
 
 公式如下：
 
-\\[ CDF(x) = P(X \\leq x ) \\]
+\\[ CDF(x) = P( -\\infty < X \\leq x ) \\]
 
 大写X是指随机变量，小写x指的是参数，P是概率函数，因此CDF(x)的含义是，**随机变量X的值小于等于x的概率**。
 
@@ -109,12 +107,102 @@ CDF的性质：
 
 ![5.png](../images/2016.8/5.png)
 
+CDF一般也可以用\\(F\_\{X\}\\)表示。
 
 
 ## Inverse transform sampling 逆采样方法
 
+步骤一：获得一个均布分布的随机变量u，这个u必须落在[0,1]范围内，并把这个u解释为“概率值”（概率的范围也是[0,1])。
+
+步骤二：获得一个CDF(x)函数
+
+步骤三：计算使得下面的不等式成立的x的最大值：
+
+\\[ CDF(x) = P( -\\infty < X \\leq x ) = F\_\{X\}(x) < u \\]
+
+因为**逆采样**本质上是一个函数，变量是u，解是x，所以用这个不等式来表达逆采样方法是不方便的，更常见的做法是用\\(F\_\{X\}\^\{-1\}(u) \\)来表示**逆采样**。\\(F\_\{X\}\^\{-1\}(u) \\)的完整表达式一般用[下确界或上确界](https://en.wikipedia.org/wiki/Infimum_and_supremum)等式表示：
+
+上确界形式：
+
+ \\[ F\_\{X\}\^\{-1\}(u) = \\sup \lbrace F\_\{X\}(x) < u \rbrace \\]
+
+下确界形式：
+
+ \\[ F\_\{X\}\^\{-1\}(u) = \\inf \lbrace F\_\{X\}(x) \geq u \rbrace \\]
+
+\\(F\_\{X\}\^\{-1\}(u) \\)的重要性质：u的每一个取值都有唯一的x与之对应。使得这个性质的原因是CDF是一个递增的函数。
+
+因此，在实际应用中，可以先随机一个u，再通过CDF函数计算出对应的x，又因为u是均匀采样(uniform sample)的，于是x也是均匀采样的。
+
+## 再回到间接光照的问题
+
+前面已经得到了\\( p(θ)\\) 和 \\( p(ϕ) \\):
+
+\\[ p(θ) = sin\\theta \\]
+
+\\[ p(ϕ) = \\frac \{1\}\{2π\} \\]
+
+现在可以推导它们的CDF函数了：
+
+\\[ CDF(θ) = \\int \_\{0 \}\^\{θ\}p(θ)dθ = \\int \_\{0 \}\^\{θ\}sin\\theta dθ = (-cos\\theta) |\_\{0\}\^\{θ\}  = -cos\\theta - (-cos0) = 1 - cos\\theta \\]
+
+\\[ CDF(ϕ) = \\int \_\{0 \}\^\{ϕ\}p(ϕ)dϕ = \\int \_\{0 \}\^\{ϕ\}\\frac \{1\}\{2π\}dϕ = \\frac \{1\}\{2π\}\\int \_\{0 \}\^\{ϕ\}dϕ = \\frac \{ϕ\}\{2π\} \\]
+
+即：
+
+\\[ F\_\{θ\}(θ) = 1 - cos\\theta  \\]
+
+\\[ F\_\{ϕ\}(ϕ) = \\frac \{ϕ\}\{2π\} \\]
+
+然后就是推导这两个CDF的逆采样公式，设：
+
+\\[ u\_\{1\} = 1 - cos\\theta \\]
+
+\\[ cos\\theta = 1 - u\_\{1\}  \\]
+
+\\[ \\theta = cos\^\{-1\}(1 - u\_\{1\})  \\]
+
+即：
+
+\\[ F\_\{θ\}\^\{-1\}(u\_\{1\}) = cos\^\{-1\}(1 - u\_\{1\}) \\]
+
+
+
+再设：
+
+\\[ u\_\{2\} = \\frac \{ϕ\}\{2π\} \\]
+
+\\[ ϕ = u\_\{2\}2π  \\]
+
+即：
+
+\\[ F\_\{ϕ\}\^\{-1\}(u\_\{2\}) =  u\_\{2\}2π   \\]
+
+
+汇总一下：
+
+\\[ F\_\{θ\}\^\{-1\}(u\_\{1\}) = cos\^\{-1\}(1 - u\_\{1\}) \\]
+
+\\[ F\_\{ϕ\}\^\{-1\}(u\_\{2\}) =  u\_\{2\}2π   \\]
+
+总结一下：只要生成2个在[0,1]范围的符合均匀分布的随机数\\( u\_\{1\}、u\_\{2\}\\)，就可以得到均匀分布的\\(θ、ϕ\\)了，就是这么简单。
+
+有了\\(θ、ϕ\\)后，就可以代入3维的极坐标公式，得到3维的笛卡尔坐标：
+
+\\[ x= sinθ cosϕ \\]
+
+\\[ y= cosθ \\]
+
+\\[ z= sinθ sinϕ \\]
+
+坐标(x,y,z)必然落在圆心在原点、半径为1、法向量为(0,1,0)的半球的球面。
+
+有了(x,y,z)坐标，就可以生成沿着半球面的均匀的出射光线了。之后的就是光线追踪的问题了。本文不表。
 
 
 # 参考资料
 
 [http://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation](http://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation)
+
+
+[https://en.wikipedia.org/wiki/Infimum_and_supremum](https://en.wikipedia.org/wiki/Infimum_and_supremum)
