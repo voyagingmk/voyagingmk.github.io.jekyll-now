@@ -204,5 +204,3 @@ CDF一般也可以用\\(F\_\{X\}\\)表示。
 
 [http://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation](http://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation)
 
-
-[https://en.wikipedia.org/wiki/Infimum_and_supremum](https://en.wikipedia.org/wiki/Infimum_and_supremum)
