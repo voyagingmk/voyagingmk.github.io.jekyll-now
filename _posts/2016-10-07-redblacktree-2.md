@@ -68,6 +68,6 @@ iiii) Right-Right
 
 ## 资料
 
-本文配图来自：https://www.cs.usfca.edu/~galles/visualization/RedBlack.html
+本文配图使用yEd编辑：http://www.yworks.com/products/yed/download
 
 http://www.geeksforgeeks.org/red-black-tree-set-2-insert/
