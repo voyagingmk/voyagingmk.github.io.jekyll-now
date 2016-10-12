@@ -56,11 +56,31 @@ published: true
 
 i) Left-Left
 
-ii) Left-Right
+步骤：
 
-iii) Right-Left
+    1. **右**旋转g
+    2. 交换g和p的颜色
 
-iiii) Right-Right
+
+ii) Right-Right
+
+步骤：
+    1. **左**旋转g
+    2. 交换g和p的颜色
+
+可以注意到，整个步骤和Left-Left非常相似。
+
+iii) Left-Right
+
+可以用一个旋转操作把这个case转换成Left-Left的case，步骤如下：
+
+    1. **左**旋转p
+
+iiii) Right-Left
+
+可以用一个旋转操作把这个case转换成Right-Right的case，步骤如下：
+
+    1. **右**旋转p
 
 
 
