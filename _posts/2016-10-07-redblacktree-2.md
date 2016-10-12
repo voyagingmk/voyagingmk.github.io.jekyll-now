@@ -1,13 +1,13 @@
 ---
 layout: post_latex
-title: 细说红黑树(2)-基本操作
+title: 细说红黑树(2)-基本操作之Insert
 tags: ['data structure' ]
 published: true
 ---
 
 
 <!--more-->
-本文争取用精简的文字描述清楚红黑树的各种基本操作：插入、删除、查询。
+本文争取用精简的文字描述清楚红黑树的各种基本操作：**插入**、删除、查询。
 
 在开始下文之前，再次祭出红黑树的四大性质：
 
@@ -58,15 +58,18 @@ i) Left-Left
 
 步骤：
 
-    1. **右**旋转g
-    2. 交换g和p的颜色
+1）**右**旋转g
+
+2）交换g和p的颜色
 
 
 ii) Right-Right
 
 步骤：
-    1. **左**旋转g
-    2. 交换g和p的颜色
+
+1）**左**旋转g
+
+2）交换g和p的颜色
 
 可以注意到，整个步骤和Left-Left非常相似。
 
@@ -74,13 +77,13 @@ iii) Left-Right
 
 可以用一个旋转操作把这个case转换成Left-Left的case，步骤如下：
 
-    1. **左**旋转p
+1）**左**旋转p
 
 iiii) Right-Left
 
 可以用一个旋转操作把这个case转换成Right-Right的case，步骤如下：
 
-    1. **右**旋转p
+1）**右**旋转p
 
 
 
