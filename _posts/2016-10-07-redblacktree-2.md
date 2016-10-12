@@ -34,7 +34,7 @@ published: true
 
 2.插入的节点的父节点是**黑**色
 
-![3.png](../images/2016.10/3.png)![4.png](../images/2016.10/4.png)![5.png](../images/2016.10/5.png)
+![3.png](../images/2016.10/3.png)
 
 **插入红节点，并不影响性质4。无需调整红黑树。**
 
@@ -47,12 +47,8 @@ published: true
 
 这个步骤被称为**Recoloring**。
 
-![6.png](../images/2016.10/6.png)
-![arrow.png](../images/2016.10/arrow.png)
-![7.png](../images/2016.10/7.png)
 
-![arrow.png](../images/2016.10/arrow.png)
-![8.png](../images/2016.10/8.png)
+![4.png](../images/2016.10/4.png)
 
 - 3b.叔节点是**黑**色
 
