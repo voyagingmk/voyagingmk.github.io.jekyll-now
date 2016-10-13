@@ -56,6 +56,9 @@ published: true
 
 i) Left-Left
 
+
+![5.png](../images/2016.10/5.png)
+
 步骤：
 
 1）**右**旋转g
@@ -65,21 +68,28 @@ i) Left-Left
 
 ii) Right-Right
 
+
+![6.png](../images/2016.10/6.png)
+
 步骤：
 
 1）**左**旋转g
 
 2）交换g和p的颜色
 
-可以注意到，整个步骤和Left-Left非常相似。
+可以注意到，整个步骤和Left-Left非常相似，其实就是Left-Left的水平镜像。
 
 iii) Left-Right
+
+![7.png](../images/2016.10/7.png)
 
 可以用一个旋转操作把这个case转换成Left-Left的case，步骤如下：
 
 1）**左**旋转p
 
 iiii) Right-Left
+
+![8.png](../images/2016.10/8.png)
 
 可以用一个旋转操作把这个case转换成Right-Right的case，步骤如下：
 
