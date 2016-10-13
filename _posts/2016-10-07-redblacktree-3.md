@@ -21,3 +21,14 @@ published: true
 
 
 # Delete
+
+首先，我感到不开心的一件事是，我发现红黑树的删除逻辑之复杂（比Insert还要复杂！），让红黑树变得不那么完美了。不过下文还是会慢慢介绍整个删除算法。
+
+红黑树的Delete，需要用到一个新的概念：Double-Black，即删除目标节点后，把另一个节点标记为**双黑**，然后通过把它调整成**单黑**，从而不破坏红黑树的性质。
+
+
+
+# 资料
+
+http://www.geeksforgeeks.org/red-black-tree-set-3-delete-2/
+
