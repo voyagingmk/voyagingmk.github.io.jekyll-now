@@ -116,15 +116,26 @@ run代表启动一个container；
 
 执行成功后，就进入这个临时生成的ubuntu的控制台啦！
 
-### 4.在ubuntu中安装cmake并构建forward
+### 4.在ubuntu中构建forward
 
-需要先执行:
+第三步建立的ubuntu镜像不是持久化的，需要永久保存的镜像的话，需要自行写Dockerfile。
 
-apt-get update
+在forwarder根目录下的docker目录我已经写了一个。cmd进入这个目录并执行：
 
-然后安装cmake
+docker build -t myubuntu  .
 
-apt-get install -y cmake=3.5
+就开始在本地创建一个自定义的image镜像了。
+
+如果update太慢，可考虑更换国内的soureces，访问：http://wiki.ubuntu.org.cn/%E6%A8%A1%E6%9D%BF:16.04source
+
+把Dockerfile中的那些sources链接的地址替换成国内的镜像站点即可，例如我替换成阿里云的镜像站点。
+
+
+### 5.apt-get的一些技巧
+
+查询一个包的版本列表：
+
+apt-cache policy <package name>
 
 
 
