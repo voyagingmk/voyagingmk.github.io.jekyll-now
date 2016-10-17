@@ -5,6 +5,9 @@ tags: ['C++' ]
 published: true
 ---
 
+项目地址：https://github.com/voyagingmk/forwarder
+
+<!--more-->
 
 # cmake
 
@@ -22,6 +25,7 @@ https://cmake.org/files/v3.7/cmake-3.7.0-rc1-win64-x64.msi
 那么，在执行cmake构建指令前，需要在forwarder项目根目录下手写一个CMakeLists.txt文件。
 
 ```c
+# 注：这个个CMakeLists.txt在将来的版本中会发生改动。
 cmake_minimum_required (VERSION 2.6)
 project (forwarder)
 
@@ -45,32 +49,15 @@ target_link_libraries (forwarder  ${EXTRA_LIBS})
 
 ### 3.构建
 
-forwarder项目目前用到了2个第三方库，一个是enet，一个是spdlog。
+forwarder项目目前用到了3个第三方库：enet、spdlog、rapidjson。
 
-spdlog的源码都在头文件里，直接把源码包含进来就可以了。
+spdlog和rapidjson是头文件形式的第三方库，直接把头文件放到include就可以了。
 
-enet则用静态链接的方式引入。需要把enet的源码都放在子目录**enet**里，然后在enet目录再手写一个CMakeLists.txt：
+enet则打算用静态链接的方式引入。需要建一个子目录**enet**，然后添加enet的所有c文件、CMakeLists.txt。
 
-```c
-cmake_minimum_required (VERSION 2.6)
-project (libenet)
+（其实可以把enet整个源码文件夹搬进来，不过我为了forwarder的东西更少些，所以只添加了enet的c文件和CMakeLists.txt）
 
-# The version number.
-set (ENET_VERSION_MAJOR 1)
-set (ENET_VERSION_MINOR 0)
-
-include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories("${PROJECT_SOURCE_DIR}/src")
-
-
-file(GLOB libenet_SRC "src/*.c")
-add_library(libenet STATIC ${libenet_SRC})
-
-
-target_link_libraries (libenet winmm.lib ws2_32.lib)
-```
-
-（这个CMakeLists.txt是作为根目录CMakeLists.txt的孩子存在的，由根目录的CMakeLists.txt来调用。）
+enet的CMakeLists.txt是作为根目录CMakeLists.txt的孩子存在的，由根目录的CMakeLists.txt来调用。
 
 有了这2个个CMakeLists.txt后，在根目录新建一个文件夹叫build，然后cmd进入这个目录，并执行：
 
@@ -100,7 +87,7 @@ docker安装完毕后在任务栏会有一个图标，右键然后点setting：
 
 ### 3.然后在cmd中执行：
 
-docker run --rm -it -v D:/workplace/forwarder:/data ubuntu:latest
+docker run --rm -it -v D:\workplace\project\forwarder:/data ubuntu:latest
 
 run代表启动一个container；
 
@@ -110,7 +97,7 @@ run代表启动一个container；
 
 -it作用是设置成交互模式(interactive)；
 
--v D:/workplace/forwarder:/data，是把windows的共享目录D:/workplace/forwarder 映射到container中的/data目录。
+-v D:\workplace\project\forwarder:/data，是把windows的共享目录D:\workplace\project\forwarder 映射到container中的/data目录。
 
 第一次执行时，会从docker官方服务器下载ubuntu:latest镜像到本地，所以会比较慢。
 
@@ -130,6 +117,13 @@ docker build -t myubuntu  .
 
 把Dockerfile中的那些sources链接的地址替换成国内的镜像站点即可，例如我替换成阿里云的镜像站点。
 
+镜像生成完毕后，在任意目录执行命令：
+
+docker run --rm -it -v D:\workplace\project\forwarder:/data myubuntu
+
+此时，进入的ubuntu只是一个临时的无持久化的系统，若你修改了这个系统下的东西，exit退出后再执行上面的命令进入ubuntu，是不会看到之前的修改的。
+
+这个特性很适合用来做开发测试，保证了测试环境不会被轻易破坏掉。
 
 ### 5.apt-get的一些技巧
 
