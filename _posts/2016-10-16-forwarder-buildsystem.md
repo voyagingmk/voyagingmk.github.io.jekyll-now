@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: forwarder开发备忘
-tags: ['C++' ]
+tags: ['c++' ]
 published: true
 ---
 
