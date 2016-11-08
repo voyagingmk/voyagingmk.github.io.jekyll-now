@@ -34,3 +34,16 @@ for(int i = 0; i <= 100; i++){
 然后再执行delete[] array就会出上面截图那个报错了。
 
 修了那个循环次数就没事了，就酱。
+
+
+## error C2338: tuple_element index out of bounds
+
+参考了这篇文章 http://www.cnblogs.com/fengyubo/p/4866623.html
+
+其实就是placeholders::_1 placeholders::_2 这些填错了。
+
+
+## 从mac拷贝git目录到windows后出现无法丢弃的修改 
+
+git config core.filemode false
+git config core.eol lf
