@@ -1,11 +1,9 @@
 ---
 layout: post_latex
-title: 微分几何与渲染
+title: 微分几何与渲染(1)
 tags: ['computer graphics', 'math' ]
 published: true
 ---
-
-最近在做renderer的过程中发现对于mesh的渲染，必须利用微分几何才能做好。
 
 <!--more-->
 
@@ -120,6 +118,4 @@ published: true
 \\[ {% include render_matrix_raw.html mat = A  row = 2 col = 2 %} \^\{-1\} = \\frac \{1\}\{(u\_\{0\} - u\_\{2\})(v\_\{1\} - v\_\{2\}) - (v\_\{0\} - v\_\{2\})(u\_\{1\} - u\_\{2\})\}  {% include render_matrix_raw.html mat = A2  row = 2 col = 2 %} \\]
 
 
-
-
-
+总结一下：3维空间中，某3个不同顶点组成的三角平面上的任意点\\( \\vec p \\)关于u、v的偏微分的值完全一致，且可以通过三个顶点的xyz坐标和uv坐标求得。
