@@ -2,7 +2,7 @@
 layout: post_latex
 title: 细说红黑树(3)-基本操作之Delete
 tags: ['data structure' ]
-published: true
+published: false
 ---
 
 

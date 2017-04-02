@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: 我的2015总结
-published: true
+published: false
 tags: ['life']
 ---
 
