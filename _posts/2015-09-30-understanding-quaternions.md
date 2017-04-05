@@ -610,7 +610,7 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 然后算qp：
 
-\\[ p' = qp \\]
+\\[ \\mathbf p' = \\mathbf q\\mathbf p \\]
 \\[ = [cos\\theta ,sin\\theta \\mathbf \{ \\hat \{ \\mathbf v \} \}] [0, \\mathbf \{p\} ]  \\]
 \\[ [-sin\\theta \\hat \{ \\mathbf v \}\\cdot \\mathbf \{p\}, cos\\theta \\mathbf \{p\}+sin\\theta \\mathbf \{ \\hat \{ \\mathbf v \} \}\\times \\mathbf \{p\}] \\]
 
@@ -632,22 +632,22 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 首先计算:
 
-\\[ q =  [cos\\theta ,  sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
+\\[ \\mathbf q =  [cos\\theta ,  sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
 
-\\[ q\^\{-1\} =  [cos\\theta ,  -sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
+\\[ \\mathbf q\^\{-1\} =  [cos\\theta ,  -sin\\theta (\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
 
-(译注：这里\\(q\^\{-1\}=q\^\{*\}\\)是因为q是单位四元数)
+(译注：这里\\(\\mathbf q\^\{-1\}=\\mathbf q\^\{*\}\\)是因为q是单位四元数)
 
 再代入\\(\\theta = 45\^\{\\circ \} \\)，得到：
 
-\\[ q\^\{-1\} =  [\\frac \{\\sqrt \{2\}\}\{2\},  -\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
+\\[ \\mathbf q\^\{-1\} =  [\\frac \{\\sqrt \{2\}\}\{2\},  -\\frac \{\\sqrt \{2\}\}\{2\}(\\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{i\} + \\frac \{\\sqrt \{2\}\}\{2\}\\mathbf \{k\})] \\]
 
 \\[ \\frac \{1\}\{2\}[\\sqrt \{2\}, -\\mathbf \{i\}-\\mathbf \{k\}] \\]
 
 
 现在，把前面算出来的qp再次拿出来：
 
-\\[ qp = [-1, \\sqrt \{2\}\\mathbf \{i\} + \\mathbf \{j\}] \\]
+\\[ \\mathbf q\\mathbf p = [-1, \\sqrt \{2\}\\mathbf \{i\} + \\mathbf \{j\}] \\]
 \\[ qpq\^\{-1\}  = [-1, \\sqrt \{2\}\\mathbf \{i\} + \\mathbf \{j\}]\\frac \{1\}\{2\}[\\sqrt \{2\}, -\\mathbf \{i\}-\\mathbf \{k\}] \\]
 \\[ = \\frac \{1\}\{2\}[-\\sqrt \{2\}-(\\sqrt \{2\}\\mathbf \{i\}+\\mathbf \{j\})\\cdot (-\\mathbf \{i\}-\\mathbf \{k\}), \\mathbf \{i\}+\\mathbf \{k\}+\\sqrt \{2\}(\\sqrt \{2\}\\mathbf \{i\}+\\mathbf \{j\})-\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}+\\mathbf \{k\}] \\]
 \\[ = \\frac \{1\}\{2\}[-\\sqrt \{2\}+\\sqrt \{2\},\\mathbf \{i\}+\\mathbf \{k\}+2\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}-\\mathbf \{i\}+\\sqrt \{2\}\\mathbf \{j\}+\\mathbf \{k\}] \\]
@@ -655,7 +655,7 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 这下是纯四元数了，并且它的范数是：
 
-\\[ |qpq\^\{-1\}| = \\sqrt \{1\^\{2\} + \\sqrt \{2\}\^\{2\} + 1\^\{2\} \} = \\sqrt \{4\} = 2 \\]
+\\[ |\\mathbf q\\mathbf p\\mathbf q\^\{-1\}| = \\sqrt \{1\^\{2\} + \\sqrt \{2\}\^\{2\} + 1\^\{2\} \} = \\sqrt \{4\} = 2 \\]
 
 这和原始的p的范数一致。
 
@@ -694,9 +694,9 @@ SLERP代表**S**pherical **L**inear Int**erp**olation。SLERP可以在2个朝向
 
 我们可以把这个基础公式，套用到2个用四元数表示的朝向的插值上。
 
-### 四元数的差
+### 四元数的分数差
 
-根据上面的公式的第一步，我们必须先计算\\( q\_\{1\}、 q\_\{2\}\\)的差。对于四元数来说，这等价于计算2个四元数的差（译注：不是角度差）：
+根据上面的公式的第一步，我们必须先计算\\( q\_\{1\}、 q\_\{2\}\\)的差。对于四元数来说，这等价于计算2个四元数的分数差（译注：不是角度差）：
 
 \\[ diff = \\mathbf q\_\{1\}\^\{-1\}\\mathbf q\_\{2\} \\]
 
@@ -704,7 +704,7 @@ SLERP代表**S**pherical **L**inear Int**erp**olation。SLERP可以在2个朝向
 
 ### 四元数的幂运算
 
-接下来的目标是干掉上面的角度差的分数部分，方法是计算四元数的t次幂(就是上面的那个插值参数t，区间是[0,1])。
+接下来的目标是干掉上面四元数分数差的分数部分，方法是计算四元数的t次幂(就是上面的那个插值参数t，区间是[0,1])。
 
 四元数的幂运算的一般化公式是：
 
