@@ -92,3 +92,5 @@ published: true
 [3] cos sin三角函数的泰勒展开公式的证明：
 
 [MacLaurin series of Trigonometric function](http://www.songho.ca/math/taylor/taylor_tri.html)
+
+[Quaternions, Interpolation and Animation](http://web.mit.edu/2.998/www/QuaternionReport1.pdf)
