@@ -8,6 +8,29 @@ published: true
 
 <!--more-->
 
+## Visual Studio的
+
+### lib include目录，继承的值丢失
+
+在C:\Users\%{用户名}\AppData\Local\Microsoft\MSBuild\v4.0里面有2个文件要检查一下:
+
+Microsoft.Cpp.x64.user.props
+
+Microsoft.Cpp.Win32.user.props
+
+32位和64位的全局项目配置，里面的<PropertyGroup>的<IncludePath>或者<LibraryPath>是不是空的，是空的话要去掉该行，否则就意味着父级配置的path是空的，所以就继承不到值了。
+
+### glew和glfw的动态链接/静态链接问题
+
+除了要在链接选项设置好lib文件名之外，还要在代码里面加以下代码，控制动态/静态链接：
+
+#define GLEW_STATIC
+
+#define GLFW_DLL
+
+否则会编译报错。
+
+
 
 ## Heap Corruption Deteched
 
