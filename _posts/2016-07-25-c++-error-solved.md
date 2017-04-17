@@ -30,7 +30,13 @@ Microsoft.Cpp.Win32.user.props
 
 否则会编译报错。
 
+### SDL_main链接错误
 
+mian函数必须带参数：
+
+int main(int argc, char *argv[])
+
+如果只写int main() 就会链接报错。
 
 ## Heap Corruption Deteched
 
