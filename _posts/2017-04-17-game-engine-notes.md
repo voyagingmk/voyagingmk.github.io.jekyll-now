@@ -33,7 +33,7 @@ published: true
 
 一大堆报错，处理了一两个小时，主要产生原理是vc和gcc的不一致性，以及一些平台相关代码问题。
 
-1. Point模板类，Vector模板继承Point，会出现一个便特化的问题，症状就是Vector的代码里调用父类成员x y z，gcc会找不到（vc没问题），原因暂时没完全搞懂，关键词是偏特化，gcc要求明确指出x y z是哪来的对象，也就是说要么写成Point<T>::x, 要么写成this->x。
+1. Point模板类，Vector模板继承Point，会出现一个偏特化的问题，症状就是Vector的代码里调用父类成员x y z，gcc会找不到（vc没问题），原因暂时没完全搞懂，关键词是偏特化，gcc要求明确指出x y z是哪来的对象，也就是说要么写成Point<T>::x, 要么写成this->x。
 
 2. 当class的构造函数的参数没有加const限定符，但用右值作为参数去创建类实例时，vc不会报错，而gcc报错了，加上const后可以解决。
 
