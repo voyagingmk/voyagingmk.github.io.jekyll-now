@@ -7,6 +7,8 @@ published: true
 
 # 引言
 
+（下文的讨论基于右手坐标系，以及矩阵左乘顺序。）
+
 我对视角矩阵的理解是这样子的，假设3维空间有一个观察者（摄像机），这个观察者必然有它的坐标位置、视角、焦点，根据这3个参数，可以建立一个正交化、规范化的坐标系（一个正交化、单位化的3x3矩阵），这个坐标系对应的矩阵就是Lookat矩阵。
 
 <!--more-->
@@ -31,23 +33,45 @@ published: true
 
 当eye、focal、up三个向量的值确定后，就可以构造Lookat矩阵了。
 
-(额外补充：focal向量一般是通过计算被观察位置center和观察者的位置eye的差值得到的，focal = center - eye)
 
 首先明确2点：一，Lookat矩阵是正交且规范化的；二，我们使用的是右手坐标系。
 
-这个Lookat矩阵，相当于是一个坐标系，那么可以设三个坐标轴的方向向量分别为\\(\\vec r\\)、\\(\\vec u\\)、\\(\\vec f\\)，分别的含义是，观察者坐标系的right、up、forward方向。
+这个Lookat矩阵，相当于是一个坐标系，那么可以设三个坐标轴的方向向量分别为\\(\\vec r\\)、\\(\\vec u\\)、\\(\\vec f\\)，分别的含义是，观察者坐标系的+x、+y、+z方向。
 
-\\(\\vec f\\)可以轻松得到：它的朝向是focal的反方向。为什么呢？很简单，focal是指从观察者位置到焦点位置的方向向量，又因为我们用的是右手坐标系，那么观察者坐标系的f轴朝向当然是focal的反方向了。
+### focal向量
 
-\\[\\vec f = - \\frac \{\\overrightarrow \{focal\} \}\{\|\\overrightarrow \{focal\}\|\} \\]
+focal向量一般是通过计算被观察位置center和观察者的位置eye的差值得到的，focal = center - eye，然后要单位化:
 
-接着是\\(\\vec r\\)。显然，\\(\\vec r\\)指的方向是，focal和up所构成的平面的垂线的正方向，即focal和up的叉积。
+
+\\[ \\overrightarrow \{focal\} = \\frac \{\\overrightarrow \{target\} - \\overrightarrow \{eye\} \}\{ |\\overrightarrow \{target\} - \\overrightarrow \{eye\}| \} \\]
+
+### f向量
+
+上面得到的focal向量此时是朝向屏幕里侧的，而我们需要的是右手坐标系下的f向量（+z），应该是朝向屏幕外侧，所以f要取focal的反方向：
+
+\\[\\vec f = - \{\\overrightarrow \{focal\} \} \\]
+
+### r向量
+
+接着是\\(\\vec r\\)。显然，\\(\\vec r\\)指的方向是focal和up的叉积。
 
 \\[\\vec r = \\frac \{\\overrightarrow \{focal\} \\times \\overrightarrow \{up\}\}\{\|\\overrightarrow \{focal\} \\times \\overrightarrow \{up\}\|\} \\]
 
-\\(\\vec r\\)、\\(\\vec f\\)都得到后，\\(\\vec u\\)就简单了，因为\\(\\vec r\\)、\\(\\vec f\\)已经规范化、正交化了的，那么\\(\\vec u\\)就是他们的叉积：
+这里用了叉积，叉积后得到的向量的方向，可以用一个小技巧识别：以叉积符号左边的向量当做"自己"的up向量（指向自己头顶），然后想象自己向叉积符号右边的向量靠近，靠近过程中，左手边方向就是结果向量的方向。
 
-\\[\\vec u = \\vec f \\times \\vec r \\]
+### u向量
+
+u不一定等于up，因为up和focal的夹角不一定是90度。
+
+
+\\(\\vec r\\)、\\( \\overrightarrow \{focal\} \\)都得到后，\\(\\vec u\\)的计算很简单，因为\\(\\vec r\\)、\\( \\overrightarrow \{focal\} \\)已经规范化、正交化了的，那么\\(\\vec u\\)就是他们的叉积：
+
+\\[\\vec u = \\vec r \\times  \\overrightarrow \{focal\} = \\vec r \\times (-\\vec f) = -\\vec r \\times  \\vec f = \\vec f \\times  \\vec r  \\]
+
+注意，这一步叉积的调用顺序很关键，别弄错了；而且这一步不需要单位化了，能节省计算。
+
+### 构造矩阵
+
 
 设Lookat矩阵为M，则M等于：
 
@@ -98,3 +122,22 @@ published: true
 {% assign matL2 =  "r\_\{x\},r\_\{y\},r\_\{z\},-(\\vec r\\cdot \\overrightarrow \{eye\}), u\_\{x\},u\_\{y\},u\_\{z\},-(\\vec u\\cdot \\overrightarrow \{eye\}), f\_\{x\},f\_\{y\},f\_\{z\},-(\\vec f\\cdot \\overrightarrow \{eye\}), 0,0,0,1" | split: ',' %}
 
 \\[ Lookat = {% include render_matrix_raw.html mat = matL2 row = 4 col = 4 %} \\]
+
+### 翻译成代码
+
+```c++
+
+static Matrix4x4 LookAt(const Vector3dF &eye, const Vector3dF &target, const Vector3dF &up) {
+    Vector3dF focal = (target - eye).Normalize();
+    Vector3dF r = (focal.Cross(up)).Normalize();
+    Vector3dF u = r.Cross(focal);
+    Vector3dF f = -focal;
+    return Matrix4x4{
+        r.x, r.y, r.z, -r.Dot(eye),
+        u.x, u.y, u.z, -u.Dot(eye),
+        f.x, f.y, f.z, -f.Dot(eye),
+        0,	 0,	  0,    1
+    };
+}
+
+```

@@ -42,7 +42,7 @@ pitch即x轴，pitch到90度时，yaw和roll转的是同一条轴。这和欧拉
 
 ```c++
     const float pitch = 1.0f, yaw = 2.0f, roll = 3.0f;
-    static QuaternionF orientation = {0.0, 0.0, 0.0, 1.0};
+    static QuaternionF orientation = {1.0, 0.0, 0.0, 0.0};
     QuaternionF rotX = QuaternionF::RotateX(pitch); // x
     QuaternionF rotY = QuaternionF::RotateY(yaw); // y
     QuaternionF rotZ = QuaternionF::RotateZ(roll); // z
