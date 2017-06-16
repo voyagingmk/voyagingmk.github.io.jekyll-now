@@ -344,7 +344,7 @@ Hamilton自己也发现i、j、k虚数可以被用来表达3个笛卡尔坐标�
 
 \\[ \\mathbf a = x\_\{a\}\\mathbf i + y\_\{a\}\\mathbf j + z\_\{a\}\\mathbf k\\]
 \\[ \\mathbf b = x\_\{b\}\\mathbf i + y\_\{b\}\\mathbf j + z\_\{b\}\\mathbf k\\]
-\\[ \\mathbf a\\cdot \\mathbf b = x\_\{a\}x\_\{b\}\\mathbf i\^\{2\}+y\_\{a\}y\_\{b\}\\mathbf j\^\{2\}+z\_\{a\}z\_\{b\}\\mathbf k\^\{2\} \\]
+\\[ \\mathbf a\\cdot \\mathbf b = x\_\{a\}x\_\{b\} + y\_\{a\}y\_\{b\} + z\_\{a\}z\_\{b\}  \\]
 \\[ \\mathbf a\\times \\mathbf b = (y\_\{a\}z\_\{b\}-y\_\{b\}z\_\{a\})\\mathbf i + (z\_\{a\}x\_\{b\} - z\_\{b\}x\_\{a\})\\mathbf j + (x\_\{a\}y\_\{b\} - x\_\{b\}y\_\{a\})\\mathbf k  \\]
 
 （译注：注意，第三条和第四条并不是四元数的点积和叉积，而是向量的点积和叉积）
