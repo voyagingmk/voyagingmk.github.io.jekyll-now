@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 渲染器开发笔记-1
+title: 渲染器开发笔记1-ECS框架实现
 tags: ['renderer']
 published: true
 ---
