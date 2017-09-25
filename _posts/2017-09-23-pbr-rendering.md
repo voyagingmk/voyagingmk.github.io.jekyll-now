@@ -152,7 +152,7 @@ k的公式要看情况做选择，例如对于方向光，有:
 
 \\[ k = \\frac \{ (\\alpha + 1)\^\{2\} \}\{ 8 \} \\]
 
-为了更加地近似模拟平面几何属性，可以用再应用一条公式（Smith's method）:
+为了更加地近似模拟平面几何属性，可以再应用一条公式（Smith's method）:
 
 \\[ G'(n,v,l,k) = G(n,v,k)G(n,l,k) \\]
 
@@ -181,3 +181,10 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float k)
     return ggx1 * ggx2;
 }
 ```
+
+
+## Cook-Torrance reflectance equation
+
+有了brdf函数后，之前的渲染方程就可以变成：
+
+\\[ L\_\{o\}(p, \omega \_\{o\}) = L\_\{e\}(p, \omega \_\{o\})  + \\int \_\{\Omega \} (k\_\{d\}\frac \{c\}\{\pi \} + k\_\{s\}\\frac \{ DFG \}\{ 4 (\omega \_\{o\} \\cdot \\mathbf n)(\omega \_\{i\} \\cdot \\mathbf n) \} ) L\_\{i\}(p, \omega \_\{i\}) |cos \theta \_\{i\}|d\omega \_\{i\} \\]
