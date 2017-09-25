@@ -52,7 +52,26 @@ halfway vector(简称h)等于光线方向矢量l加上视角方向矢量v并单�
 
 渲染方程的详细讨论已经写在[渲染基础理论的介绍](http://www.qiujiawei.com/rendering-equation/)一文。
 
-## cook-Torrance BRDF
+## 双向反射分布函数BRDF
 
 
+在[渲染基础理论的介绍](http://www.qiujiawei.com/rendering-equation/)一文里，没有详细讨论到的是brdf这个东西。简单地说，brdf是个控制系数，这个系数并不是常量，需要根据平面属性、光线属性计算得到，是个动态属性。基于PBR渲染，关键点就是选择合理的brdf函数。brdf函数将囊括上文提到的各个概念。
 
+brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
+
+\\[ f\_\{r\} = k\_\{d\}f\_\{lambert\} + k\_\{s\}f\_\{cook−torrance\} \\]
+
+ 其中：
+
+ \\[ f\_\{lambert\} = \frac \{c\}\{\pi \} \\]
+
+ 这里的c是指平面自身的颜色值，一般就是指采样纹理贴图出来的颜色。
+
+ 右边的镜面光部分才是最复杂的：
+
+ \\[ f\_\{cook−torrance\} = \\frac \{ DFG \}\{ 4 (\omega \_\{o\} \\cdot \\mathbf n)(\omega \_\{i\} \\cdot \\mathbf n) \} \\]
+
+
+ 这条公式怎么来的，改天再写一篇数学推导文。现在需要重点关注右边的分子部分：DFG。DFG其实是3个函数，每个函数算出一个scalar因子，3个因子得到后相乘。
+
+ - D， Normal Distribution Function。这个函数其实不是正态分布函数，而是法线分布函数。不要被normal这个单词搞懵了。在渲染一个mesh的一个fragment时，就是在渲染一个平面，这个平面又是由一堆更加小的**微平面**组成。这些微平面有自己的**微法线**，D函数就是用来近似算出究竟有多少微法线和h向量对齐。D函数的输入数据包括：平面法线、h向量、粗糙度r。
