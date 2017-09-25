@@ -103,9 +103,12 @@ float DistributionGGX(vec3 N, vec3 H, float a)
 
 ### F，Fresnel equation，菲涅尔方程
 
-对于真实的物理材质，光照向量、视角向量不同，平面的反射情况就会不同。F函数能算出不同角度时的反射光情况，也是用一个比值表示。
+对于真实的物理材质，光照向量、视角向量不同，平面的反射情况就会不同。F函数能算出不同角度时的反射光情况，也是用一个比值(也叫做平面的真实的反射率）表示。这个比值能反应出有多少百分比的光被反射和被吸收(记住反射和吸收是互斥关系)。
+
 
 #### Fresnel-Schlick approximation
+
+\\[ F\_\{Schlick\}(n, v, F\_\{base\}) = F\_\{base\} + (1 - F\_\{base\})( 1- (n\\cdot v))\^\{2\} \\]
 
 ### G，Geometry function，几何属性函数
 
