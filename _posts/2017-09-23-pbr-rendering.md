@@ -82,7 +82,24 @@ brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
 
 \\[ D(n, h, \alpha ) = \\frac \{ \alpha \^\{2\} \} \{ \\pi ( (n\\cdot h)\^\{2\}(\\alpha \^\{2\} - 1) + 1 )\^\{2\} \} \\]
 
-输入参数：平面法线、h向量、粗糙度\\( \alpha \\)。
+输入参数：平面法线n、h向量、粗糙度\\( \alpha \\)。
+
+shader函数：
+
+```c
+float DistributionGGX(vec3 N, vec3 H, float a)
+{
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float nom    = a2;
+    float denom  = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom        = PI * denom * denom;
+	
+    return nom / denom;
+}
+```
 
 ### F，Fresnel equation，菲涅尔方程
 
@@ -92,6 +109,44 @@ brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
 
 ### G，Geometry function，几何属性函数
 
-微平面的起伏不定，导致微平面之间产生了自阴影（self-shadowing）。G函数模拟计算的就是这个事情. 粗糙度越高，自阴影越多，反射出去的光就越少。
+微平面的起伏不定，导致微平面之间产生了自阴影（self-shadowing）。G函数模拟计算的就是这个事情. 粗糙度越高，自阴影越多，反射出去的光就越少。G函数输出的是一个比值，0.0表示百分百自阴影（全黑掉），1.0表示没有任何自阴影（全白）。
 
 #### Smith's Schlick-GGX
+
+\\[ G(n, v, k) = \\frac \{ n\\cdot v \}\{ (n\\cdot v)(1 - k) + k \} \\]
+
+输入参数：平面法线n、视角向量v、粗糙度\\( \alpha \\)的重新映射k。
+
+k的公式要看情况做选择，例如对于方向光，有:
+
+\\[ k = \\frac \{ (\\alpha + 1)\^\{2\} \}\{ 8 \} \\]
+
+为了更加地近似模拟平面几何属性，可以用再应用一条公式（Smith's method）:
+
+\\[ G'(n,v,l,k) = G(n,v,k)G(n,l,k) \\]
+
+Smith's method同时处理掉了微平面的高低起伏导致的对光线、对视角的障碍问题，如下图。图中左边，视角向量（红色）的路线上有一个微平面突起，导致接收不到左边的光线的反射，这种情况叫**几何障碍（geometry obstruction）**；图中右边，光线到达微平面后又反射到另一个微平面上（能量衰减了），没有直接反射到眼睛，这种情况叫**几何遮蔽（geometry shadowing）**。
+
+![4.png](../images/2017.9/4.png)
+
+shader函数如下：
+
+```c
+float GeometrySchlickGGX(float NdotV, float k)
+{
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return nom / denom;
+}
+  
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float k)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx1 = GeometrySchlickGGX(NdotV, k);
+    float ggx2 = GeometrySchlickGGX(NdotL, k);
+	
+    return ggx1 * ggx2;
+}
+```
