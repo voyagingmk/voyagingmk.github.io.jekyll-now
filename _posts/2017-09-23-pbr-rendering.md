@@ -84,7 +84,7 @@ brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
 
 输入参数：平面法线n、h向量、粗糙度\\( \alpha \\)。
 
-shader函数：
+shader：
 
 ```c
 float DistributionGGX(vec3 N, vec3 H, float a)
@@ -108,7 +108,35 @@ float DistributionGGX(vec3 N, vec3 H, float a)
 
 #### Fresnel-Schlick approximation
 
-\\[ F\_\{Schlick\}(n, v, F\_\{base\}) = F\_\{base\} + (1 - F\_\{base\})( 1- (n\\cdot v))\^\{2\} \\]
+\\[ F\_\{Schlick\}(n, v, F\_\{0\}) = F\_\{0\} + (1 - F\_\{0\})( 1- (n\\cdot v))\^\{5\} \\]
+
+
+\\( F\_\{0\} \\)就是垂直观察平面时的**基本反射率**，一般要用一个vec3表示。注意，这条公式其实只适用于绝缘体（dielectric），对于金属/导体（metal/conductor）是不适用的。这时就有了些取巧的做法。
+
+一是先预计算出各种常见材质的基本反射率，汇总成一个表，然后需要的时候查表即可。
+
+有了表之后就会发现，对于绝缘体，基本反射率基本都在0.17这个水平线以下，且rgb分量一致；而对于导体，基本反射率都在0.5到1.0之间，且rgb分量值不一致（正是这个不一致性，使得不同的金属有显著的颜色差异，如金、铜、银颜色各异）。
+
+综上,\\( F\_\{0\} \\)的求取实际上可以做得非常简化，用shader代码可以看出：
+
+```c
+vec3 F0 = vec3(0.04); 
+F0 = mix(F0, surfaceColor.rgb, metalness); 
+```
+
+第一行是绝缘体基本反射率，0.04是统计了大部分绝缘体的基本反射率并取平均值得到。
+
+第二行使用了一个新的参数叫金属性metalness，这是个十分人为的控制变量，范围为0.0到1.0；surfaceColor就是反射颜色值，例如黄金反射颜色为(1.00, 0.71, 0.29)。然后就可以使用mix函数和metalness做插值，metalness越接近0，那么就越接近绝缘体，metalness越接近1，那么就越接近surfaceColor。
+
+有了\\( F\_\{0\} \\)后，就可以代入到菲涅尔方程做运算了：
+
+```c
+
+vec3 fresnelSchlick(vec3 n, vec3 v, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - dot(n, v), 5.0);
+}
+```
 
 ### G，Geometry function，几何属性函数
 
@@ -132,7 +160,7 @@ Smith's method同时处理掉了微平面的高低起伏导致的对光线、对
 
 ![4.png](../images/2017.9/4.png)
 
-shader函数如下：
+shader：
 
 ```c
 float GeometrySchlickGGX(float NdotV, float k)
