@@ -59,5 +59,6 @@ G就是我们要求的normal matrix，相应的G变换的shader代码就是：
 
 注意，这里先对mat4的M做了个mat3的操作。这是为了去掉M变换的translation信息（因为normal和position不同，它是个朝向向量）。
 
+## 参考资料 
 
-<!--more-->
+http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
