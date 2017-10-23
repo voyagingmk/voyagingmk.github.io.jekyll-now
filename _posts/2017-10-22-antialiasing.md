@@ -15,6 +15,8 @@ published: true
 
 <!--more-->
 
+值得一提的是，SMAA的前身是Jimenez's MLAA，也是同一个团队做出来的，SMAA可以认为是在质量和性能两方面都超越Jimenez's MLAA的一个进化版。所以可以先阅读Jimenez's MLAA的论文再来学习SMAA。
+
 ## SMAA
 
 ### 边缘检测
@@ -95,3 +97,10 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
 
     return edges;
 ```
+
+
+# 资料
+
+http://www.iryoku.com/smaa/
+
+http://www.iryoku.com/mlaa/
