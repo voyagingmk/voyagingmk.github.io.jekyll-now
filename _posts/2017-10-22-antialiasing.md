@@ -21,6 +21,32 @@ published: true
 
 锯齿问题体现在图像上几何物体的边缘处，也就是说，如果能准确地post process出图像上哪些地方是边，哪些地方不是。检测过少，锯齿边就会残留；检测过多，图像就会糊。为来更好地提升AA质量，SMAA边缘检测算法的选取非常关键。
 
-相比基于normal map、depth map，基于颜色的边缘检测尤佳。一是因为，颜色信息容易获得，而深度图／法线图相对难获得，例如对于图像处理领取，用户提供的只有照片而已；二是因为它还有一个优点：对于做了shading后才产生的锯齿，也一样能处理（例如有梯度的tone shading）。
+相比基于normal map、depth map，基于颜色的边缘检测尤佳。一是因为，颜色信息容易获得，而深度图／法线图相对难获得，例如对于图像处理领取，用户提供的只有照片而已；二是因为它还有一个优点：对于做了shading后才产生的锯齿，也一样能处理（例如有梯度的toon shading）。
 
+SMAA首推的是基于Luma（亮度）的边缘检测算法。
  
+1. vertex shader，根据纹理坐标输出3组offset：
+
+```c
+    vec4 SMAA_RT_METRICS = vec4(1.0 / imgSize.x, 1.0 / imgSize.y, imgSize.x, imgSize.y);
+    Offsets[0] = fma(SMAA_RT_METRICS.xyxy, vec4(-1.0, 0.0, 0.0, -1.0), texCoord.xyxy); // Left / Top Edge
+    Offsets[1] = fma(SMAA_RT_METRICS.xyxy, vec4( 1.0, 0.0, 0.0,  1.0), texCoord.xyxy); // Right / Bottom Edge
+    Offsets[2] = fma(SMAA_RT_METRICS.xyxy, vec4(-2.0, 0.0, 0.0, -2.0), texCoord.xyxy); // Leftx2 / Topx2 Edge
+```
+
+
+![smaa1.png](../images/2017.10/smaa1.png)
+
+2. fragment shader，先求出fragment的luma值：
+
+```c
+    // Calculate lumas:
+    float3 weights = float3(0.2126, 0.7152, 0.0722);
+    float L = dot(texture(colorTex, texcoord).rgb, weights);
+```
+
+（RGB->luma的公式来自wiki https://en.wikipedia.org/wiki/Relative_luminance  ）
+
+
+    float Lleft = dot(texture(colorTex, offsets[0].xy).rgb, weights);
+    float Ltop  = dot(texture(colorTex, offsets[0].zw).rgb, weights);
