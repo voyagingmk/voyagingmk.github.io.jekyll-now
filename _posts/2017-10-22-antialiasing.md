@@ -5,7 +5,7 @@ tags: ['computer graphics']
 published: true
 ---
 
-## PPAA
+# PPAA
 
 所谓PPAA，是基于后处理的抗锯齿技术。在PPAA之前，主流AA技术的是MSAA（MultiSamples AA）、SSAA（SuperSamples AA），SSAA是AA中最暴力也是最完美的解决方案，而MSAA是与硬件紧密结合的built-in AA。对于forward rendering来说，MSAA几乎是唯一的选择。
 
@@ -17,9 +17,9 @@ published: true
 
 值得一提的是，SMAA的前身是Jimenez's MLAA，也是同一个团队做出来的，SMAA可以认为是在质量和性能两方面都超越Jimenez's MLAA的一个进化版。所以可以先阅读Jimenez's MLAA的论文再来学习SMAA。
 
-## SMAA
+# SMAA
 
-### 边缘检测
+## 边缘检测 Edge Detection
 
 锯齿问题体现在图像上几何物体的边缘处，也就是说，如果能准确地post process出图像上哪些地方是边，哪些地方不是。检测过少，锯齿边就会残留；检测过多，图像就会糊。为来更好地提升AA质量，SMAA边缘检测算法的选取非常关键。
 
@@ -98,6 +98,15 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
     return edges;
 ```
 
+## 权重混合计算 Blending Weight Calculation
+
+### 模式处理
+
+SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的"边角"和"锯齿角"并不能区分（都认为是交叉角crossing edges），导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。
+
+因此，SMAA判断锯齿角需要计算2个像素长度的范围，也从而识别出真的边角。
+
+MLAA的
 
 # 资料
 
