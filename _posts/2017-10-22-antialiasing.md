@@ -116,6 +116,18 @@ SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体
 
 MLAA的
 
+
+# 最终效果
+
+原始图像:
+
+![alias.png](../images/2017.10/alias.png)
+
+经过SMAA 1x过滤后:
+
+![antialias.png](../images/2017.10/antialias.png)
+
+
 # 资料
 
 http://www.iryoku.com/smaa/
