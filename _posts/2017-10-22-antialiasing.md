@@ -19,6 +19,12 @@ published: true
 
 # SMAA
 
+总共3个pass：
+
+- Pass 1，边缘检测原始图像得到edgesTex
+- Pass 2，用edgesTex得到weightTex
+- Pass 3，用weightTex混合原始图像，得到抗锯齿图像
+
 ## 边缘检测 Edge Detection
 
 锯齿问题体现在图像上几何物体的边缘处，也就是说，如果能准确地post process出图像上哪些地方是边，哪些地方不是。检测过少，锯齿边就会残留；检测过多，图像就会糊。为来更好地提升AA质量，SMAA边缘检测算法的选取非常关键。
@@ -99,6 +105,8 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
 ```
 
 ## 权重混合计算 Blending Weight Calculation
+
+最复杂的一个pass
 
 ### 模式处理
 
