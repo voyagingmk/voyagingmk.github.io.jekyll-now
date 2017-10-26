@@ -264,6 +264,20 @@ deltaLeft，就是根据x y方向2组bool值，算出一个分类值d，d的取�
 
 ![e2.png](../images/2017.10/e2.png)
 
+求出d后， val = 127 * d，把d映射到0／127/254，然后就可以填入到searchTex了，相当于是在生成一张三值的灰度值。
+
+![searchTex.png](../images/2017.10/searchTex.png)
+
+观察searchTex发现，这图有很大部分是全黑的。略显多余，于是作者补充了一个裁剪操作：
+
+```python
+image = image.crop([0, 17, 64, 33])
+image = image.transpose(Image.FLIP_TOP_BOTTOM)
+```
+把上面的17行黑色区域都裁掉，searchTex就变成了64x16的大小，符合2的幂次方，更迷你更优雅。第二行代码做了个上下翻转，用意不明。最终的searchTex如下:
+
+![searchTex2.png](../images/2017.10/searchTex2.png)
+
 
 ### search算法
 
