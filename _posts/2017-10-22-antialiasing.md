@@ -156,6 +156,114 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
 
 这里增加了一个y，y和x是类似的，需要赋予一个不等于0.5的值，但需要附加一个限制是y = 0.5x（可以假设y!=0.5x去推导上面的公式，会得到无法一一对应的情况）。这样拓展后，就可以用2个常量值x、y，对\\(b\_\{1\}、b\_\{2\}、b\_\{3\}、b\_\{4\}\\)所有组合编码出\\(2\^\{4\} \\)共16种取值情况。也就是依然可以用一个f值，反向找出\\(b\_\{1\}、b\_\{2\}、b\_\{3\}、b\_\{4\}\\)！
 
+这个映射关系可以打表到代码里减少shader计算，但这样还不够，SMAA做啦进一步的优化，减少了对这个映射表的访问。作者写了一个脚本来生成一个叫searchTex的东西。先讲一下生成步骤再说用法。
+
+首先，确定了刚才提到的常量x，y的值，x等于0.25，y等于0.5x=0.125。然后枚举16种情况，调用bilinear函数，生成映射表:
+
+```python
+
+# Interpolates between two values:
+def lerp(v0, v1, p):
+    return v0 + (v1 - v0) * p
+
+# Calculates the bilinear fetch for a certain edge combination:
+def bilinear(e):
+    # e[0]       e[1]
+    #
+    #          x <-------- Sample position:    (-0.25,-0.125)
+    # e[2]       e[3] <--- Current pixel [3]:  (  0.0, 0.0  )
+    a = lerp(e[0], e[1], 1.0 - 0.25)
+    b = lerp(e[2], e[3], 1.0 - 0.25)
+    return lerp(a, b, 1.0 - 0.125)
+
+# This dict returns which edges are active for a certain bilinear fetch:
+# (it's the reverse lookup of the bilinear function)
+edge = {
+    bilinear([0, 0, 0, 0]): [0, 0, 0, 0], # 0.0
+    bilinear([0, 0, 0, 1]): [0, 0, 0, 1], # 0.65625
+    bilinear([0, 0, 1, 0]): [0, 0, 1, 0], # 0.21875
+    bilinear([0, 0, 1, 1]): [0, 0, 1, 1], # 0.875
+
+    bilinear([0, 1, 0, 0]): [0, 1, 0, 0], # 0.09375
+    bilinear([0, 1, 0, 1]): [0, 1, 0, 1], # 0.75
+    bilinear([0, 1, 1, 0]): [0, 1, 1, 0], # 0.3125
+    bilinear([0, 1, 1, 1]): [0, 1, 1, 1], # 0.96875
+
+    bilinear([1, 0, 0, 0]): [1, 0, 0, 0], # 0.03125
+    bilinear([1, 0, 0, 1]): [1, 0, 0, 1], # 0.6875
+    bilinear([1, 0, 1, 0]): [1, 0, 1, 0], # 0.25
+    bilinear([1, 0, 1, 1]): [1, 0, 1, 1], # 0.90625
+
+    bilinear([1, 1, 0, 0]): [1, 1, 0, 0], # 0.125
+    bilinear([1, 1, 0, 1]): [1, 1, 0, 1], # 0.78125
+    bilinear([1, 1, 1, 0]): [1, 1, 1, 0], # 0.34375
+    bilinear([1, 1, 1, 1]): [1, 1, 1, 1], # 1.0
+}
+
+```
+
+然后观察16个bilinear值，发现它们有最大公约数0.03125，于是，可以设计一个大小为33 x 33的数组（这是因为33 = 1 / 0.03125 + 1），又因为搜索的是line，需要分左右（也只有左右2个方向），所以数组要乘2，变成66 x 33。
+
+然后开始枚举所有pattern：
+
+```python
+# Calculate delta distances to the left:
+image = Image.new("RGB", (66, 33))
+for x in range(33):
+    for y in range(33):
+        texcoord = 0.03125 * x, 0.03125 * y
+        if texcoord[0] in edge and texcoord[1] in edge:
+            edges = edge[texcoord[0]], edge[texcoord[1]]
+            val = 127 * deltaLeft(*edges) # Maximize dynamic range to help compression
+            image.putpixel((x, y), (val, val, val))
+            #debug("left: ", texcoord, val, *edges)
+
+# Calculate delta distances to the right:
+for x in range(33):
+    for y in range(33):
+        texcoord = 0.03125 * x, 0.03125 * y
+        if texcoord[0] in edge and texcoord[1] in edge:
+            edges = edge[texcoord[0]], edge[texcoord[1]]
+            val = 127 * deltaRight(*edges) # Maximize dynamic range to help compression
+            image.putpixel((33 + x, y), (val, val, val))
+            #debug("right: ", texcoord, val, *edges)
+```
+
+其中的if texcoord[0] in edge and texcoord[1] in edge意思是当前这2个纹理坐标x y，都刚好是一个f，f就对应了某四个bool值，2个f就组成一个pattern。edges = edge[texcoord[0]], edge[texcoord[1]]，分别解码出了x y方向的4个bool值。接着是另外两个函数:
+
+```python
+# Delta distance to add in the last step of searches to the left:
+def deltaLeft(left, top):
+    d = 0
+    # If there is an edge, continue:
+    if top[3] == 1:
+        d += 1
+    # If we previously found an edge, there is another edge and no crossing
+    # edges, continue:
+    if d == 1 and top[2] == 1 and left[1] != 1 and left[3] != 1:
+        d += 1
+    return d
+# Delta distance to add in the last step of searches to the right:
+def deltaRight(left, top):
+    d = 0
+    # If there is an edge, and no crossing edges, continue:
+    if top[3] == 1 and left[1] != 1 and left[3] != 1:
+        d += 1
+    # If we previously found an edge, there is another edge and no crossing
+    # edges, continue:
+    if d == 1 and top[2] == 1 and left[0] != 1 and left[2] != 1:
+        d += 1
+    return d
+```
+
+deltaLeft，就是根据x y方向2组bool值，算出一个分类值d，d的取值范围是0/1/2。top[3]是指当前像素在y方向上的bool值，如果为1，就是有边，那么d = 1，再如果top[2]也有边，且x方向没有边(没有交叉角)，那么d = 2.deltaRight过程类似。
+
+以下图为例，上面的是top，下面的是left，标绿色／红色的是边，那么经过deltaLeft运算后，下面的pattern会得到d=1(又交叉角)。
+
+![e1.png](../images/2017.10/e1.png)
+
+![e2.png](../images/2017.10/e2.png)
+
 
 ### search算法
 
