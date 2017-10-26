@@ -21,11 +21,11 @@ published: true
 
 总共3个pass：
 
-- Pass 1，边缘检测原始图像得到edgesTex
-- Pass 2，用edgesTex得到weightTex
+- Pass 1，算edgeTex
+- Pass 2，用edgeTex算weightTex
 - Pass 3，用weightTex混合原始图像，得到抗锯齿图像
 
-## 边缘检测 Edge Detection
+## 边缘纹理的计算 Edge Detection (edgeTex)
 
 锯齿问题体现在图像上几何物体的边缘处，也就是说，如果能准确地post process出图像上哪些地方是边，哪些地方不是。检测过少，锯齿边就会残留；检测过多，图像就会糊。为来更好地提升AA质量，SMAA边缘检测算法的选取非常关键。
 
@@ -104,17 +104,39 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
     return edges;
 ```
 
-## 权重混合计算 Blending Weight Calculation
+## 权重纹理的计算 Blending Weight Calculation (weightTex)
 
-最复杂的一个pass
+最复杂的一个pass，需要分成多个部分讲解。
 
-### 模式处理
+### areaTex的生成
+
+### searchTex的生成
+
+### search算法
 
 SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的"边角"和"锯齿角"并不能区分（都认为是交叉角crossing edges），导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。
 
 因此，SMAA判断锯齿角需要计算2个像素长度的范围，也从而识别出真的边角。
 
 (待续)
+
+## 用weightTex混合原图像
+
+# 总结
+
+SMAA的优点：
+
+- 强配置性，可以根据需要决定使用SMAA 1x/SMAA t2x/SMAA 4x
+- SMAA 4x的性能和质量足以抗衡SSAA
+- 支持defer框架
+
+SMAA的缺点：
+
+- pass 2的逻辑太复杂了，仅读论文是看不懂代码的。只能边看代码边读论文，结合地去理解。
+- 需要预生成areaTex、searchTex，定制修改SMAA比较复杂
+
+
+本文仅介绍SMAA 1x的技术原理，至于SMAA t2x和SMAA 4x需要用到temporal reprojection和supersampliing，就是更进一步的话题了。
 
 # 最终效果
 
