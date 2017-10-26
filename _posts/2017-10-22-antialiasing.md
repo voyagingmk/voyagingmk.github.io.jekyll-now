@@ -256,7 +256,7 @@ def deltaRight(left, top):
     return d
 ```
 
-deltaLeft，就是根据x y方向2组bool值，算出一个分类值d，d的取值范围是0/1/2。top[3]是指当前像素在y方向上的bool值，如果为1，就是有边，那么d = 1，再如果top[2]也有边，且x方向没有边(没有交叉角)，那么d = 2.deltaRight过程类似。
+deltaLeft，就是根据x y方向2组bool值，算出一个长度补充值d，d的取值范围是0/1/2。top[3]是指当前像素在y方向上的bool值，如果为0，就是没边，d = 0；如果为1，就是有边，那么d = 1；再如果top[2]也有边，且x方向没有边(没有交叉角)，那么d = 2。deltaRight过程类似。
 
 以下图为例，上面的是top，下面的是left，标绿色／红色的是边，那么经过deltaLeft运算后，下面的pattern会得到d=1(又交叉角)。
 
