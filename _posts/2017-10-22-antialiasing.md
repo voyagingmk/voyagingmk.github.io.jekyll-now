@@ -108,9 +108,7 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
 
 最复杂的一个pass，需要分成多个部分讲解。
 
-### areaTex
-
-### searchTex
+### 预生成searchTex
 
 根据当前像素坐标，搜索当前这个像素对应的边的2个端点，求出2个距离值\\(d\_\{1\}、d\_\{2\}\\)，是实现模式分类的关键。
 
@@ -277,6 +275,14 @@ image = image.transpose(Image.FLIP_TOP_BOTTOM)
 把上面的17行黑色区域都裁掉，searchTex就变成了64x16的大小，符合2的幂次方，更迷你更优雅。第二行代码做了个上下翻转，用意不明。最终的searchTex如下:
 
 ![searchTex2.png](../images/2017.10/searchTex2.png)
+
+searchTex会用在横向和纵向的搜索中。
+
+### 预生成areaTex
+
+areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步骤比searchTex更复杂，作者更是用了多线程来做。为了破解areaTex的魔法原理，需要慢慢剖析AreaTex.py。尽管AreaTex.py已经有不少注释，但还是很难理解。
+
+
 
 
 ### search算法
