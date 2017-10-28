@@ -286,7 +286,7 @@ areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步
 
 ![areaTex.png](../images/2017.10/areaTex.png)
 
-它分左右两列，左边一列七个大格（黄色框代表第一个大格），每个大格包含16个pattern的area纹理，右边一列类似，但只有五个大格（蓝色框）。有意思的是黄框大格是有镂空的，理应可以放5*5=25个小格，但只放了16个，所以有个十字架的黑色区域。因为areaTex有4个维度：ortho（左列）／diag（右列）、大格offset值、纹理坐标x、纹理坐标y，所以areaTex是一个4D的纹理。
+它分左右两列，左边一列七个大格（黄色框代表第一个大格），每个大格包含16个pattern的area纹理，右边一列类似，但只有五个大格（蓝色框）。有意思的是黄框大格是有镂空的，理应可以放5*5=25个小格，但只放了16个，所以有个十字架的黑色区域。因为areaTex有4个维度： ortho还是diag、哪一个大格、哪一个小格、纹理坐标，所以areaTex是一个4D的纹理。
 
 标记下16个pattern在大格里的位置：
 
@@ -348,15 +348,15 @@ SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体
 SMAA的优点：
 
 - 强配置性，可以根据需要决定使用SMAA 1x/SMAA t2x/SMAA 4x
-- SMAA 4x的性能和质量足以抗衡SSAA
+- SMAA 4x的性能和质量足以抗衡SSAA，低配的SMAA 1x对低端机也足够用了
 - 支持defer框架
 
 SMAA的缺点：
 
-- pass 2的逻辑太复杂了，仅读论文是看不懂代码的。只能边看代码边读论文，结合地去理解。
-- 需要预生成areaTex、searchTex，定制修改SMAA比较复杂
+- 流程太复杂，代码各种trick，仅读论文是看不懂代码的。只能边看代码边读论文，结合地去理解。
+- 需要预生成areaTex、searchTex，维护shader之外还得维护2个py脚本，定制修改SMAA比较复杂。
 
-其实我说的缺点比较naive，对大佬来说这套SMAA可能并不复杂。
+我说的缺点可能比较naive，说不定对大佬来说这套SMAA并不复杂。
 
 本文仅介绍SMAA 1x的技术原理，至于SMAA t2x和SMAA 4x需要用到temporal reprojection和supersampliing，就是更进一步的话题了。
 
