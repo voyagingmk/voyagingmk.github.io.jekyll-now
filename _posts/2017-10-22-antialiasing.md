@@ -292,6 +292,7 @@ areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步
 
 ![areaTex2.png](../images/2017.10/areaTex2.png)
 
+值得一提的是，对于SMAA 1x，只会用到第一排这2个大格。
 
 首先从这个函数入手：
 
