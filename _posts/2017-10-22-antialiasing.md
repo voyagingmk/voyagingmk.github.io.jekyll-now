@@ -282,8 +282,56 @@ searchTex会用在横向和纵向的搜索中。
 
 areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步骤比searchTex更复杂，作者更是用了多线程来做。为了破解areaTex的魔法原理，需要慢慢剖析AreaTex.py。尽管AreaTex.py已经有不少注释，但还是很难理解。
 
+先来看areaTex长啥样：
+
+![areaTex.png](../images/2017.10/areaTex.png)
+
+它分左右两列，左边一列七个大格（黄色框代表第一个大格），每个大格包含16个pattern的area纹理，右边一列类似，但只有五个大格（蓝色框）。有意思的是黄框大格是有镂空的，理应可以放5*5=25个小格，但只放了16个，所以有个十字架的黑色区域。因为areaTex有4个维度：ortho（左列）／diag（右列）、大格offset值、纹理坐标x、纹理坐标y，所以areaTex是一个4D的纹理。
+
+标记下16个pattern在大格里的位置：
+
+![areaTex2.png](../images/2017.10/areaTex2.png)
 
 
+首先从这个函数入手：
+
+```python
+
+# Calculates the area under the line p1->p2, for the pixel x..x+1:
+def area(p1, p2, x):
+    print('p1 ', p1, p2, x)
+    d = p2[0] - p1[0], p2[1] - p1[1]
+    x1 = float(x)
+    x2 = x + 1.0
+    y1 = p1[1] + d[1] * (x1 - p1[0]) / d[0]
+    y2 = p1[1] + d[1] * (x2 - p1[0]) / d[0]
+    print('y1', y1, 'y2', y2)
+    inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0])
+    print('inside', inside)
+    if inside:
+        istrapezoid = (copysign(1.0, y1) == copysign(1.0, y2) or 
+                        abs(y1) < 1e-4 or abs(y2) < 1e-4)
+        print('istrapezoid', istrapezoid)               
+        if istrapezoid:
+            a = (y1 + y2) / 2.0
+            if a < 0.0:
+                return abs(a), 0.0
+            else:
+                return 0.0, abs(a)
+        else: # Then, we got two triangles:
+            x = -p1[1] * d[0] / d[1] + p1[0]
+            a1 = y1 *        modf(x)[0]  / 2.0 if x > p1[0] else 0.0
+            a2 = y2 * (1.0 - modf(x)[0]) / 2.0 if x < p2[0] else 0.0
+            print('a1', a1, 'a2', a2)
+            print('x', x, 'modf(x)[0]', modf(x)[0])
+            a = a1 if abs(a1) > abs(a2) else -a2
+            if a < 0.0:
+                return abs(a1), abs(a2)
+            else:
+                return abs(a2), abs(a1)
+    else:
+        return 0.0, 0.0
+```
 
 ### search算法
 
