@@ -329,32 +329,7 @@ def areaortho(pattern, left, right, offset):
 
     # Calculates the area under the line p1->p2, for the pixel x..x+1:
     def area(p1, p2, x):
-        d = p2[0] - p1[0], p2[1] - p1[1]
-        x1 = float(x)
-        x2 = x + 1.0
-        y1 = p1[1] + d[1] * (x1 - p1[0]) / d[0]
-        y2 = p1[1] + d[1] * (x2 - p1[0]) / d[0]
-        inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0])
-        if inside:
-            istrapezoid = (copysign(1.0, y1) == copysign(1.0, y2) or 
-                           abs(y1) < 1e-4 or abs(y2) < 1e-4)
-            if istrapezoid:
-                a = (y1 + y2) / 2.0
-                if a < 0.0:
-                    return abs(a), 0.0
-                else:
-                    return 0.0, abs(a)
-            else: # Then, we got two triangles:
-                x = -p1[1] * d[0] / d[1] + p1[0]
-                a1 = y1 *        modf(x)[0]  / 2.0 if x > p1[0] else 0.0
-                a2 = y2 * (1.0 - modf(x)[0]) / 2.0 if x < p2[0] else 0.0
-                a = a1 if abs(a1) > abs(a2) else -a2
-                if a < 0.0:
-                    return abs(a1), abs(a2)
-                else:
-                    return abs(a2), abs(a1)
-        else:
-            return 0.0, 0.0
+        ......
 
     # o1           |
     #      .-------´
@@ -511,12 +486,51 @@ def areaortho(pattern, left, right, offset):
 
 // 因为SMAA 1x的offset为0，所以 o1 = 0.5， o2 = 0.5 - 1.0 = -0.5，代表o1当前像素的上边缘距离中心0.5个像素距离，o2是-0.5距离。
 
-- **一型pattern**。对于pattern 0，左右都没有crossing edge，是完美的直线，不需要抗锯齿，所以返回了2个0；
+- **一型pattern：1**。对于pattern 0，左右都没有crossing edge，是完美的直线，不需要抗锯齿，所以返回了两个0；
 
-- **L型pattern**。对于pattern 1，先做了一个判断if left <= right，这是为了收敛到pattern 0，当left比right小，且是这个L型pattern，那么当前像素才需要做混合，也就需要计算面积。注释也写着只对L型pattern的crossing edge一侧做计算。pattern 2、4、8，就是pattern 1的3种镜像情况了，同理。
+- **L型pattern：1、2、4、8**。对于pattern 1，先做了一个判断if left <= right，这是为了收敛到pattern 0，当left比right小，且是这个L型pattern，那么当前像素才需要做混合，也就需要计算面积。注释也写着只对L型pattern的crossing edge一侧做计算。pattern 2、4、8，就是pattern 1的3种镜像情况了，同理。
 
+- **和一型pattern输出一样的pattern：5、10、15**。观察这几个pattern可以发现有上下对称性，等于2个L叠加，互相抵消掉了。返回两个0.
 
+- **U型pattern：3、12**。对于3，就是1、2的叠加，同时做了1和2的面积计算，再smooth，再混合；同理，12就是4、8的叠加了。
 
+- **Z型pattern：6、9**。对于SMAA 1x，即offset=0，Z型pattern 6等同于h型pattern 7，Z型pattern 9等同于h型pattern 13。
+
+- **h型pattern：7、11、13、14**。相当直白的area函数调用。
+
+剖析完这16个pattern后，就差看area函数是怎么回事了:
+
+```python
+# Calculates the area under the line p1->p2, for the pixel x..x+1:
+def area(p1, p2, x):
+    d = p2[0] - p1[0], p2[1] - p1[1]
+    x1 = float(x)
+    x2 = x + 1.0
+    y1 = p1[1] + d[1] * (x1 - p1[0]) / d[0]
+    y2 = p1[1] + d[1] * (x2 - p1[0]) / d[0]
+    inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0])
+    if inside:
+        istrapezoid = (copysign(1.0, y1) == copysign(1.0, y2) or 
+                        abs(y1) < 1e-4 or abs(y2) < 1e-4)
+        if istrapezoid:
+            a = (y1 + y2) / 2.0
+            if a < 0.0:
+                return abs(a), 0.0
+            else:
+                return 0.0, abs(a)
+        else: # Then, we got two triangles:
+            x = -p1[1] * d[0] / d[1] + p1[0]
+            a1 = y1 *        modf(x)[0]  / 2.0 if x > p1[0] else 0.0
+            a2 = y2 * (1.0 - modf(x)[0]) / 2.0 if x < p2[0] else 0.0
+            a = a1 if abs(a1) > abs(a2) else -a2
+            if a < 0.0:
+                return abs(a1), abs(a2)
+            else:
+                return abs(a2), abs(a1)
+    else:
+        return 0.0, 0.0
+```
+函数说明写着area函数算的是p1到p2这条线段下，x到x+1范围内的面积（一个像素宽度），x参数其实就是等于left，因为16个pattern都是传入了left。所以area的任务就是要算出p1-p2把[left,left+1]这个像素切开了多大面积。
 
 ### search算法
 
