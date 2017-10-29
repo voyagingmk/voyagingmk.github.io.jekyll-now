@@ -511,9 +511,11 @@ def areaortho(pattern, left, right, offset):
 
 // 因为SMAA 1x的offset为0，所以 o1 = 0.5， o2 = 0.5 - 1.0 = -0.5，代表o1当前像素的上边缘距离中心0.5个像素距离，o2是-0.5距离。
 
-- 对于pattern 0，左右都没有crossing edge，是完美的直线，不需要抗锯齿，所以返回了2个0；
+- **一型pattern**。对于pattern 0，左右都没有crossing edge，是完美的直线，不需要抗锯齿，所以返回了2个0；
 
-- pattern 1，先做了一个判断if left <= right，这是为了收敛到pattern 0，当left比right小，且是这个L型pattern，那么当前像素才需要做混合，也就需要计算面积。注释也写着只对L型pattern的crossing edge一侧做计算。
+- **L型pattern**。对于pattern 1，先做了一个判断if left <= right，这是为了收敛到pattern 0，当left比right小，且是这个L型pattern，那么当前像素才需要做混合，也就需要计算面积。注释也写着只对L型pattern的crossing edge一侧做计算。pattern 2、4、8，就是pattern 1的3种镜像情况了，同理。
+
+
 
 
 ### search算法
