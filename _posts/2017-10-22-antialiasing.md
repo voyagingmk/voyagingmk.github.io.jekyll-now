@@ -498,7 +498,11 @@ def areaortho(pattern, left, right, offset):
 
 - **h型pattern：7、11、13、14**。相当直白的area函数调用。
 
-剖析完这16个pattern后，就差看area函数是怎么回事了:
+作者绘制的一张pattern图：
+
+![area.png](../images/2017.10/area.png)
+
+观察此图和对应分支代码，可以发现area函数的坐标系原点是在left处，即最左边edge那里。以这里为原点，+x方向朝右，+y方向朝下。
 
 ```python
 # Calculates the area under the line p1->p2, for the pixel x..x+1:
@@ -531,7 +535,14 @@ def area(p1, p2, x):
     else:
         return 0.0, 0.0
 ```
-函数说明写着area函数算的是p1到p2这条线段下，x到x+1范围内的面积（一个像素宽度），x参数其实就是等于left，因为16个pattern都是传入了left。所以area的任务就是要算出p1-p2把[left,left+1]这个像素切开了多大面积。
+
+函数说明写着area函数算的是p1到p2这条线段下，x到x+1范围内的面积，x参数其实就是等于left，因为16个pattern都是传入了left。所以[x, x+1]就是[left，left+1]，又因为坐标系原点在最左边，[left，left+1]指的其实就是当前像素的左边界和右边界（一个像素的宽度为1）。所以area的任务就是要算出p1-p2把当前像素切开了多大面积。
+
+再就是斜向的情况：
+
+
+![area_diag.png](../images/2017.10/area_diag.png)
+
 
 ### search算法
 
