@@ -254,9 +254,9 @@ def deltaRight(left, top):
     return d
 ```
 
-deltaLeft，就是根据x y方向2组bool值，算出一个长度补充值d，d的取值范围是0/1/2。top[3]是指当前像素在y方向上的bool值，如果为0，就是没边，d = 0；如果为1，就是有边，那么d = 1；再如果top[2]也有边，且x方向没有边(没有交叉角)，那么d = 2。deltaRight过程类似。
+deltaLeft，就是根据x y方向2组bool值，算出一个长度补充值d，d的取值范围是0/1/2。top[3]是指当前像素在y方向上的bool值，如果为0，就是没边，d = 0；如果为1，就是有边，那么d = 1；再如果top[2]也有边，且x方向没有边(没有交叉边)，那么d = 2。deltaRight过程类似。
 
-以下图为例，上面的是top，下面的是left，标绿色／红色的是边，那么经过deltaLeft运算后，下面的pattern会得到d=1(又交叉角)。
+以下图为例，上面的是top，下面的是left，标绿色／红色的是边，那么经过deltaLeft运算后，下面的pattern会得到d=1(有交叉边)。
 
 ![e1.png](../images/2017.10/e1.png)
 
@@ -298,49 +298,13 @@ areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步
 
 注意，因为areaTex分辨率有限，并且需要用长度值去索引，所以对于超长的锯齿边，就行不通了。作者也加了一个#define SMAA_MAX_SEARCH_STEPS 32。32就是小格的边长的一半，因为做了一个sqrt的压缩。
 
-首先从这个函数入手：
+areaTex的使用地方极少，只有在pass2调用了两次SMAAArea。所以关键的地方是areaTex的原理和生成（AreaTex.py）、以及SMAAArea需要的参数的计算（pass 2）。
 
-```python
-
-# Calculates the area under the line p1->p2, for the pixel x..x+1:
-def area(p1, p2, x):
-    print('p1 ', p1, p2, x)
-    d = p2[0] - p1[0], p2[1] - p1[1]
-    x1 = float(x)
-    x2 = x + 1.0
-    y1 = p1[1] + d[1] * (x1 - p1[0]) / d[0]
-    y2 = p1[1] + d[1] * (x2 - p1[0]) / d[0]
-    print('y1', y1, 'y2', y2)
-    inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0])
-    print('inside', inside)
-    if inside:
-        istrapezoid = (copysign(1.0, y1) == copysign(1.0, y2) or 
-                        abs(y1) < 1e-4 or abs(y2) < 1e-4)
-        print('istrapezoid', istrapezoid)               
-        if istrapezoid:
-            a = (y1 + y2) / 2.0
-            if a < 0.0:
-                return abs(a), 0.0
-            else:
-                return 0.0, abs(a)
-        else: # Then, we got two triangles:
-            x = -p1[1] * d[0] / d[1] + p1[0]
-            a1 = y1 *        modf(x)[0]  / 2.0 if x > p1[0] else 0.0
-            a2 = y2 * (1.0 - modf(x)[0]) / 2.0 if x < p2[0] else 0.0
-            print('a1', a1, 'a2', a2)
-            print('x', x, 'modf(x)[0]', modf(x)[0])
-            a = a1 if abs(a1) > abs(a2) else -a2
-            if a < 0.0:
-                return abs(a1), abs(a2)
-            else:
-                return abs(a2), abs(a1)
-    else:
-        return 0.0, 0.0
-```
+areaTex的生成是brute force的，遍历每一个subsample offset、每一个pattern、每一个left distance、每一个right distance，然后算出2个面积存起来（r和g通道）。
 
 ### search算法
 
-SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的"边角"和"锯齿角"并不能区分（都认为是交叉角crossing edges），导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。
+SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的"边角"和"锯齿角"并不能区分，导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。
 
 因此，SMAA判断锯齿角需要计算2个像素长度的范围，也从而识别出真的边角。
 
