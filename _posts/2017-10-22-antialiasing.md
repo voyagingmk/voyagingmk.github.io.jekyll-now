@@ -508,17 +508,18 @@ def area(p1, p2, x):
     x2 = x + 1.0
     y1 = p1[1] + d[1] * (x1 - p1[0]) / d[0]
     y2 = p1[1] + d[1] * (x2 - p1[0]) / d[0]
-    inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0])
+    inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0]) # 线段[x,x+1]和[p1,p2]需要重叠
     if inside:
         istrapezoid = (copysign(1.0, y1) == copysign(1.0, y2) or 
-                        abs(y1) < 1e-4 or abs(y2) < 1e-4)
+                        abs(y1) < 1e-4 or abs(y2) < 1e-4) 
+        # 计算是不是梯形（y1和y2同正负号）／直角形（y1或y2的长度为0）
         if istrapezoid:
-            a = (y1 + y2) / 2.0
-            if a < 0.0:
+            a = (y1 + y2) / 2.0 # 梯形面积公式：0.5 * h * (上底+下底) = 0.5 * 1 * (y1 + y2)
+            if a < 0.0: # y1和y2都在top edge线下方
                 return abs(a), 0.0
             else:
                 return 0.0, abs(a)
-        else: # Then, we got two triangles:
+        else: # [p1,p2]和top edge交叉了，形成2个三角形
             x = -p1[1] * d[0] / d[1] + p1[0]
             a1 = y1 *        modf(x)[0]  / 2.0 if x > p1[0] else 0.0
             a2 = y2 * (1.0 - modf(x)[0]) / 2.0 if x < p2[0] else 0.0
