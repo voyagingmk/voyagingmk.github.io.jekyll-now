@@ -19,13 +19,15 @@ published: true
 
 # SMAA
 
-总共3个pass：
+SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的"边角"和"锯齿角"并不能区分，导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。因此，SMAA判断锯齿角需要计算2个像素长度的范围，也从而识别出真的边角。但也就使得SMAA的算法极为复杂。
+
+SMAA总共3个pass：
 
 - Pass 1，算edgeTex
 - Pass 2，用edgeTex算weightTex
 - Pass 3，用weightTex混合原始图像，得到抗锯齿图像
 
-## 边缘纹理的计算 Edge Detection (edgeTex)
+## 边缘纹理的计算 Edge Detection (edgeTex) （Pass 1）
 
 锯齿问题体现在图像上几何物体的边缘处，也就是说，如果能准确地post process出图像上哪些地方是边，哪些地方不是。检测过少，锯齿边就会残留；检测过多，图像就会糊。为来更好地提升AA质量，SMAA边缘检测算法的选取非常关键。
 
@@ -104,7 +106,7 @@ SMAA首推的是基于Luma（亮度）的边缘检测算法。
     return edges;
 ```
 
-## 权重纹理的计算 Blending Weight Calculation (weightTex)
+## 权重纹理的计算 Blending Weight Calculation (weightTex)（Pass 2）
 
 最复杂的一个pass，需要分成多个部分讲解。
 
@@ -298,19 +300,230 @@ areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步
 
 注意，因为areaTex分辨率有限，并且需要用长度值去索引，所以对于超长的锯齿边，就行不通了。作者也加了一个#define SMAA_MAX_SEARCH_STEPS 32。32就是小格的边长的一半，因为做了一个sqrt的压缩。
 
-areaTex的使用地方极少，只有在pass2调用了两次SMAAArea。所以关键的地方是areaTex的原理和生成（AreaTex.py）、以及SMAAArea需要的参数的计算（pass 2）。
+areaTex的使用地方极少，只有在pass2调用了两次SMAAArea。所以关键的地方是areaTex的原理和生成（AreaTex.py）、以及SMAAArea需要的参数的计算。
 
-areaTex的生成是brute force的，遍历每一个subsample offset、每一个pattern、每一个left distance、每一个right distance，然后算出2个面积存起来（r和g通道）。
+areaTex的生成是brute force的，遍历每一个subsample offset、每一个pattern、每一个left distance、每一个right distance，然后算出left、right方向4个面积存到weightTex，就可以给pass 3用了。
+
+先看如何生成Ortho（左边列）的一个小格：
+
+```python
+def tex2dortho(args):
+    pattern, path, offset = args # 对哪一个offset、哪一个pattern做生成，SMAA 1x的话只需要认为offset为0
+    size = (SIZE_ORTHO - 1)**2 + 1 # 本来只有SIZE_ORTHO大小，这里偷偷放大一倍来计算，最终会被压缩回SIZE_ORTHO放进4D纹理里
+    tex2d = Image.new("RGBA", (size, size))
+    for y in range(size):
+        for x in range(size):
+            # x y代表left distance 和 right distance
+            p = areaortho(pattern, x, y, offset)
+            p = p[0], p[1], 0.0, 0.0 # p[0] p[1]就是一个edge关联的2个像素的a值了
+            tex2d.putpixel((x, y), bytes(p))
+    tex2d.save(path, "TGA")
+```
+
+关键的areaortho：
+
+```python
+# Calculates the area for a given pattern and distances to the left and to the
+# right, biased by an offset:
+def areaortho(pattern, left, right, offset):
+
+    # Calculates the area under the line p1->p2, for the pixel x..x+1:
+    def area(p1, p2, x):
+        d = p2[0] - p1[0], p2[1] - p1[1]
+        x1 = float(x)
+        x2 = x + 1.0
+        y1 = p1[1] + d[1] * (x1 - p1[0]) / d[0]
+        y2 = p1[1] + d[1] * (x2 - p1[0]) / d[0]
+        inside = (x1 >= p1[0] and x1 < p2[0]) or (x2 > p1[0] and x2 <= p2[0])
+        if inside:
+            istrapezoid = (copysign(1.0, y1) == copysign(1.0, y2) or 
+                           abs(y1) < 1e-4 or abs(y2) < 1e-4)
+            if istrapezoid:
+                a = (y1 + y2) / 2.0
+                if a < 0.0:
+                    return abs(a), 0.0
+                else:
+                    return 0.0, abs(a)
+            else: # Then, we got two triangles:
+                x = -p1[1] * d[0] / d[1] + p1[0]
+                a1 = y1 *        modf(x)[0]  / 2.0 if x > p1[0] else 0.0
+                a2 = y2 * (1.0 - modf(x)[0]) / 2.0 if x < p2[0] else 0.0
+                a = a1 if abs(a1) > abs(a2) else -a2
+                if a < 0.0:
+                    return abs(a1), abs(a2)
+                else:
+                    return abs(a2), abs(a1)
+        else:
+            return 0.0, 0.0
+
+    # o1           |
+    #      .-------´
+    # o2   |
+    #
+    #      <---d--->
+    d = left + right + 1
+
+    o1 = 0.5 + offset
+    o2 = 0.5 + offset - 1.0
+ 
+    if pattern == 0:
+        #
+        #    ------
+        #   
+        return 0.0, 0.0
+
+    elif pattern == 1:
+        #
+        #   .------
+        #   |
+        #
+        # We only offset L patterns in the crossing edge side, to make it
+        # converge with the unfiltered pattern 0 (we don't want to filter the
+        # pattern 0 to avoid artifacts).
+        if left <= right:
+            return area(([0.0, o2]), ([d / 2.0, 0.0]), left)
+        else:
+            return 0.0, 0.0
+        
+    elif pattern == 2:
+        #
+        #    ------.
+        #          |
+        if left >= right:
+            return area(([d / 2.0, 0.0]), ([d, o2]), left)
+        else:
+            return 0.0, 0.0
+        
+    elif pattern == 3:
+        #
+        #   .------.
+        #   |      |
+        a1 = vec2(*area(([0.0, o2]), ([d / 2.0, 0.0]), left))
+        a2 = vec2(*area(([d / 2.0, 0.0]), ([d, o2]), left))
+        a1, a2 = smootharea(d, a1, a2)
+        return a1[0] + a2[0], a1[1] + a2[1]
+
+    elif pattern == 4:
+        #   |
+        #   `------
+        #          
+        if left <= right:
+            return area(([0.0, o1]), ([d / 2.0, 0.0]), left)
+        else:
+            return 0.0, 0.0
+    
+    elif pattern == 5:
+        #   |
+        #   +------
+        #   |      
+        return 0.0, 0.0
+
+    elif pattern == 6:
+        #   |
+        #   `------.
+        #          |
+        #
+        # A problem of not offseting L patterns (see above), is that for certain
+        # max search distances, the pixels in the center of a Z pattern will
+        # detect the full Z pattern, while the pixels in the sides will detect a
+        # L pattern. To avoid discontinuities, we blend the full offsetted Z
+        # revectorization with partially offsetted L patterns.
+        if abs(offset) > 0.0:
+            a1 =  vec2(*area(([0.0, o1]), ([d, o2]), left))
+            a2 =  vec2(*area(([0.0, o1]), ([d / 2.0, 0.0]), left))
+            a2 += vec2(*area(([d / 2.0, 0.0]), ([d, o2]), left))
+            return (a1 + a2) / 2.0
+        else:
+            return area(([0.0, o1]), ([d, o2]), left)
+
+    elif pattern == 7:
+        #   |
+        #   +------.
+        #   |      |
+        return area(([0.0, o1]), ([d, o2]), left)
+
+    elif pattern == 8:
+        #          |
+        #    ------´
+        #   
+        if left >= right:
+            return area(([d / 2.0, 0.0]), ([d, o1]), left)
+        else:
+            return 0.0, 0.0
+
+    elif pattern == 9:
+        #          |
+        #   .------´
+        #   |
+        if abs(offset) > 0.0:
+            a1 = vec2(*area(([0.0, o2]), ([d, o1]), left))
+            a2 = vec2(*area(([0.0, o2]), ([d / 2.0, 0.0]), left))
+            a2 += vec2(*area(([d / 2.0, 0.0]), ([d, o1]), left))
+            return (a1 + a2) / 2.0
+        else:
+            return area(([0.0, o2]), ([d, o1]), left)
+
+    elif pattern == 10:
+        #          |
+        #    ------+
+        #          |
+        return 0.0, 0.0
+
+    elif pattern == 11:
+        #          |
+        #   .------+
+        #   |      |
+        return area(([0.0, o2]), ([d, o1]), left)
+
+    elif pattern == 12:
+        #   |      |
+        #   `------´
+        #   
+        a1 = vec2(*area(([0.0, o1]), ([d / 2.0, 0.0]), left))
+        a2 = vec2(*area(([d / 2.0, 0.0]), ([d, o1]), left))
+        a1, a2 = smootharea(d, a1, a2)
+        return a1[0] + a2[0], a1[1] + a2[1]
+
+    elif pattern == 13:
+        #   |      |
+        #   +------´
+        #   |
+        return area(([0.0, o2]), ([d, o1]), left)
+
+    elif pattern == 14:
+        #   |      |
+        #   `------+
+        #          |
+        return area(([0.0, o1]), ([d, o2]), left)
+
+    elif pattern == 15:
+        #   |      |
+        #   +------+
+        #   |      |
+        return 0.0, 0.0
+```
+
+（代码贴进来后排版乱来= =）
+
+这里面根据pattern的值做来16个分支判断，为什么是16，看注释的图就知道了，4个边值\\(e\_\{1\}、e\_\{2\}、e\_\{3\}、e\_\{4\}\\)的组合都要枚举出来，每个e取值0或1，所以有2的4次方共16种情况。
+
+中间的横杠代表在search的时候的当前line，长度等于当前像素左边缘到左端点+右边缘到右端点+自己的宽度1，即d=left+right+1。
+
+// 因为SMAA 1x的offset为0，所以 o1 = 0.5， o2 = 0.5 - 1.0 = -0.5，代表o1当前像素的上边缘距离中心0.5个像素距离，o2是-0.5距离。
+
+- 对于pattern 0，左右都没有crossing edge，是完美的直线，不需要抗锯齿，所以返回了2个0；
+
+- pattern 1，先做了一个判断if left <= right，这是为了收敛到pattern 0，当left比right小，且是这个L型pattern，那么当前像素才需要做混合，也就需要计算面积。注释也写着只对L型pattern的crossing edge一侧做计算。
+
 
 ### search算法
 
-SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的"边角"和"锯齿角"并不能区分，导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。
 
-因此，SMAA判断锯齿角需要计算2个像素长度的范围，也从而识别出真的边角。
+
 
 (待续)
 
-## 用weightTex混合原图像
+## 用weightTex混合原图像（Pass 3）
 
 # 总结
 
