@@ -498,7 +498,7 @@ def areaortho(pattern, left, right, offset):
 
 - **h型pattern：7、11、13、14**。相当直白的area函数调用。
 
-作者绘制的一张pattern图：
+作者绘制的一张pattern图（就是左列的第一个大格）：
 
 ![area.png](../images/2017.10/area.png)
 
