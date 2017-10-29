@@ -540,8 +540,10 @@ def area(p1, p2, x):
 
 再就是斜向的情况：
 
-
 ![area_diag.png](../images/2017.10/area_diag.png)
+
+如果能完全理解ortho的情况，diag的就触类旁通了。这里暂时跳过。（这套SMAA太多细节了，每个点都搞懂实在不容易）
+
 
 
 ### search算法
