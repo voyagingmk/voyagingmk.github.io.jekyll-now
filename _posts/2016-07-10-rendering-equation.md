@@ -316,7 +316,7 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 - \\(\\int \_\{ \Omega \} \\cdots d\omega \_\{i\} \\) 指对这个半球做积分
 
-- \\(f\_\{r\}(x, \\omega \_\{i\}, \\omega \_\{o\}, λ, t) \\) BRDF函数，函数的返回值是一个比值(ratio scalar)
+- \\(f\_\{r\}(x, \\omega \_\{i\}, \\omega \_\{o\}, λ, t) \\) BRDF函数，函数的返回值是一个比值标量(ratio scalar)
 
 - \\( L\_\{i\}(x, \\omega \_\{i\}, λ, t) \\)  在t时刻、沿着\\( \\omega \_\{i\} \\)方向进入x点的光(λ)的辐射亮度(Radiance)
 

@@ -72,7 +72,7 @@ brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
  \\[ f\_\{cook−torrance\} = \\frac \{ DFG \}\{ 4 (\omega \_\{o\} \\cdot \\mathbf n)(\omega \_\{i\} \\cdot \\mathbf n) \} \\]
 
 
- 这条公式怎么来的，改天再写一篇数学推导文。现在需要重点关注右边的分子部分：DFG。DFG其实是3个函数，每个函数算出一个scalar因子，3个因子得到后相乘。D、F、G有很多公式可以选择，下面会介绍几个常用的DFG函数。
+ 这条公式怎么来的，改天再写一篇数学推导文。现在需要重点关注右边的分子部分：DFG。DFG其实是3个函数，每个函数算出一个标量因子，3个因子得到后相乘。D、F、G有很多公式可以选择，下面会介绍几个常用的DFG函数。
 
 ### D， Normal Distribution Function，法线分布函数
 

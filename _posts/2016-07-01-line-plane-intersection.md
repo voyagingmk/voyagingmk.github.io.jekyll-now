@@ -22,7 +22,7 @@ published: true
 
 \\[ \\vec p = \\vec o + t\\vec d, t\\in R \\]
 
-注意，式子右边的t是一个Scalar（一个实数），这个t决定了\\(\\vec p\\)的位置。
+注意，式子右边的t是一个Scalar（一个实数标量），这个t决定了\\(\\vec p\\)的位置。
 
 # 直线与平面的相交
 
