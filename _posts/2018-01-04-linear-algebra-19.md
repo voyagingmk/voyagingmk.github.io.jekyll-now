@@ -108,3 +108,33 @@ struct SkeletonPose {
 再定义\\(\\mathbf v \_\{M\}\^\{B\} \\)为模型任意顶点v在**绑定姿势**的模型空间坐标， 而 \\(\\mathbf v \_\{M\}\^\{C\} \\) 为在**当前姿势**的模型空间坐标。如果要求\\(\\mathbf v \_\{M\}\^\{B\} \\)在关节j的局部空间坐标\\( v\_\{j\} \\)，则公式为：
 
 \\[ \\mathbf v \_\{j\} = \\mathbf v \_\{M\}\^\{B\} B\_\{M\\to j\} = \\mathbf v \_\{M\}\^\{B\} (B\_\{j\\to M\})\^\{-1\}  \\] 
+
+然后再乘以当前姿势的姿势矩阵C，得到当前姿势的模型空间坐标 \\(\\mathbf v \_\{M\}\^\{C\} \\)：
+
+\\[ v \_\{M\}\^\{C\} = \\mathbf v \_\{j\} C\_\{j \\to M\}  \\] 
+
+
+### 蒙皮矩阵 Skinning Matrix
+
+\\[ v \_\{M\}\^\{C\} = \\mathbf v \_\{j\} C\_\{j \\to M\}  = \\mathbf v \_\{M\}\^\{B\} (B\_\{j\\to M\})\^\{-1\}  C\_\{j \\to M\} =   \\mathbf v \_\{M\}\^\{B\}  K\_\{j\} \\] 
+
+
+\\[ K\_\{j\} = (B\_\{j\\to M\})\^\{-1\}  C\_\{j \\to M\} \\]
+
+\\( K\_\{j\} \\) 就是关节j的蒙皮矩阵了。
+
+ozz-animation中的算K矩阵的代码片段：
+
+```c
+
+for (size_t j = 0; j < models.Count(); ++j) {
+    skinning_matrices[j] = models[j] * mesh.inverse_bind_poses[j];
+}
+
+```
+
+models[j]就是当前姿势当前时刻第j个关节的\\( C\_\{j \\to M\}\\)；
+
+mesh.inverse_bind_poses[j]就是\\( (B\_\{j\\to M\})\^\{-1\} \\)；
+
+注意这里的乘法顺序和公式相反（公式是右乘，一般OGL程序中是用左乘）。
