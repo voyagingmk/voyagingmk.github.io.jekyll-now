@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: 蒙皮矩阵
+title: 矩阵和四元数的运用：骨骼动画与蒙皮矩阵
 tags: ['matrix','linear algebra','math']
 published: true
 ---
