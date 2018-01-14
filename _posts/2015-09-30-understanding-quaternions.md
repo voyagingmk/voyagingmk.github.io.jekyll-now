@@ -723,7 +723,8 @@ SLERP代表**S**pherical **L**inear Int**erp**olation。SLERP可以在2个朝向
 \\[ = [0, \\theta \\mathbf \{ \\hat \{ \\mathbf v \} \}] \\]
 
 
-(译注：上述的2次公式推导，其实省略了很多证明过程。具体可以参考：[http://bpeers.com/blog/?itemid=861](http://bpeers.com/blog/?itemid=861),[http://bpeers.com/blog/?itemid=863](http://bpeers.com/blog/?itemid=863),[http://bpeers.com/blog/?itemid=866](http://bpeers.com/blog/?itemid=866), [http://bpeers.com/blog/?itemid=1001](http://bpeers.com/blog/?itemid=1001) )
+(译注：上述的2次公式推导，其实省略了很多证明过程。具体可以参考：
+[四元数公式的补充](http://www.qiujiawei.com/quaternion2/) )
 
 对于t = 0，我们有：
 
