@@ -59,15 +59,46 @@ var transform = function(a, b, c, d, e, f) {
 
 ## 2D仿射变换矩阵的分解
 
-首先参数a, b, c, d, e, f组成了一个3x3仿射变换矩阵：
+transform的参数a, b, c, d, e, f组成了一个3x3仿射变换矩阵A：
 
 
 {% assign matA = "a,c,e,b,d,f,0,0,1" | split: ',' %}
 
 
-\\( {% include render_matrix_raw.html mat = matA row = 3 col = 3 %}  \\)
+\\( A = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %}  \\)
+
+设有2维向量\\(\\mathbf p=(x, y, 1)\\)，让它左乘A，就会得到经过A变换后的向量\\(\\mathbf p'=(x', y', 1)\\)。
 
 
+{% assign matP = "x,y,1" | split: ',' %}
+
+\\( \\mathbf p = {% include render_matrix_raw.html mat = matP row = 3 col = 1 %}  \\)
+
+{% assign matP2 = "x',y',1" | split: ',' %}
+
+{% assign matP3 = "ax+cy+e,bx+dy+f,1" | split: ',' %}
+
+\\( \\mathbf p' = A\\mathbf p  = {% include render_matrix_raw.html mat = matP2 row = 3 col = 1 %} = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %} {% include render_matrix_raw.html mat = matP row = 3 col = 1 %} = {% include render_matrix_raw.html mat = matP3 row = 3 col = 1 %} \\)
+
+
+现在问题是，怎么把A分解成T(translate)、R(rotate)、S(scale)三个矩阵。
+
+### 提取T
+
+首先先把translate矩阵提取出来：
+
+{% assign matT = "1,0,e,0,1,f,0,0,1" | split: ',' %}
+
+
+\\( T = {% include render_matrix_raw.html mat = matT row = 3 col = 3 %}  \\)
+
+显然这是正确的，可以试一下：
+
+{% assign matP4 = "x+e,y+f,1" | split: ',' %}
+
+\\( \\mathbf p' = T\\mathbf p = {% include render_matrix_raw.html mat = matT row = 3 col = 3 %} {% include render_matrix_raw.html mat = matP row = 3 col = 1 %} = {% include render_matrix_raw.html mat = matP4 row = 3 col = 1 %} \\)
+
+x偏移了e，y偏移了f。
 
 ## 原始注释解释
 
