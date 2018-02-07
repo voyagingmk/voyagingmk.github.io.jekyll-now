@@ -100,6 +100,93 @@ transform的参数a, b, c, d, e, f组成了一个3x3仿射变换矩阵A：
 
 x偏移了e，y偏移了f。
 
+再设等式：A = QT。Q是未知矩阵，且Q包含了scale、rotate变换。
+
+Q可以用参数a, b, c, d, e, f表示：
+
+{% assign matQ = "a,c,e - ae - cf,b,d,f - be - df,0,0,1" | split: ',' %}
+
+\\( Q = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}  \\)
+
+验证下：
+
+
+\\( QT = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}{% include render_matrix_raw.html mat = matT row = 3 col = 3 %} \\)
+
+{% assign matTmp = "a, c, ae + cf + e - ae - cf, b, d, be + df + f - be - df, 0, 0, 1" | split: ',' %}
+
+\\( = {% include render_matrix_raw.html mat = matTmp row = 3 col = 3 %} \\)
+
+\\( = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %} = A \\)
+
+### 分解Q
+
+设 Q = SR，S是scale，R是rotate。2D的R、S矩阵分别为：
+
+
+{% assign matR = "cosθ, -sinθ, 0, sinθ, cosθ, 0, 0, 0, 1" | split: ',' %}
+
+\\( R = {% include render_matrix_raw.html mat = matR row = 3 col = 3 %}  \\)
+
+{% assign matS = "x, 0, 0, 0, y, 0, 0, 0, 1" | split: ',' %}
+
+\\( S = {% include render_matrix_raw.html mat = matS row = 3 col = 3 %}  \\)
+
+其实，Q还可能包含了shear斜切变换。一般来说斜切是比较少见到的一种变换，且canvas并没有单独的shear函数。所以本文开头的目标，自定义custom，怎么弄都不能实现shear变换（只有scale、translate、rotate可用）。
+
+现在要分解Q，可以把shear也一并考虑。shear矩阵形式如下；
+
+{% assign matSH = "1, s, 0, 0, 1, 0, 0, 0, 1" | split: ',' %}
+
+\\( Shear = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %}  \\)
+
+如果没有shear变换，那么s=0。
+
+综上，Q = Shear * Scale * Rotate：
+
+\\( Q = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %} {% include render_matrix_raw.html mat = matS row = 3 col = 3 %} {% include render_matrix_raw.html mat = matR row = 3 col = 3 %}  \\)
+
+{% assign matQ2 = "xcosθ, -xsinθ, 0, ysinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
+
+{% assign matQ3 = "xcosθ + sysinθ, -xsinθ+sycosθ, 0, ysinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
+
+\\( = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %}  {% include render_matrix_raw.html mat = matQ2 row = 3 col = 3 %}  \\)
+
+\\( = {% include render_matrix_raw.html mat = matQ3 row = 3 col = 3 %}  \\)
+
+再回顾上一小节的Q：
+
+\\( Q = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}  \\)
+
+所以可以得到方程组：
+
+- \\( a =  x  cosθ + s y sinθ \\)
+
+- \\( b =  y  sinθ \\)
+
+- \\( c = -x  sinθ + s y cosθ \\)
+
+- \\( d = y cosθ \\)
+
+- \\( 0 = e - ae - cf  \\)
+
+- \\( 0 = f - be - df \\)
+
+看起来有点乱，慢慢拆解下吧。观察发现第二四等式可以解出未知数y：
+
+\\( b\^\{2\} = y\^\{2\} sin\^\{2\}θ \\)
+
+\\( d\^\{2\} = y\^\{2\} cos\^\{2\}θ  \\)
+
+\\( b\^\{2\} + d\^\{2\} = y\^\{2\} sin\^\{2\}θ + y\^\{2\} cos\^\{2\}θ \\)
+
+\\( b\^\{2\} + d\^\{2\} = y\^\{2\} ( sin\^\{2\}θ + cos\^\{2\}θ ) \\)
+
+\\( b\^\{2\} + d\^\{2\} = y\^\{2\} \\)
+
+\\( y = \\sqrt \{ b\^\{2\} + d\^\{2\} \} \\)
+
+
 ## 原始注释解释
 
 decomposition algorithm：
