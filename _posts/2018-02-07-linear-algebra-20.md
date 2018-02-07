@@ -142,11 +142,11 @@ Q可以用参数a, b, c, d, e, f表示：
 
 如果没有shear变换，那么s=t=0。
 
-同时用s和t是不必要的，可以让其中一个为0。现在让s = 0，t != 0，从而只对X轴做斜切。
+同时用s和t是不对的，其中一个必需为0。下面推导的前提是s = 0，t != 0。
 
-综上，得到Q = Shear * Scale * Rotate：
+综上，得到Q' = Shear * Scale * Rotate：
 
-\\( Q = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %} {% include render_matrix_raw.html mat = matS row = 3 col = 3 %} {% include render_matrix_raw.html mat = matR row = 3 col = 3 %}  \\)
+\\( Q' = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %} {% include render_matrix_raw.html mat = matS row = 3 col = 3 %} {% include render_matrix_raw.html mat = matR row = 3 col = 3 %}  \\)
 
 {% assign matQ2 = "xcosθ, -xsinθ, 0, ysinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
 
@@ -160,19 +160,17 @@ Q可以用参数a, b, c, d, e, f表示：
 
 \\( Q = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}  \\)
 
-所以可以得到方程组：
+发现有 Q' = QT'的关系。（当然这个不是关键）
+
+分析Q，可以得到方程组：
 
 - \\( a =  x cosθ + s y sinθ = x cosθ \\)
 
-- \\( b =  t x cosθ + y sinθ \\)
+- \\( b =  t x cosθ + y sinθ = t a + y sinθ  \\)
 
 - \\( c = -x sinθ + s y cosθ = -x sinθ \\)
 
-- \\( d = -t x sinθ + y cosθ \\)
-
-- \\( 0 = e - ae - cf  \\)
-
-- \\( 0 = f - be - df \\)
+- \\( d = -t x sinθ + y cosθ = t c + y cosθ \\)
 
 
 看起来有点乱，慢慢拆解下吧。观察发现第一三等式可以解出未知数x：
@@ -188,6 +186,12 @@ Q可以用参数a, b, c, d, e, f表示：
 \\( a\^\{2\} + c\^\{2\} = x\^\{2\} \\)
 
 \\( x = \\sqrt \{ a\^\{2\} + c\^\{2\} \} \\)
+
+用x代入等式一得到θ:
+
+\\( θ  = acos \\frac \{ a \} \{ x \} \\)
+
+然后就差求y、t。
 
 
 ## 原始注释解释
