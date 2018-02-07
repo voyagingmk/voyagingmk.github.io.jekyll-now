@@ -5,9 +5,9 @@ tags: ['matrix','linear algebra','math']
 published: true
 ---
 
-最近偶然接触了一下canvas的仿射变换。和3D一样，canvas有scale、translate、rotate操作，本质上这3个函数也是矩阵乘法。
+最近偶然接触了一下canvas的2D仿射变换。和3D一样，canvas有scale、translate、rotate操作，本质上这3个函数也是矩阵乘法。
 
-canvas应该内置了一套矩阵运算系统，并且canvas内含有一个仿射变换矩阵（大概认为是3x3=9个浮点数变量即可）。每次调用scale、translate、rotate就是对这个矩阵做矩阵乘法。
+canvas应该内置了一套矩阵运算系统，并且canvas内含有一个仿射变换矩阵（大概认为是3x3=9个浮点数变量即可，2D是3x3矩阵，3D是4x4矩阵）。每次调用scale、translate、rotate就是对这个矩阵做矩阵乘法。
 
 另外还有3个函数可以控制canvas的仿射变换：
 
@@ -52,6 +52,8 @@ var transform = function(a, b, c, d, e, f) {
 [unmatrix - parse(str) ](https://github.com/matthewmueller/unmatrix/blob/master/index.js)
 
 [DecomposeMatrix 此代码最原始出处（有注释）](https://hg.mozilla.org/mozilla-central/file/7cb3e9795d04/layout/style/nsStyleAnimation.cpp)
+
+[GRAPHICS GEMS II edited by JAMES ARVO]()
 
 我这个版本代码看起来不复杂，但还是慢慢地来分析下数学原理吧。
 
