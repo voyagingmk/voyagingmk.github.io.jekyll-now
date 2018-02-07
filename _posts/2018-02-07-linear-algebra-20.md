@@ -136,19 +136,21 @@ Q可以用参数a, b, c, d, e, f表示：
 
 现在要分解Q，可以把shear也一并考虑。shear矩阵形式如下；
 
-{% assign matSH = "1, s, 0, 0, 1, 0, 0, 0, 1" | split: ',' %}
+{% assign matSH = "1, s, 0, t, 1, 0, 0, 0, 1" | split: ',' %}
 
 \\( Shear = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %}  \\)
 
-如果没有shear变换，那么s=0。
+如果没有shear变换，那么s=t=0。
 
-综上，Q = Shear * Scale * Rotate：
+同时用s和t是不必要的，可以让其中一个为0。现在让s = 0，t != 0，从而只对X轴做斜切。
+
+综上，得到Q = Shear * Scale * Rotate：
 
 \\( Q = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %} {% include render_matrix_raw.html mat = matS row = 3 col = 3 %} {% include render_matrix_raw.html mat = matR row = 3 col = 3 %}  \\)
 
 {% assign matQ2 = "xcosθ, -xsinθ, 0, ysinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
 
-{% assign matQ3 = "xcosθ + sysinθ, -xsinθ+sycosθ, 0, ysinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
+{% assign matQ3 = "xcosθ + sysinθ, -xsinθ+sycosθ, 0, txcosθ + ysinθ, -txsinθ + ycosθ, 0, 0, 0, 1" | split: ',' %}
 
 \\( = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %}  {% include render_matrix_raw.html mat = matQ2 row = 3 col = 3 %}  \\)
 
@@ -160,31 +162,32 @@ Q可以用参数a, b, c, d, e, f表示：
 
 所以可以得到方程组：
 
-- \\( a =  x  cosθ + s y sinθ \\)
+- \\( a =  x cosθ + s y sinθ = x cosθ \\)
 
-- \\( b =  y  sinθ \\)
+- \\( b =  t x cosθ + y sinθ \\)
 
-- \\( c = -x  sinθ + s y cosθ \\)
+- \\( c = -x sinθ + s y cosθ = -x sinθ \\)
 
-- \\( d = y cosθ \\)
+- \\( d = -t x sinθ + y cosθ \\)
 
 - \\( 0 = e - ae - cf  \\)
 
 - \\( 0 = f - be - df \\)
 
-看起来有点乱，慢慢拆解下吧。观察发现第二四等式可以解出未知数y：
 
-\\( b\^\{2\} = y\^\{2\} sin\^\{2\}θ \\)
+看起来有点乱，慢慢拆解下吧。观察发现第一三等式可以解出未知数x：
 
-\\( d\^\{2\} = y\^\{2\} cos\^\{2\}θ  \\)
+\\( a\^\{2\} = x\^\{2\} cos\^\{2\}θ \\)
 
-\\( b\^\{2\} + d\^\{2\} = y\^\{2\} sin\^\{2\}θ + y\^\{2\} cos\^\{2\}θ \\)
+\\( c\^\{2\} = x\^\{2\} sin\^\{2\}θ  \\)
 
-\\( b\^\{2\} + d\^\{2\} = y\^\{2\} ( sin\^\{2\}θ + cos\^\{2\}θ ) \\)
+\\( a\^\{2\} + c\^\{2\} = x\^\{2\} cos\^\{2\}θ + x\^\{2\} sin\^\{2\}θ \\)
 
-\\( b\^\{2\} + d\^\{2\} = y\^\{2\} \\)
+\\( a\^\{2\} + c\^\{2\} = x\^\{2\} (cos\^\{2\}θ + sin\^\{2\}θ) \\)
 
-\\( y = \\sqrt \{ b\^\{2\} + d\^\{2\} \} \\)
+\\( a\^\{2\} + c\^\{2\} = x\^\{2\} \\)
+
+\\( x = \\sqrt \{ a\^\{2\} + c\^\{2\} \} \\)
 
 
 ## 原始注释解释
