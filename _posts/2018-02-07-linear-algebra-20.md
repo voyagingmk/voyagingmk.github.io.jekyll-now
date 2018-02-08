@@ -100,28 +100,24 @@ transform的参数a, b, c, d, e, f组成了一个3x3仿射变换矩阵A：
 
 x偏移了e，y偏移了f。
 
-再设等式：A = QT。Q是未知矩阵，且Q包含了scale、rotate变换。
+再设等式：A = TQ。Q是未知矩阵，且Q包含了scale、rotate变换。
 
 Q可以用参数a, b, c, d, e, f表示：
 
-{% assign matQ = "a,c,e - ae - cf,b,d,f - be - df,0,0,1" | split: ',' %}
+{% assign matQ = "a,c,0,b,d,0,0,0,1" | split: ',' %}
 
 \\( Q = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}  \\)
 
 验证下：
 
 
-\\( QT = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}{% include render_matrix_raw.html mat = matT row = 3 col = 3 %} \\)
-
-{% assign matTmp = "a, c, ae + cf + e - ae - cf, b, d, be + df + f - be - df, 0, 0, 1" | split: ',' %}
-
-\\( = {% include render_matrix_raw.html mat = matTmp row = 3 col = 3 %} \\)
+\\( TQ = {% include render_matrix_raw.html mat = matT row = 3 col = 3 %} {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %} \\)
 
 \\( = {% include render_matrix_raw.html mat = matA row = 3 col = 3 %} = A \\)
 
 ### 分解Q
 
-设 Q = SR，S是scale，R是rotate。2D的R、S矩阵分别为：
+设 Q = RS，S是scale，R是rotate。2D的R、S矩阵分别为：
 
 
 {% assign matR = "cosθ, -sinθ, 0, sinθ, cosθ, 0, 0, 0, 1" | split: ',' %}
@@ -142,17 +138,17 @@ Q可以用参数a, b, c, d, e, f表示：
 
 如果没有shear变换，那么s=t=0。
 
-同时用s和t是不对的，其中一个必需为0。下面推导的前提是s = 0，t != 0。
+同时用s和t是不对的，其中一个必需为0。下面推导的前提是s != 0，t = 0。
 
-综上，得到Q' = Shear * Scale * Rotate：
+综上，得到Q' = Rotate * Scale * Shear
 
-\\( Q' = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %} {% include render_matrix_raw.html mat = matS row = 3 col = 3 %} {% include render_matrix_raw.html mat = matR row = 3 col = 3 %}  \\)
+\\( Q' ={% include render_matrix_raw.html mat = matR row = 3 col = 3 %} {% include render_matrix_raw.html mat = matS row = 3 col = 3 %} {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %}   \\)
 
-{% assign matQ2 = "xcosθ, -xsinθ, 0, ysinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
+{% assign matQ2 = "xcosθ, -ysinθ, 0, xsinθ, ycosθ, 0, 0, 0, 1" | split: ',' %}
 
-{% assign matQ3 = "xcosθ + sysinθ, -xsinθ+sycosθ, 0, txcosθ + ysinθ, -txsinθ + ycosθ, 0, 0, 0, 1" | split: ',' %}
+{% assign matQ3 = "xcosθ - tysinθ, sxcosθ - ysinθ, 0, xsinθ + tycosθ, sxsinθ + ycosθ, 0, 0, 0, 1" | split: ',' %}
 
-\\( = {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %}  {% include render_matrix_raw.html mat = matQ2 row = 3 col = 3 %}  \\)
+\\( =  {% include render_matrix_raw.html mat = matQ2 row = 3 col = 3 %}  {% include render_matrix_raw.html mat = matSH row = 3 col = 3 %} \\)
 
 \\( = {% include render_matrix_raw.html mat = matQ3 row = 3 col = 3 %}  \\)
 
@@ -160,39 +156,54 @@ Q可以用参数a, b, c, d, e, f表示：
 
 \\( Q = {% include render_matrix_raw.html mat = matQ row = 3 col = 3 %}  \\)
 
-发现有 Q' = QT'的关系。（当然这个不是关键）
+对比Q和Q'，可以得到方程组：
 
-分析Q，可以得到方程组：
+- \\( a =  x cosθ - t y sinθ = x cosθ  \\)
 
-- \\( a =  x cosθ + s y sinθ = x cosθ \\)
+- \\( b = x sinθ + t y cosθ = x sinθ  \\)
 
-- \\( b =  t x cosθ + y sinθ = t a + y sinθ  \\)
+- \\( c = s x cosθ - y sinθ = sa - y sinθ = sa - y(b/x) \\)
 
-- \\( c = -x sinθ + s y cosθ = -x sinθ \\)
-
-- \\( d = -t x sinθ + y cosθ = t c + y cosθ \\)
+- \\( d = s x sinθ + y cosθ = sb + y cosθ = sb + y(a/x) \\)
 
 
-看起来有点乱，慢慢拆解下吧。观察发现第一三等式可以解出未知数x：
+看起来有点乱，慢慢拆解下吧:
 
-\\( a\^\{2\} = x\^\{2\} cos\^\{2\}θ \\)
+一二等式相除解出θ：
 
-\\( c\^\{2\} = x\^\{2\} sin\^\{2\}θ  \\)
+\\( tanθ = \\frac \{ b \} \{ a \} \\)
 
-\\( a\^\{2\} + c\^\{2\} = x\^\{2\} cos\^\{2\}θ + x\^\{2\} sin\^\{2\}θ \\)
+\\( θ = atan2(b, a) \\)
 
-\\( a\^\{2\} + c\^\{2\} = x\^\{2\} (cos\^\{2\}θ + sin\^\{2\}θ) \\)
+一二等式分别平方后相加，解出x：
 
-\\( a\^\{2\} + c\^\{2\} = x\^\{2\} \\)
+\\( a\^\{2\} + b\^\{2\} = x\^\{2\} \\)
 
-\\( x = \\sqrt \{ a\^\{2\} + c\^\{2\} \} \\)
+\\( x = \\sqrt \{ a\^\{2\} + b\^\{2\} \} \\\)
 
-用x代入等式一得到θ:
+三四等式消去s：
 
-\\( θ  = acos \\frac \{ a \} \{ x \} \\)
+\\( c = sa - y(b/x) \\)
 
-然后就差求y、t。
+\\( s = (c + y(b/x))/a \\)
 
+\\( d = sb + y(a/x) =  b(c + y(b/x))/a + y(a/x)  \\)
+
+对上式两边乘a：
+
+\\( ad =  b(c + y(b/x)) + ay(a/x)  \\)
+
+\\( ad =  bc + by(b/x) + ay(a/x)  \\)
+
+\\( ad -  bc = by(b/x) + ay(a/x)  \\)
+
+\\( ad -  bc = y(b\^\{2\}/x + a\^\{2\}/x)  \\)
+
+\\( ad -  bc = y(a\^\{2\} + b\^\{2\})/ \\sqrt \{ a\^\{2\} + b\^\{2\} \}    \\)
+
+\\( ad -  bc = y \\sqrt \{ a\^\{2\} + b\^\{2\} \}    \\)
+
+\\( y = \\frac \{ ad -  bc \} \{  \\sqrt \{ a\^\{2\} + b\^\{2\} \}  \} \\)
 
 ## 原始注释解释
 
