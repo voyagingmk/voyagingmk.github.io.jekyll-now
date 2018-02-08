@@ -2,22 +2,25 @@
 layout: default
 ---
 <script type="text/javascript"
-            src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
+    src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
 <article class="post">
-  <h1>{{ page.title }}</h1>
-  <h3>Tags: {{ page | tags }}</h3>
-  <div class="entry">
-    {{ content }}
-  </div>
-  <div class="entry">
-  (未经授权禁止转载)
-  </div>
-  <div class="date">
-    Written on {{ page.date | date: "%B %e, %Y" }}
-  </div>
- <img src="../images/dashang.png" />
+    <h1>{{ page.title }}</h1>
+    <h3>Tags: {{ page | tags }}</h3>
+    <div class="entry">
+        {{ content }}
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on {{ page.date | date: "%B %e, %Y" }}
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
     
-  {% include disqus.html %}
+    {% include disqus.html %}
 </article>
+
 
