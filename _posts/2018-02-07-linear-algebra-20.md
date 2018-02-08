@@ -25,37 +25,61 @@ canvas应该内置了一套矩阵运算系统，并且canvas内含有一个仿�
 
 ```javascript
 
+var p = Math.PI / 180;
+var degree = 45; // 旋转度数
+var sx = 0.5;// x 轴缩放倍数
+var sy = 2.0;// y 轴缩放倍数
+var t = 0 * Math.PI / 180;// 斜切度数 
+var tx = 200; // x轴平移
+var ty = 100; // y轴平移
+var args = [
+    sx * Math.cos(p * degree),
+    sx * Math.sin(p * degree),
+    t * sx * Math.cos(p * degree) - sy * Math.sin(p * degree),
+    t * sx * Math.sin(p * degree) + sy * Math.cos(p * degree),
+    tx,
+    ty];
+
 var transform = function(a, b, c, d, e, f) {
-    var a = [a, b, c, d, e, f];
-    var angle = Math.atan2(a[1], a[0]),
-        denom = Math.pow(a[0], 2) + Math.pow(a[1], 2),
-        scaleX = Math.sqrt(denom),
-        scaleY = (a[0] * a[3] - a[2] * a[1]) / scaleX,
-        skewX = Math.atan2(a[0] * a[2] + a[1] * a[3], denom);
-    
-    skewX = skewX / (Math.PI / 180); // Note: canvas has no skew only function!
+    var angle = Math.atan2(b, a);
+    var denom = Math.pow(a, 2) + Math.pow(b, 2);
+    var scaleX = Math.sqrt(denom);
+    var scaleY = (a * d - c * b) / scaleX;
+    var skewX = Math.atan2(a * c + b * d, denom);
     var skewY = 0;
-    var translateX = a[4];
-    var translateY = a[5];
-    this.translate(translateX, translateY);
-    this.rotate(angle);
-    this.scale(scaleX, scaleY);
+    var translateX = e;
+    var translateY = f;
+
+    console.log("angle", angle * 180 / Math.PI);
+    console.log("skewX", skewX);
+    console.log("scale", scaleX, scaleY);
+    console.log("translate", translateX, translateY);
+    /*
+    Outout:
+    angle 45
+    skewX 0
+    scale 0.5 2
+    translate 200 100
+    */
+    ctx.translate(translateX, translateY);
+    ctx.rotate(angle);
+    ctx.scale(scaleX, scaleY);
 }
+
+
+var canvas = document.getElementById('test2');
+var ctx = canvas.getContext('2d');
+transform(...args);
+ctx.fillRect(100, 100, 50, 50);
+ctx.font = "30px Verdana";
+ctx.fillText("Hello, World", 10, 90);
 
 ```
 
-代码来源:
+上面代码大意是，用户输入任意degree，sx， sy，t，tx，ty，并计算出它们的a,b,c,d,e,f，然后调用这个自定义transform函数，就能得到和内置的transform一样的变换效果。
 
- [stackoverflow - Find the Rotation and Skew of a Matrix transformation
-](https://stackoverflow.com/questions/5107134/find-the-rotation-and-skew-of-a-matrix-transformation/32125700#32125700)
+下面将逐步讲解transform函数怎么得来。
 
-[unmatrix - parse(str) ](https://github.com/matthewmueller/unmatrix/blob/master/index.js)
-
-[DecomposeMatrix 此代码最原始出处（有注释）](https://hg.mozilla.org/mozilla-central/file/7cb3e9795d04/layout/style/nsStyleAnimation.cpp)
-
-[GRAPHICS GEMS II edited by JAMES ARVO]()
-
-我这个版本代码看起来不复杂，但还是慢慢地来分析下数学原理吧。
 
 ## 2D仿射变换矩阵的分解
 
@@ -205,132 +229,36 @@ Q可以用参数a, b, c, d, e, f表示：
 
 \\( y = \\frac \{ ad -  bc \} \{  \\sqrt \{ a\^\{2\} + b\^\{2\} \}  \} \\)
 
-## 原始注释解释
 
-decomposition algorithm：
+然后可以求s了：
 
-```c
+\\( s = (c + y(b/x))/a \\)
 
-/*
- * The relevant section of the transitions specification:
- * http://dev.w3.org/csswg/css3-transitions/#animation-of-property-types-
- * defers all of the details to the 2-D and 3-D transforms specifications.
- * For the 2-D transforms specification (all that's relevant for us, right
- * now), the relevant section is:
- * http://dev.w3.org/csswg/css3-2d-transforms/#animation
- * This, in turn, refers to the unmatrix program in Graphics Gems,
- * available from http://tog.acm.org/resources/GraphicsGems/ , and in
-+
-− * particular as the file GraphicsGems/gemsii/unmatrix.c
- * in http://tog.acm.org/resources/GraphicsGems/AllGems.tar.gz
- *
- * The unmatrix reference is for general 3-D transform matrices (any of the
- * 16 components can have any value).
- *
- * For CSS 2-D transforms, we have a 2-D matrix with the bottom row constant:
- *
- * [ A C E ]
- * [ B D F ]
- * [ 0 0 1 ]
- *
- * For that case, I believe the algorithm in unmatrix reduces to:
- *
- *  (1) If A * D - B * C == 0, the matrix is singular.  Fail.
- *
- *  (2) Set translation components (Tx and Ty) to the translation parts of
- *      the matrix (E and F) and then ignore them for the rest of the time.
- *      (For us, E and F each actually consist of three constants:  a
- *      length, a multiplier for the width, and a multiplier for the
- *      height.  This actually requires its own decomposition, but I'll
- *      keep that separate.)
- *
- *  (3) Let the X scale (Sx) be sqrt(A^2 + B^2).  Then divide both A and B
- *      by it.
- *
- *  (4) Let the XY shear (K) be A * C + B * D.  From C, subtract A times
- *      the XY shear.  From D, subtract B times the XY shear.
- *
- *  (5) Let the Y scale (Sy) be sqrt(C^2 + D^2).  Divide C, D, and the XY
- *      shear (K) by it.
- *
- *  (6) At this point, A * D - B * C is either 1 or -1.  If it is -1,
- *      negate the XY shear (K), the X scale (Sx), and A, B, C, and D.
- *      (Alternatively, we could negate the XY shear (K) and the Y scale
- *      (Sy).)
- *
- *  (7) Let the rotation be R = atan2(B, A).
- *
- * Then the resulting decomposed transformation is:
- *
- *   translate(Tx, Ty) rotate(R) skewX(atan(K)) scale(Sx, Sy)
- *
- * An interesting result of this is that all of the simple transform
- * functions (i.e., all functions other than matrix()), in isolation,
- * decompose back to themselves except for:
- *   'skewY(φ)', which is 'matrix(1, tan(φ), 0, 1, 0, 0)', which decomposes
- *   to 'rotate(φ) skewX(φ) scale(sec(φ), cos(φ))' since (ignoring the
- *   alternate sign possibilities that would get fixed in step 6):
- *     In step 3, the X scale factor is sqrt(1+tan²(φ)) = sqrt(sec²(φ)) = sec(φ).
- *     Thus, after step 3, A = 1/sec(φ) = cos(φ) and B = tan(φ) / sec(φ) = sin(φ).
- *     In step 4, the XY shear is sin(φ).
- *     Thus, after step 4, C = -cos(φ)sin(φ) and D = 1 - sin²(φ) = cos²(φ).
- *     Thus, in step 5, the Y scale is sqrt(cos²(φ)(sin²(φ) + cos²(φ)) = cos(φ).
- *     Thus, after step 5, C = -sin(φ), D = cos(φ), and the XY shear is tan(φ).
- *     Thus, in step 6, A * D - B * C = cos²(φ) + sin²(φ) = 1.
- *     In step 7, the rotation is thus φ.
- *
- *   skew(θ, φ), which is matrix(1, tan(φ), tan(θ), 1, 0, 0), which decomposes
- *   to 'rotate(φ) skewX(θ + φ) scale(sec(φ), cos(φ))' since (ignoring
- *   the alternate sign possibilities that would get fixed in step 6):
- *     In step 3, the X scale factor is sqrt(1+tan²(φ)) = sqrt(sec²(φ)) = sec(φ).
- *     Thus, after step 3, A = 1/sec(φ) = cos(φ) and B = tan(φ) / sec(φ) = sin(φ).
- *     In step 4, the XY shear is cos(φ)tan(θ) + sin(φ).
- *     Thus, after step 4,
- *     C = tan(θ) - cos(φ)(cos(φ)tan(θ) + sin(φ)) = tan(θ)sin²(φ) - cos(φ)sin(φ)
- *     D = 1 - sin(φ)(cos(φ)tan(θ) + sin(φ)) = cos²(φ) - sin(φ)cos(φ)tan(θ)
- *     Thus, in step 5, the Y scale is sqrt(C² + D²) =
- *     sqrt(tan²(θ)(sin⁴(φ) + sin²(φ)cos²(φ)) -
- *          2 tan(θ)(sin³(φ)cos(φ) + sin(φ)cos³(φ)) +
- *          (sin²(φ)cos²(φ) + cos⁴(φ))) =
- *     sqrt(tan²(θ)sin²(φ) - 2 tan(θ)sin(φ)cos(φ) + cos²(φ)) =
- *     cos(φ) - tan(θ)sin(φ) (taking the negative of the obvious solution so
- *     we avoid flipping in step 6).
- *     After step 5, C = -sin(φ) and D = cos(φ), and the XY shear is
- *     (cos(φ)tan(θ) + sin(φ)) / (cos(φ) - tan(θ)sin(φ)) =
- *     (dividing both numerator and denominator by cos(φ))
- *     (tan(θ) + tan(φ)) / (1 - tan(θ)tan(φ)) = tan(θ + φ).
- *     (See http://en.wikipedia.org/wiki/List_of_trigonometric_identities .)
- *     Thus, in step 6, A * D - B * C = cos²(φ) + sin²(φ) = 1.
- *     In step 7, the rotation is thus φ.
- *
- *     To check this result, we can multiply things back together:
- *
- *     [ cos(φ) -sin(φ) ] [ 1 tan(θ + φ) ] [ sec(φ)    0   ]
- *     [ sin(φ)  cos(φ) ] [ 0      1     ] [   0    cos(φ) ]
- *
- *     [ cos(φ)      cos(φ)tan(θ + φ) - sin(φ) ] [ sec(φ)    0   ]
- *     [ sin(φ)      sin(φ)tan(θ + φ) + cos(φ) ] [   0    cos(φ) ]
- *
- *     but since tan(θ + φ) = (tan(θ) + tan(φ)) / (1 - tan(θ)tan(φ)),
- *     cos(φ)tan(θ + φ) - sin(φ)
- *      = cos(φ)(tan(θ) + tan(φ)) - sin(φ) + sin(φ)tan(θ)tan(φ)
- *      = cos(φ)tan(θ) + sin(φ) - sin(φ) + sin(φ)tan(θ)tan(φ)
- *      = cos(φ)tan(θ) + sin(φ)tan(θ)tan(φ)
- *      = tan(θ) (cos(φ) + sin(φ)tan(φ))
- *      = tan(θ) sec(φ) (cos²(φ) + sin²(φ))
- *      = tan(θ) sec(φ)
- *     and
- *     sin(φ)tan(θ + φ) + cos(φ)
- *      = sin(φ)(tan(θ) + tan(φ)) + cos(φ) - cos(φ)tan(θ)tan(φ)
- *      = tan(θ) (sin(φ) - sin(φ)) + sin(φ)tan(φ) + cos(φ)
- *      = sec(φ) (sin²(φ) + cos²(φ))
- *      = sec(φ)
- *     so the above is:
- *     [ cos(φ)  tan(θ) sec(φ) ] [ sec(φ)    0   ]
- *     [ sin(φ)     sec(φ)     ] [   0    cos(φ) ]
- *
- *     [    1   tan(θ) ]
- *     [ tan(φ)    1   ]
- */
+\\( s = \\frac \{ c \} \{ a \} + \\frac \{ yb \} \{ xa \} \\)
 
-```
+y/x上面已经有了，代入：
+
+\\( s = \\frac \{ c \} \{ a \} + \\frac \{ (ad -  bc)b \} \{ (a\^\{2\} + b\^\{2\})a \} \\)
+
+\\( s = \\frac \{ c(a\^\{2\} + b\^\{2\}) + (ad -  bc)b \} \{ (a\^\{2\} + b\^\{2\})a \} \\)
+
+\\( s = \\frac \{ ca\^\{2\} + cb\^\{2\} + adb -  cb\^\{2\} \} \{ (a\^\{2\} + b\^\{2\})a \} \\)
+
+\\( s = \\frac \{ ca\^\{2\} + adb \} \{ (a\^\{2\} + b\^\{2\})a \} \\)
+
+\\( s = \\frac \{ a(ca + bd) \} \{ (a\^\{2\} + b\^\{2\})a \} \\)
+
+\\( s = \\frac \{ ca + bd \} \{ a\^\{2\} + b\^\{2\} \} \\)
+
+
+
+## 参考资料
+
+ [stackoverflow - Find the Rotation and Skew of a Matrix transformation
+](https://stackoverflow.com/questions/5107134/find-the-rotation-and-skew-of-a-matrix-transformation/32125700#32125700)
+
+[unmatrix - parse(str) ](https://github.com/matthewmueller/unmatrix/blob/master/index.js)
+
+[DecomposeMatrix 此代码最原始出处（有注释）](https://hg.mozilla.org/mozilla-central/file/7cb3e9795d04/layout/style/nsStyleAnimation.cpp)
+
+《GRAPHICS GEMS II edited by JAMES ARVO》
