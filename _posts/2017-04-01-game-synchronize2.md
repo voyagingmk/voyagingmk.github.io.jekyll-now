@@ -2,7 +2,7 @@
 layout: post_latex
 title: 实时战斗游戏的同步——demo实战
 tags: ['game' ]
-published: true
+published: false
 ---
 
 <!--more-->
