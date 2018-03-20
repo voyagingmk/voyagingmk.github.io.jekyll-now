@@ -62,9 +62,11 @@ GJK算法原理：
 
 \\[ (A\times B)\times C = -C\times (A\times B) \\]
 
-\\[ (A\times B)\times C = -A(B\cdot C) + B(A\cdot C) \\]
+\\[ (A\times B)\times C = B(A\cdot C) - A(B\cdot C)  \\]
 
 Proof: [https://en.wikipedia.org/wiki/Triple_product#Proof](https://en.wikipedia.org/wiki/Triple_product#Proof)
+
+GJK使用的第三条公式。
 
 # GJK算法原理
 
