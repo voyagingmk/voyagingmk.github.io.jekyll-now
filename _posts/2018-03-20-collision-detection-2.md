@@ -41,10 +41,6 @@ GJK有以下几个关键点：
 
 （可以理解为B先做了一次镜像，然后再和A做并集运算）
 
-### Minkowski空间
-
-闵可夫斯基空间定义为A - B得到的几何体所在的空间。
-
 
 ## 几何体的定义：连续or离散
 
@@ -81,7 +77,7 @@ Point support(Shape shape1, Shape shape2, Vector d) {
   Point p2 = shape2.getFarthestPointInDirection(d.negative());
   // Minkowski减法运算（这里其实只是普通的向量运算）
   Point p3 = p1.subtract(p2);
-  // p3位于闵可夫斯基空间中，且p3刚好就在shape1、shape2闵可夫斯基差的这个新几何体的边上
+  // p3刚好就在shape1、shape2闵可夫斯基差的这个新几何体的边上
   return p3;
 }
 ```
