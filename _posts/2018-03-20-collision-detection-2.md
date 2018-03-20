@@ -49,8 +49,9 @@ GJK算法原理：
 
 这条公式才是真正应用到GJK算法里的公式。
 
-（可以理解为B先做了一次镜像，然后再和A做并集运算）
+可以理解为B先做了一次镜像，然后再和A做并集运算。
 
+所以，说到GJK的Minkowski运算时，可以叫Minkowski和，也可以叫Minkowski差。anyway。
 
 ## 向量混合积
 
@@ -98,7 +99,7 @@ GJK实际上是一个**迭代式**的算法，迭代次数上限就是n x m。
 
 ```c
 // 给定2个静态几何形状和一个方向向量，求出经过Minkowski减法运算得到的点（唯一）
-Point support(Shape shape1, Shape shape2, Vector d) {
+Point support(Shape& shape1, Shape& shape2, Vector& d) {
   // 沿着d方向找出shape1中最远的点p1
   Point p1 = shape1.getFarthestPointInDirection(d);
   // 沿着-d方向找出shape2中最远的点p2
@@ -109,6 +110,160 @@ Point support(Shape shape1, Shape shape2, Vector d) {
   return p3;
 }
 ```
+
+## GJK主循环
+
+为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为参考对象。（找到的其他GJK代码都觉得奇奇怪怪的）
+
+b2Distance不仅实现了GJK算法，还实现了Simplex Cache机制，即支持时间相干性，从而提升计算效率。
+
+下面将精简b2Distance代码（去掉了Simplex Cache、input->useRadii等），只保留和GJK相关的，来方便读者理解b2Distance。
+
+```c
+
+
+void b2Distance(b2DistanceOutput* output,
+				b2SimplexCache* cache,
+				const b2DistanceInput* input)
+{
+	const b2DistanceProxy* proxyA = &input->proxyA;
+	const b2DistanceProxy* proxyB = &input->proxyB;
+
+	b2Transform transformA = input->transformA;
+	b2Transform transformB = input->transformB;
+
+	b2Simplex simplex;
+
+	b2SimplexVertex* vertices = &simplex.m_v1;
+	const int32 k_maxIters = 20;
+
+  // saveA、saveB、saveCount保存上一轮迭代的结果，用来判重，防止循环
+	int32 saveA[3], saveB[3];
+	int32 saveCount = 0;
+
+	// 这就是传说中的GJK迭代loop了
+	int32 iter = 0;
+	while (iter < k_maxIters)
+	{
+		saveCount = simplex.m_count;
+		for (int32 i = 0; i < saveCount; ++i)
+		{
+			saveA[i] = vertices[i].indexA;
+			saveB[i] = vertices[i].indexB;
+		}
+
+    // 根据当前的单纯形的顶点数量，选择不同的处理流程
+		switch (simplex.m_count)
+		{
+		case 1:
+      // 
+			break;
+
+		case 2:
+			simplex.Solve2();
+			break;
+
+		case 3:
+			simplex.Solve3();
+			break;
+
+		default:
+			b2Assert(false);
+		}
+
+		if (simplex.m_count == 3)
+		{
+      // 单纯形已经有3个顶点，说明原点已经在单纯形里面了
+			break;
+		}
+
+		// Get search direction.
+		b2Vec2 d = simplex.GetSearchDirection();
+
+		// Ensure the search direction is numerically fit.
+		if (d.LengthSquared() < b2_epsilon * b2_epsilon)
+		{
+			// The origin is probably contained by a line segment
+			// or triangle. Thus the shapes are overlapped.
+
+			// We can't return zero here even though there may be overlap.
+			// In case the simplex is a point, segment, or triangle it is difficult
+			// to determine if the origin is contained in the CSO or very close to it.
+			break;
+		}
+
+		// Compute a tentative new simplex vertex using support points.
+		b2SimplexVertex* vertex = vertices + simplex.m_count;
+		vertex->indexA = proxyA->GetSupport(b2MulT(transformA.q, -d));
+		vertex->wA = b2Mul(transformA, proxyA->GetVertex(vertex->indexA));
+		b2Vec2 wBLocal;
+		vertex->indexB = proxyB->GetSupport(b2MulT(transformB.q, d));
+		vertex->wB = b2Mul(transformB, proxyB->GetVertex(vertex->indexB));
+		vertex->w = vertex->wB - vertex->wA;
+
+		// Iteration count is equated to the number of support point calls.
+		++iter;
+		// Check for duplicate support points. This is the main termination criteria.
+		bool duplicate = false;
+		for (int32 i = 0; i < saveCount; ++i)
+		{
+			if (vertex->indexA == saveA[i] && vertex->indexB == saveB[i])
+			{
+				duplicate = true;
+				break;
+			}
+		}
+
+		// If we found a duplicate support point we must exit to avoid cycling.
+		if (duplicate)
+		{
+			break;
+		}
+
+		// New vertex is ok and needed.
+		++simplex.m_count;
+	}
+
+	// Prepare output.
+	simplex.GetWitnessPoints(&output->pointA, &output->pointB);
+	output->distance = b2Distance(output->pointA, output->pointB);
+	output->iterations = iter;
+
+	// Cache the simplex.
+	simplex.WriteCache(cache);
+
+	// Apply radii if requested.
+	if (input->useRadii)
+	{
+		float32 rA = proxyA->m_radius;
+		float32 rB = proxyB->m_radius;
+
+		if (output->distance > rA + rB && output->distance > b2_epsilon)
+		{
+			// Shapes are still no overlapped.
+			// Move the witness points to the outer surface.
+			output->distance -= rA + rB;
+			b2Vec2 normal = output->pointB - output->pointA;
+			normal.Normalize();
+			output->pointA += rA * normal;
+			output->pointB -= rB * normal;
+		}
+		else
+		{
+			// Shapes are overlapped when radii are considered.
+			// Move the witness points to the middle.
+			b2Vec2 p = 0.5f * (output->pointA + output->pointB);
+			output->pointA = p;
+			output->pointB = p;
+			output->distance = 0.0f;
+		}
+	}
+}
+
+
+```
+
+
 
 ## 参考资料
 
