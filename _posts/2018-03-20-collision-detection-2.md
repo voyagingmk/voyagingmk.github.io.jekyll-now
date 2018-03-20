@@ -114,3 +114,7 @@ Point support(Shape shape1, Shape shape2, Vector d) {
 
 [Algorithms for the computation of the
 Minkowski difference](file:///Users/wyman/Downloads/Tomiczkova.pdf)
+
+[http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/](http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/)
+
+[https://github.com/kroitor/gjk.c](https://github.com/kroitor/gjk.c)
