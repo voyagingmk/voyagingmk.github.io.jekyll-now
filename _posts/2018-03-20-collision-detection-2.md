@@ -5,14 +5,18 @@ tags: ['collision detection']
 published: true
 ---
 
-GJK有以下几个关键点：
+GJK的特性：
 
-- 需要用到Minkowski数学
-- GJK是二元运算，需要输入2个几何体，返回碰撞判定信息
-- GJK是维度无关的算法，适用1D、2D、3D
-- GJK自定义的Support函数
+- GJK是二元运算，输入2个几何体信息，返回碰撞判定信息
+- GJK是维度无关的算法，2D、3D游戏都可以用
+
+GJK包含的知识点：
+
+- Minkowski数学
 - 向量混合积
+- GJK自定义的Support函数
 
+本文将详解GJK的来龙去脉。
 
 <!--more-->
 
@@ -65,6 +69,21 @@ GJK实际上是一个**迭代式**的算法，迭代次数上限就是n x m。
 为了优化迭代次数，GJK定义了一个方向向量\\(d\\)，\\(d\\)贯穿了整个GJK算法。\\(d\\)如何选取，基本就决定了GJK的收敛速度。
 
 
+## 向量混合积
+
+曾经，我在我的[用线性代数知识解决光线和三角形的交点问题](http://127.0.0.1:4000/triangle-intersect/)一文中提到了一个数学公式，叫**标量混合积(Scalar Triple Product)**。
+
+而在GJK中，需要用到相似的另一个东西——**[向量混合积(Vector Triple Product)](https://en.wikipedia.org/wiki/Triple_product)**, 同时也被称为**BAC-CAB特性**:
+
+\\[ A\times (B\times C) = B(A\cdot C) - C(A\cdot B) \\]
+
+\\[ (A\times B)\times C = -C\times (A\times B) \\]
+
+\\[ (A\times B)\times C = -A(B\cdot C) + B(A\cdot C) \\]
+
+Proof: [https://en.wikipedia.org/wiki/Triple_product#Proof](https://en.wikipedia.org/wiki/Triple_product#Proof)
+
+
 ## Support函数
 
 伪代码：
@@ -82,20 +101,6 @@ Point support(Shape shape1, Shape shape2, Vector d) {
   return p3;
 }
 ```
-
-## 向量混合积
-
-曾经，我在我的[用线性代数知识解决光线和三角形的交点问题](http://127.0.0.1:4000/triangle-intersect/)一文中提到了一个数学公式，叫**标量混合积(Scalar Triple Product)**。
-
-而在gjk中，需要用到相似的另一个东西——**向量混合积(Vector Triple Product)**, 同时也被称为**BAC-CAB特性**:
-
-\\[ A\times (B\times C) = B(A\cdot C) - C(A\cdot B) \\]
-
-\\[ (A\times B)\times C = -C\times (A\times B) \\]
-
-\\[ (A\times B)\times C = -A(B\cdot C) + B(A\cdot C) \\]
-
-
 
 ## 参考资料
 
