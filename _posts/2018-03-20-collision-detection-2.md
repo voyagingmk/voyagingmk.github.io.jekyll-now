@@ -5,19 +5,16 @@ tags: ['collision detection']
 published: true
 ---
 
-GJK的特性：
+GJK的主要特性：
 
-- GJK是二元运算，输入2个几何体信息，返回碰撞判定信息
-- GJK是维度无关的算法，2D、3D游戏都可以用
+- GJK算法与维度无关，2D、3D游戏都可以用
+- 不要求对顶点数组做排序
+- 存在一些技巧可以大大优化GJK的性能
 
 GJK包含的数学知识点：
 
 - Minkowski数学
 - 向量混合积
-
-GJK算法原理：
-
-- Support函数
 
 本文将详解GJK的来龙去脉。
 
@@ -71,15 +68,6 @@ GJK使用的第三条公式。
 
 # GJK算法原理
 
-## GJK的时间复杂度问题
-
-假设2个几何体的顶点数分别为n和m，最坏情况时，GJK要进行n x m次Minkowski减法运算，非常慢。然而，GJK不至于这么暴力。
-
-GJK实际上是一个**迭代式**的算法，迭代次数上限就是n x m。
-
-为了优化迭代次数，GJK定义了一个方向向量\\(d\\)，\\(d\\)贯穿了整个GJK算法。\\(d\\)如何选取，基本就决定了GJK的收敛速度。
-
-
 ## 几何体的定义：连续or离散
 
 从GJK用到的数学知识来看，GJK并不要求输入的2个几何体必须是离散定义的几何体。
@@ -90,8 +78,33 @@ GJK实际上是一个**迭代式**的算法，迭代次数上限就是n x m。
 
 继续下面的讨论之前，先定义一下本文中的几何体：由离散的有限的n个顶点唯一确定的凸几何体(Convex)。
 
-\\[ One\ Geometry\ Shape = A\ Convex\ Defined\ By\ A\ Set\ Of\ Vertices \\]
 
+## GJK的时间复杂度问题
+
+假设2个几何体的顶点数分别为n和m，最坏情况时，GJK要进行n x m次Minkowski减法运算，非常慢。然而，GJK不至于这么暴力。
+
+GJK实际上是一个**迭代式**的算法，迭代次数上限就是n x m。
+
+为了优化迭代次数，GJK定义了一个方向向量\\(d\\)，\\(d\\)贯穿了整个GJK算法。\\(d\\)如何选取，基本就决定了GJK的收敛速度。
+
+
+
+## 来自wiki的GJK伪代码
+
+```js
+function GJK_intersection(shape p, shape q, vector initial_axis):
+    vector  A = Support(p, initial_axis) - Support(q, -initial_axis)
+    simplex s = {A}
+    vector  D = -A
+    loop:
+        A = Support(p, D) - Support(q, -D)
+        if dot(A, D) < 0:
+          reject
+        s = s ∪ A
+        s, D, contains_origin = NearestSimplex(s)
+        if contains_origin:
+          accept
+```
 
 ## Support函数
 
@@ -116,6 +129,8 @@ Point support(Shape& shape1, Shape& shape2, Vector& d) {
 为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为参考对象。（找到的其他GJK代码都觉得奇奇怪怪的）
 
 b2Distance不仅实现了GJK算法，还实现了Simplex Cache机制，即支持时间相干性，从而提升计算效率。
+
+不过有个问题是，b2Distance不一定能直接改成支持3D，因为用到了一些2D几何公式，例如b2Cross。
 
 下面将精简b2Distance代码（去掉了Simplex Cache、input->useRadii等），只保留和GJK相关的，来方便读者理解b2Distance。
 
@@ -267,9 +282,38 @@ void b2Distance(b2DistanceOutput* output,
 
 ## 参考资料
 
+[Gilbert–Johnson–Keerthi distance algorithm](https://en.wikipedia.org/wiki/Gilbert%E2%80%93Johnson%E2%80%93Keerthi_distance_algorithm)
+
 [Algorithms for the computation of the
 Minkowski difference](file:///Users/wyman/Downloads/Tomiczkova.pdf)
 
-[http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/](http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/)
+http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/
 
-[https://github.com/kroitor/gjk.c](https://github.com/kroitor/gjk.c)
+
+## GJK各种实现
+
+(Warning: 如果不能先参透GJK的原理，看下面这些代码的时候是非常折磨人的)
+
+### 2D
+
+- Box2D：
+
+https://github.com/erincatto/Box2D/blob/master/Box2D/Box2D/Collision/b2Distance.cpp
+
+- gjk.c，200多行纯C代码实现GJK：
+
+https://github.com/kroitor/gjk.c
+
+- dyn4j，一个java写的物理引擎：
+
+https://github.com/dyn4j/dyn4j/blob/master/src/main/java/org/dyn4j/collision/narrowphase/Gjk.java
+
+- 这个自带演示程序，很厉害
+
+https://github.com/juhl/collision-detection-2d
+
+### 3D
+
+- Bullet，重量级引擎，全局搜btGjkPairDetector可找到GJK代码
+
+https://github.com/bulletphysics/bullet3
