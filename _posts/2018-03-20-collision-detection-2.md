@@ -11,6 +11,7 @@ GJK有以下几个关键点：
 - GJK是二元运算，需要输入2个几何体，返回碰撞判定信息
 - GJK是维度无关的算法，适用1D、2D、3D
 - GJK自定义的Support函数
+- 向量混合积
 
 
 <!--more-->
@@ -81,6 +82,20 @@ Point support(Shape shape1, Shape shape2, Vector d) {
   return p3;
 }
 ```
+
+## 向量混合积
+
+曾经，我在我的[用线性代数知识解决光线和三角形的交点问题](http://127.0.0.1:4000/triangle-intersect/)一文中提到了一个数学公式，叫**标量混合积(Scalar Triple Product)**。
+
+而在gjk中，需要用到相似的另一个东西——**向量混合积(Vector Triple Product)**, 同时也被称为**BAC-CAB特性**:
+
+\\[ A\times (B\times C) = B(A\cdot C) - C(A\cdot B) \\]
+
+\\[ (A\times B)\times C = -C\times (A\times B) \\]
+
+\\[ (A\times B)\times C = -A(B\cdot C) + B(A\cdot C) \\]
+
+
 
 ## 参考资料
 

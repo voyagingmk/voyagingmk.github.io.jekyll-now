@@ -114,7 +114,7 @@ published: true
 
 \\[ {% include render_matrix_raw.html mat = B row = 3 col = 1 %} = \\frac \{ 1 \} \{ {% include render_det_raw.html mat = A row = 1 col = 3 %} \} \\left\[ \begin{matrix} {% include render_det_raw.html mat = D1 row = 1 col = 3 %}  \\\ {% include render_det_raw.html mat = D2 row = 1 col = 3 %}  \\\ {% include render_det_raw.html mat = D3 row = 1 col = 3 %}  \\\  \end{matrix} \\right\]    \\]
 
-然后再使用另一杀招——**向量的混合积**[The Scalar Triple Product](http://mathworld.wolfram.com/ScalarTripleProduct.html)，从而再次将上式简化。
+然后再使用另一杀招——**标量混合积**[The Scalar Triple Product](http://mathworld.wolfram.com/ScalarTripleProduct.html)，从而再次将上式简化。
 
 向量的混合积公式：
 
