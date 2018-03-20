@@ -7,7 +7,7 @@ published: true
 
 GJK有以下几个关键点：
 
-- 需要用到Minkowski减法运算
+- 需要用到Minkowski数学
 - GJK是一个二元运算，需要给定2个参数，即2个几何体
 - GJK是维度无关的算法，适用1D、2D、3D
 - GJK自定义的Support函数
@@ -15,7 +15,7 @@ GJK有以下几个关键点：
 
 <!--more-->
 
-## Minkowski 闵可夫斯基
+## Minkowski 闵可夫斯基数学
 
 ### Minkowski扩大运算  [Minkowski Sum](https://en.wikipedia.org/wiki/Minkowski_addition)
 
@@ -41,7 +41,7 @@ GJK有以下几个关键点：
 
 （可以理解为B先做了一次镜像，然后再和A做并集运算）
 
-### Minkowski space
+### Minkowski空间
 
 闵可夫斯基空间定义为A - B得到的几何体所在的空间。
 
