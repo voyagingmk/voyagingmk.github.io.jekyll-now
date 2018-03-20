@@ -8,7 +8,7 @@ published: true
 GJK有以下几个关键点：
 
 - 需要用到Minkowski数学
-- GJK是一个二元运算，需要给定2个参数，即2个几何体
+- GJK是二元运算，需要输入2个几何体，返回碰撞判定信息
 - GJK是维度无关的算法，适用1D、2D、3D
 - GJK自定义的Support函数
 
