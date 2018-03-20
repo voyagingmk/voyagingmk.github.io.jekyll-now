@@ -5,16 +5,17 @@ tags: ['collision detection']
 published: true
 ---
 
-GJK有以下几个知识点要掌握：
+GJK有以下几个关键点：
 
-1. 闵可夫斯基运算
-2. Support函数
+- 需要用到Minkowski减法运算
+- GJK是一个二元运算，需要给定2个参数，即2个几何体
+- GJK是维度无关的算法，适用1D、2D、3D
+- GJK自定义的Support函数
 
-下面，将根据这些知识点，逐步拉开GJK算法的面纱。
 
 <!--more-->
 
-## Minkowski 闵可夫斯基运算
+## Minkowski 闵可夫斯基
 
 ### Minkowski扩大运算  [Minkowski Sum](https://en.wikipedia.org/wiki/Minkowski_addition)
 
@@ -22,17 +23,56 @@ GJK有以下几个知识点要掌握：
 
 其中，\\(A\^\{b\} = \\{ a + b | a \\in A\\}  = A + b \\)，代表集合A整体移动b
 
+（可以理解为几何形状的Union并集运算）
+
 ### Minkowski收缩运算 
 
 \\[ A \ominus B = \\bigcap \_\{b \in B} A\^\{-b\}  \\]
 
 其中，\\(A\^\{-b\} = \\{ a - b | a \\in A\\}  = A - b \\)，代表集合A整体移动-b
 
-### Minkowski减法运算
+（可以理解为几何形状的Intersect交集运算）
+
+### Minkowski减法运算（Minkowski差)
 
 \\[ A - B =  A \oplus (-B)  \\]
 
 这条公式才是真正应用到GJK算法里的公式。
+
+（可以理解为B先做了一次镜像，然后再和A做并集运算）
+
+### Minkowski space
+
+闵可夫斯基空间定义为A - B得到的几何体所在的空间。
+
+
+## 几何体的定义：连续or离散
+
+从GJK用到的数学知识来看，GJK并不要求输入的2个几何体必须是离散的点组成的几何体。但这里不深入探讨连续(矢量)几何体的情况。
+
+实际上在计算机领域，矢量几何体总可以转换成离散的点集合。
+
+继续下面的讨论之前，先定义一下本文中的几何体：由离散的有限的n个顶点唯一确定的凸几何体(Convex)。
+
+\\[ One\ Geometry\ Shape = A\ Convex\ Defined\ By\ A\ Set\ Of\ Vertices \\]
+
+## Support函数
+
+伪代码：
+
+```c
+// 给定2个静态几何形状和一个方向向量，求出经过Minkowski减法运算得到的点（唯一）
+Point support(Shape shape1, Shape shape2, Vector d) {
+  // 沿着d方向找出shape1中最远的点p1
+  Point p1 = shape1.getFarthestPointInDirection(d);
+  // 沿着-d方向找出shape2中最远的点p2
+  Point p2 = shape2.getFarthestPointInDirection(d.negative());
+  // Minkowski减法运算（这里其实只是普通的向量运算）
+  Point p3 = p1.subtract(p2);
+  // p3位于闵可夫斯基空间中，且p3刚好就在shape1、shape2闵可夫斯基差的这个新几何体的边上
+  return p3;
+}
+```
 
 ## 参考资料
 
