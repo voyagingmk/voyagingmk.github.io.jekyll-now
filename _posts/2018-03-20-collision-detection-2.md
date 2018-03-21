@@ -7,14 +7,16 @@ published: true
 
 GJK的主要特性：
 
-- GJK算法与维度无关，2D、3D游戏都可以用
+- 只适用于凸包几何体
+- GJK算法与维度无关，2D、3D都可以用
 - 不要求对顶点数组做排序
 - 存在一些技巧可以大大优化GJK的性能
 
 GJK包含的数学知识点：
 
-- Minkowski数学
-- 向量混合积
+- 闵可夫斯基和 Minkowski sum
+- 向量混合积 vector triple product
+- 1、2、3、4阶单纯形 n-Simplex
 
 本文将详解GJK的来龙去脉。
 
@@ -65,6 +67,12 @@ GJK包含的数学知识点：
 Proof: [https://en.wikipedia.org/wiki/Triple_product#Proof](https://en.wikipedia.org/wiki/Triple_product#Proof)
 
 GJK使用的第三条公式。
+
+
+## 单纯形
+
+
+
 
 # GJK算法原理
 
@@ -246,33 +254,6 @@ void b2Distance(b2DistanceOutput* output,
 
 	// Cache the simplex.
 	simplex.WriteCache(cache);
-
-	// Apply radii if requested.
-	if (input->useRadii)
-	{
-		float32 rA = proxyA->m_radius;
-		float32 rB = proxyB->m_radius;
-
-		if (output->distance > rA + rB && output->distance > b2_epsilon)
-		{
-			// Shapes are still no overlapped.
-			// Move the witness points to the outer surface.
-			output->distance -= rA + rB;
-			b2Vec2 normal = output->pointB - output->pointA;
-			normal.Normalize();
-			output->pointA += rA * normal;
-			output->pointB -= rB * normal;
-		}
-		else
-		{
-			// Shapes are overlapped when radii are considered.
-			// Move the witness points to the middle.
-			b2Vec2 p = 0.5f * (output->pointA + output->pointB);
-			output->pointA = p;
-			output->pointB = p;
-			output->distance = 0.0f;
-		}
-	}
 }
 
 
