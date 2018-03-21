@@ -294,6 +294,14 @@ http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/
 
 (Warning: 如果不能先参透GJK的原理，看下面这些代码的时候是非常折磨人的)
 
+### 强烈推荐
+
+一份来自2000年左右的代码：
+
+[Computing the Distance between Objects](http://www.cs.ox.ac.uk/people/stephen.cameron/distances/)
+
+http://www.cs.ox.ac.uk/people/stephen.cameron/distances/gjk2.4/
+
 ### 2D
 
 - Box2D：
