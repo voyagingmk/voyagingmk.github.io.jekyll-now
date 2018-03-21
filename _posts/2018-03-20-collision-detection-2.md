@@ -16,7 +16,7 @@ GJK包含的数学知识点：
 
 - 闵可夫斯基和 Minkowski sum
 - 向量混合积 vector triple product
-- 1、2、3、4阶单纯形 n-Simplex
+- k阶单纯形 k-Simplex
 
 本文将详解GJK的来龙去脉。
 
@@ -69,10 +69,37 @@ Proof: [https://en.wikipedia.org/wiki/Triple_product#Proof](https://en.wikipedia
 GJK使用的第三条公式。
 
 
-## 单纯形
+## 单纯形 [Simplex](https://en.wikipedia.org/wiki/Simplex)
 
+按照wiki的解释，k阶单纯形，指的是k维空间中的多胞形，且多胞形是k+1个顶点组成的凸包。根据这个定义出发，就可以理解GJK算法中会提到的各种Simplex是什么东西：
 
+### 0阶单纯形 0-Simplex
 
+![3.png](../images/2018.3/3.png)
+
+根据前面的定义，0阶单纯形是0维空间下的0+1=1个顶点组成的凸包，显然只能是一个点。
+
+### 1阶单纯形 1-Simplex
+
+![4.png](../images/2018.3/4.png)
+
+1阶单纯形，1维空间，1+1=2个顶点，所以就是一条直线（1维空间）上的一个线段。
+
+### 2阶单纯形 2-Simplex
+
+![5.png](../images/2018.3/5.png)
+
+2阶单纯形，2维空间，2+1=3个顶点，所以就是一个平面（2维空间）上的一个三角形，三角形我们就熟悉了，显然是一个凸包无误。
+
+### 3阶单纯形 3-Simplex
+
+![6.png](../images/2018.3/6.png)
+
+3阶单纯形，3维空间，3+1=4个顶点，所以就是3维立体空间里的一个四面体(tetrahedron)，显然也是一个凸包。
+
+### k>3阶单纯形
+
+我想读者做的都是2D或3D的项目，2D项目最多用到2-Simplex，3D项目最多用到3-Simplex。k>3的Simplex，忽略吧。
 
 # GJK算法原理
 
