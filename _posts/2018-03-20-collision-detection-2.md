@@ -17,6 +17,8 @@ GJK包含的知识点：
 - 闵可夫斯基和 Minkowski sum
 - 向量混合积 vector triple product
 - k阶单纯形 k-Simplex
+- supporting point和Support函数
+- witness point
 - 一般要结合[EPA](http://www.dyn4j.org/2010/05/epa-expanding-polytope-algorithm/)算法使用
 
 本文将详解GJK的来龙去脉。
