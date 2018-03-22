@@ -268,7 +268,9 @@ b2Distance不仅实现了GJK算法，还实现了Simplex Cache机制，即支持
 
 下面将精简b2Distance代码（去掉了Simplex Cache、input->useRadii等），只保留和GJK相关的，来方便读者理解b2Distance。
 
-```c
+## b2Distance核心逻辑
+
+```c++
 
 
 void b2Distance(b2DistanceOutput* output,
@@ -286,7 +288,7 @@ void b2Distance(b2DistanceOutput* output,
 	b2SimplexVertex* vertices = &simplex.m_v1;
 	const int32 k_maxIters = 20;
 
-  // saveA、saveB、saveCount保存上一轮迭代的结果，用来判重，防止循环
+  // saveA、saveB、saveCount保存上一轮迭代的结果，用来防止进入死循环
 	int32 saveA[3], saveB[3];
 	int32 saveCount = 0;
 
@@ -301,11 +303,10 @@ void b2Distance(b2DistanceOutput* output,
 			saveB[i] = vertices[i].indexB;
 		}
 
-    // 根据当前的单纯形的顶点数量，选择不同的处理流程
+    // 根据当前的单纯形拥有的顶点数量，选择不同的处理流程
 		switch (simplex.m_count)
 		{
 		case 1:
-      // 
 			break;
 
 		case 2:
@@ -326,12 +327,14 @@ void b2Distance(b2DistanceOutput* output,
 			break;
 		}
 
-		// Get search direction.
+    // 根据s计算新的搜索方向d
 		b2Vec2 d = simplex.GetSearchDirection();
 
-		// Ensure the search direction is numerically fit.
+
 		if (d.LengthSquared() < b2_epsilon * b2_epsilon)
 		{
+      // d的长度几乎等于0，说明当前的单纯形很可能已经包含原点了
+      // 可能是s的一条边压到，也可能是三角形区域包含了原点
 			// The origin is probably contained by a line segment
 			// or triangle. Thus the shapes are overlapped.
 
@@ -341,14 +344,17 @@ void b2Distance(b2DistanceOutput* output,
 			break;
 		}
 
-		// Compute a tentative new simplex vertex using support points.
+    // 计算下一个Minkowski差vertex
+
+    // simplex里的要被写入的顶点
 		b2SimplexVertex* vertex = vertices + simplex.m_count;
+    // 分别对2个几何体调用support函数
 		vertex->indexA = proxyA->GetSupport(b2MulT(transformA.q, -d));
 		vertex->wA = b2Mul(transformA, proxyA->GetVertex(vertex->indexA));
-		b2Vec2 wBLocal;
 		vertex->indexB = proxyB->GetSupport(b2MulT(transformB.q, d));
 		vertex->wB = b2Mul(transformB, proxyB->GetVertex(vertex->indexB));
-		vertex->w = vertex->wB - vertex->wA;
+    // Minkowski差 
+		vertex->w = vertex->wB - vertex->wA; 
 
 		// Iteration count is equated to the number of support point calls.
 		++iter;
@@ -362,31 +368,41 @@ void b2Distance(b2DistanceOutput* output,
 				break;
 			}
 		}
-
-		// If we found a duplicate support point we must exit to avoid cycling.
 		if (duplicate)
 		{
 			break;
 		}
 
-		// New vertex is ok and needed.
+    // 到了这里说明新的vertex符合期望
 		++simplex.m_count;
 	}
 
-	// Prepare output.
+	// 计算witness point，下一篇GJK文章再介绍
+  // 总之pointA pointB是距离原点最近的Minkowski差(一个顶点)对应的2个点
 	simplex.GetWitnessPoints(&output->pointA, &output->pointB);
-	output->distance = b2Distance(output->pointA, output->pointB);
+  // 这里调用的是重载函数
+  // distance存储了pointA pointB之间的差值（>=0)
+  // distance小于一个预期阈值时，就认为这2个几何体发生碰撞
+	output->distance = b2Distance(output->pointA, output->pointB); 
 	output->iterations = iter;
 
-	// Cache the simplex.
+	// 缓存
 	simplex.WriteCache(cache);
 }
-
-
 ```
+
+## simplex.Solve2
+
+
+## simplex.Solve3
+
+
 
 # <div id="4">GJK的其他细节</div>
 
+## 2D/3D泛化实现
+
+虽然说GJK原理没有对维度有什么限制，但2D版本的GJK代码还是很难直接泛化成2D+3D的。因为其中有一些细节，很难用维数参数化。具体有什么坑，等我踩一遍再回来更新。
 
 ## 几何体的定义：连续or离散
 
@@ -403,7 +419,9 @@ GJK中的方向向量\\(d\\)，\\(d\\)如何选取，基本就决定了GJK的收
 
 
 
-## <div id="5">参考资料</div>
+# <div id="5">参考资料</div>
+
+## 文字资料
 
 [Gilbert–Johnson–Keerthi distance algorithm](https://en.wikipedia.org/wiki/Gilbert%E2%80%93Johnson%E2%80%93Keerthi_distance_algorithm)
 
@@ -412,14 +430,28 @@ Minkowski difference](file:///Users/wyman/Downloads/Tomiczkova.pdf)
 
 http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/
 
+[Visualizing the GJK Collision detection algorithm](https://www.haroldserrano.com/blog/visualizing-the-gjk-collision-algorithm)
 
-## <div id="5.1">GJK各种实现</div>
+
+PPT：
+
+http://slideplayer.com/slide/689954/
+
+## Youtube视频资料
+
+1个小时的课程：
+
+https://caseymuratori.com/blog_0003
+
+
+
+# <div id="5.1">GJK各种实现</div>
 
 (Warning: 如果不能先参透GJK的原理，看下面这些代码的时候是非常折磨人的)
 
-### 2D
+## 2D
 
-- 一份来自2000年左右的代码：
+- 一份来自2000年左右的代码，巨复杂，阅读起来很有心理障碍：
 
 [Computing the Distance between Objects](http://www.cs.ox.ac.uk/people/stephen.cameron/distances/)
 
@@ -437,11 +469,11 @@ https://github.com/kroitor/gjk.c
 
 https://github.com/dyn4j/dyn4j/blob/master/src/main/java/org/dyn4j/collision/narrowphase/Gjk.java
 
-- 这个自带演示程序，很厉害
+- js实现，这个自带演示程序，很厉害：
 
 https://github.com/juhl/collision-detection-2d
 
-### 3D
+## 3D
 
 - Bullet，重量级引擎，全局搜btGjkPairDetector可找到GJK代码
 
