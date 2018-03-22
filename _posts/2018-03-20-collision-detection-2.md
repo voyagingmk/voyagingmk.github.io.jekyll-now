@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: 碰撞检测算法(二)：GJK详解
+title: 碰撞检测算法(二)：原始GJK详解
 tags: ['collision detection']
 published: true
 ---
@@ -12,22 +12,44 @@ GJK的主要特性：
 - 不要求对顶点数组做排序
 - 存在一些技巧可以大大优化GJK的性能
 
-GJK包含的知识点：
+原始GJK包含的知识点：
 
 - 闵可夫斯基和 Minkowski sum
 - 向量混合积 vector triple product
 - k阶单纯形 k-Simplex
 - supporting point和Support函数
-- witness point
-- 一般要结合[EPA](http://www.dyn4j.org/2010/05/epa-expanding-polytope-algorithm/)算法使用
 
-本文将详解GJK的来龙去脉。
+增强GJK的知识点:
+- witness point
+- [EPA](http://www.dyn4j.org/2010/05/epa-expanding-polytope-algorithm/)算法
+
+
+原始GJK告诉调用者2个几何体有没发生碰撞，而增强GJK不仅告知有没碰撞，还返回了碰撞点、碰撞距离信息。
+
+本文将详解原始GJK的来龙去脉。
+
+### 目录：
+
+
+- [数学知识点](#1)
+	- [闵可夫斯基数学 Minkowski Math](#1.1)
+	- [单纯形 Simplex](#1.2)
+  - [向量混合积 Vector Triple Product](#1.3)
+- [GJK算法原理](#2)
+	- [GJK伪代码](#2.1)
+  - [Support函数](#2.2)
+  - [NearestSimplex函数](#2.3)
+- [GJK算法实现](#3) 
+- [其他细节](#4) 
+- [参考资料](#5) 
+	- [GJK各种实现](#5.1)
+   
 
 <!--more-->
 
-# 数学知识点
+# <div id="1">数学知识点</div>
 
-## Minkowski 闵可夫斯基数学
+## <div id="1.1">闵可夫斯基数学 Minkowski Math</div>
 
 ### Minkowski扩大运算  [Minkowski Sum](https://en.wikipedia.org/wiki/Minkowski_addition)
 
@@ -55,7 +77,7 @@ GJK包含的知识点：
 
 所以，说到GJK的Minkowski运算时，可以叫Minkowski和，也可以叫Minkowski差。anyway。
 
-## 向量混合积
+## 向量混合积 Vector Triple Product
 
 曾经，我在我的[用线性代数知识解决光线和三角形的交点问题](http://127.0.0.1:4000/triangle-intersect/)一文中提到了一个数学公式，叫**标量混合积(Scalar Triple Product)**。
 
@@ -72,7 +94,7 @@ Proof: [https://en.wikipedia.org/wiki/Triple_product#Proof](https://en.wikipedia
 GJK使用的第三条公式。
 
 
-## 单纯形 [Simplex](https://en.wikipedia.org/wiki/Simplex)
+## <div id="1.2">单纯形 [Simplex](https://en.wikipedia.org/wiki/Simplex)</div>
 
 按照wiki的解释，k阶单纯形，指的是k维空间中的多胞形，且多胞形是k+1个顶点组成的凸包。根据这个定义出发，就可以理解GJK算法中会提到的各种Simplex是什么东西：
 
@@ -104,12 +126,12 @@ GJK使用的第三条公式。
 
 我想读者做的都是2D或3D的项目，2D项目最多用到2-Simplex，3D项目最多用到3-Simplex。k>3的Simplex，忽略吧。
 
-# GJK算法原理
+#  <div id="2">GJK算法原理</div>
 
 
-## 划重点：来自wiki的GJK伪代码
+## <div id="2.1">划重点：来自wiki的GJK伪代码</div>
 
-经过查阅大量资料，发现还是wiki对GJK的解释一语中的，所以下面介绍下wiki给出的GJ伪代码：
+经过查阅大量资料，发现还是wiki对GJK的解释一语中的，所以下面介绍下wiki给出的GJK伪代码：
 
 ```js
 function GJK_intersection(shape p, shape q, vector D):
@@ -149,7 +171,7 @@ function GJK_intersection(shape p, shape q, vector D):
 
 下面章节继续介绍伪代码里出现的**Support和NearestSimplex函数**。
 
-## Support函数
+## <div id="2.2">Support函数</div>
 
 在不同的资料中，Support函数可能有不同的定义，函数声明如下：
 
@@ -198,7 +220,7 @@ Point support2(Shape& shape1, Shape& shape2, Vector& d) {
 }
 ```
 
-## NearestSimplex函数
+## <div id="2.3">NearestSimplex函数</div>
 
 wiki:
 
@@ -235,7 +257,8 @@ NearestSimplex很不凡，做了很多事情。一是NearestSimplex可以判定2
 
 
 
-## GJK主循环
+# <div id="3">GJK算法实现</div>
+
 
 为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为参考对象。（找到的其他GJK代码都觉得奇奇怪怪的）
 
@@ -362,7 +385,7 @@ void b2Distance(b2DistanceOutput* output,
 
 ```
 
-# GJK的其他想法
+# GJK的其他细节
 
 
 ## 几何体的定义：连续or离散
@@ -394,15 +417,13 @@ http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/
 
 (Warning: 如果不能先参透GJK的原理，看下面这些代码的时候是非常折磨人的)
 
-### 强烈推荐
+### 2D
 
-一份来自2000年左右的代码：
+- 一份来自2000年左右的代码：
 
 [Computing the Distance between Objects](http://www.cs.ox.ac.uk/people/stephen.cameron/distances/)
 
 http://www.cs.ox.ac.uk/people/stephen.cameron/distances/gjk2.4/
-
-### 2D
 
 - Box2D：
 
