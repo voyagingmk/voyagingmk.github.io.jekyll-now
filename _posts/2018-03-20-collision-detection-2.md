@@ -223,6 +223,12 @@ NearestSimplex很不凡，做了很多事情。一是NearestSimplex可以判定2
 
 而如果构成的2-simplex包含了原点，GJK_intersection就可以直接返回true了。所以就是说，**s变成2-simplex的时候，就是GJK_intersection返回true的时候**。
 
+而因为算法的流程设计，执行到NearestSimplex的时候，s必然起码含有2个顶点。综上，NearestSimplex返回的s必然是2-simplex或1-simplex，而不可能是0-simplex。
+
+3. 新的迭代方向d
+
+根据第二点，如果s不能成为2-simplex（没有碰撞），就还需要继续迭代。新的迭代方向就是1-simplex这条线段的法向量。
+
 ## GJK主循环
 
 为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为参考对象。（找到的其他GJK代码都觉得奇奇怪怪的）
