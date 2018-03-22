@@ -391,6 +391,41 @@ void b2Distance(b2DistanceOutput* output,
 }
 ```
 
+下面继续介绍这段代码里出现的GetSearchDirection、Solve2、Solve3函数。
+
+## simplex.GetSearchDirection
+
+```c
+b2Vec2 GetSearchDirection() const
+{
+  switch (m_count)
+  {
+  case 1:
+    return -m_v1.w;
+
+  case 2:
+    {
+      b2Vec2 e12 = m_v2.w - m_v1.w;
+      float32 sgn = b2Cross(e12, -m_v1.w);
+      if (sgn > 0.0f)
+      {
+        // Origin is left of e12.
+        return b2Cross(1.0f, e12);
+      }
+      else
+      {
+        // Origin is right of e12.
+        return b2Cross(e12, 1.0f);
+      }
+    }
+
+  default:
+    b2Assert(false);
+    return b2Vec2_zero;
+  }
+}
+```
+
 ## simplex.Solve2
 
 
