@@ -283,6 +283,7 @@ void b2Distance(b2DistanceOutput* output,
 	b2Transform transformA = input->transformA;
 	b2Transform transformB = input->transformB;
 
+  // 单纯形类实例！
 	b2Simplex simplex;
 
 	b2SimplexVertex* vertices = &simplex.m_v1;
@@ -393,8 +394,223 @@ void b2Distance(b2DistanceOutput* output,
 ## simplex.Solve2
 
 
+Solve2主要目的：找出原点在当前这个1-simplex的哪个区域。
+
+以下图为例，区域总共有3个，w1、w2、w12：
+
+![8.png](../images/2018.3/8.png)
+
+w12就是w1和w22个顶点夹住的那片黄色。
+
+solve2的原理是，通过求原点在w1w2的投影点p（最近点），从而知道原点和线段w1w2的关系。
+
+投影点p既然在w1w2上，那么可用[质心坐标公式](https://en.wikipedia.org/wiki/Barycentric_coordinate_system)表示：
+
+\\[ (a\_\{1\} + a\_\{2\})\\mathbf p = a\_\{1\} \\mathbf w\_\{1\} + a\_\{2\} \\mathbf w\_\{2\}  \\]
+
+为了唯一确定这个点p，再加入限制条件：
+
+\\[ a\_\{1\} + a\_\{2\} = 1   \\]
+
+上式简化：
+
+\\[ \\mathbf p = a\_\{1\} \\mathbf w\_\{1\} + a\_\{2\} \\mathbf w\_\{2\}  \\]
+
+op（即向量\\(\\mathbf p\\)）必然垂直于w1w2，所以有：
+
+\\[  \\mathbf e\_\{12\} = \\mathbf w\_\{2\} - \\mathbf  w\_\{1\} \\]
+
+\\[ \\mathbf p \cdot \\mathbf e\_\{12\} = 0\\]
+
+把上面的\\(\\mathbf p\\)代入，得到：
+
+
+\\[ (a\_\{1\} \\mathbf w\_\{1\} + a\_\{2\} \\mathbf w\_\{2\}) \cdot \\mathbf e\_\{12\} = 0\\]
+
+\\[ a\_\{1\} (\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\}) + a\_\{2\} (\\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\}) = 0\\]
+
+```c++
+
+// Solve a line segment using barycentric coordinates.
+//
+// p = a1 * w1 + a2 * w2
+// a1 + a2 = 1
+//
+// The vector from the origin to the closest point on the line is
+// perpendicular to the line.
+// e12 = w2 - w1
+// dot(p, e) = 0
+// a1 * dot(w1, e) + a2 * dot(w2, e) = 0
+//
+// 2-by-2 linear system
+// [1      1     ][a1] = [1]
+// [w1.e12 w2.e12][a2] = [0]
+//
+// Define
+// d12_1 =  dot(w2, e12)
+// d12_2 = -dot(w1, e12)
+// d12 = d12_1 + d12_2
+//
+// Solution
+// a1 = d12_1 / d12
+// a2 = d12_2 / d12
+void b2Simplex::Solve2()
+{
+	b2Vec2 w1 = m_v1.w;
+	b2Vec2 w2 = m_v2.w;
+	b2Vec2 e12 = w2 - w1;
+
+	// w1 region
+	float32 d12_2 = -b2Dot(w1, e12);
+	if (d12_2 <= 0.0f)
+	{
+		// a2 <= 0, so we clamp it to 0
+		m_v1.a = 1.0f;
+		m_count = 1;
+		return;
+	}
+
+	// w2 region
+	float32 d12_1 = b2Dot(w2, e12);
+	if (d12_1 <= 0.0f)
+	{
+		// a1 <= 0, so we clamp it to 0
+		m_v2.a = 1.0f;
+		m_count = 1;
+		m_v1 = m_v2;
+		return;
+	}
+
+	// Must be in e12 region.
+	float32 inv_d12 = 1.0f / (d12_1 + d12_2);
+	m_v1.a = d12_1 * inv_d12;
+	m_v2.a = d12_2 * inv_d12;
+	m_count = 2;
+}
+
+
+```
+
+
 ## simplex.Solve3
 
+```c++
+
+// Possible regions:
+// - points[2]
+// - edge points[0]-points[2]
+// - edge points[1]-points[2]
+// - inside the triangle
+void b2Simplex::Solve3()
+{
+	b2Vec2 w1 = m_v1.w;
+	b2Vec2 w2 = m_v2.w;
+	b2Vec2 w3 = m_v3.w;
+
+	// Edge12
+	// [1      1     ][a1] = [1]
+	// [w1.e12 w2.e12][a2] = [0]
+	// a3 = 0
+	b2Vec2 e12 = w2 - w1;
+	float32 w1e12 = b2Dot(w1, e12);
+	float32 w2e12 = b2Dot(w2, e12);
+	float32 d12_1 = w2e12;
+	float32 d12_2 = -w1e12;
+
+	// Edge13
+	// [1      1     ][a1] = [1]
+	// [w1.e13 w3.e13][a3] = [0]
+	// a2 = 0
+	b2Vec2 e13 = w3 - w1;
+	float32 w1e13 = b2Dot(w1, e13);
+	float32 w3e13 = b2Dot(w3, e13);
+	float32 d13_1 = w3e13;
+	float32 d13_2 = -w1e13;
+
+	// Edge23
+	// [1      1     ][a2] = [1]
+	// [w2.e23 w3.e23][a3] = [0]
+	// a1 = 0
+	b2Vec2 e23 = w3 - w2;
+	float32 w2e23 = b2Dot(w2, e23);
+	float32 w3e23 = b2Dot(w3, e23);
+	float32 d23_1 = w3e23;
+	float32 d23_2 = -w2e23;
+	
+	// Triangle123
+	float32 n123 = b2Cross(e12, e13);
+
+	float32 d123_1 = n123 * b2Cross(w2, w3);
+	float32 d123_2 = n123 * b2Cross(w3, w1);
+	float32 d123_3 = n123 * b2Cross(w1, w2);
+
+	// w1 region
+	if (d12_2 <= 0.0f && d13_2 <= 0.0f)
+	{
+		m_v1.a = 1.0f;
+		m_count = 1;
+		return;
+	}
+
+	// e12
+	if (d12_1 > 0.0f && d12_2 > 0.0f && d123_3 <= 0.0f)
+	{
+		float32 inv_d12 = 1.0f / (d12_1 + d12_2);
+		m_v1.a = d12_1 * inv_d12;
+		m_v2.a = d12_2 * inv_d12;
+		m_count = 2;
+		return;
+	}
+
+	// e13
+	if (d13_1 > 0.0f && d13_2 > 0.0f && d123_2 <= 0.0f)
+	{
+		float32 inv_d13 = 1.0f / (d13_1 + d13_2);
+		m_v1.a = d13_1 * inv_d13;
+		m_v3.a = d13_2 * inv_d13;
+		m_count = 2;
+		m_v2 = m_v3;
+		return;
+	}
+
+	// w2 region
+	if (d12_1 <= 0.0f && d23_2 <= 0.0f)
+	{
+		m_v2.a = 1.0f;
+		m_count = 1;
+		m_v1 = m_v2;
+		return;
+	}
+
+	// w3 region
+	if (d13_1 <= 0.0f && d23_1 <= 0.0f)
+	{
+		m_v3.a = 1.0f;
+		m_count = 1;
+		m_v1 = m_v3;
+		return;
+	}
+
+	// e23
+	if (d23_1 > 0.0f && d23_2 > 0.0f && d123_1 <= 0.0f)
+	{
+		float32 inv_d23 = 1.0f / (d23_1 + d23_2);
+		m_v2.a = d23_1 * inv_d23;
+		m_v3.a = d23_2 * inv_d23;
+		m_count = 2;
+		m_v1 = m_v3;
+		return;
+	}
+
+	// Must be in triangle123
+	float32 inv_d123 = 1.0f / (d123_1 + d123_2 + d123_3);
+	m_v1.a = d123_1 * inv_d123;
+	m_v2.a = d123_2 * inv_d123;
+	m_v3.a = d123_3 * inv_d123;
+	m_count = 3;
+}
+
+```
 
 
 # <div id="4">GJK的其他细节</div>
