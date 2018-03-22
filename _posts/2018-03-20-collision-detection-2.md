@@ -335,12 +335,10 @@ void b2Distance(b2DistanceOutput* output,
 		{
       // d的长度几乎等于0，说明当前的单纯形很可能已经包含原点了
       // 可能是s的一条边压到，也可能是三角形区域包含了原点
-			// The origin is probably contained by a line segment
-			// or triangle. Thus the shapes are overlapped.
-
-			// We can't return zero here even though there may be overlap.
-			// In case the simplex is a point, segment, or triangle it is difficult
-			// to determine if the origin is contained in the CSO or very close to it.
+			
+      // 尽管很可能几何体重叠了，但不能认为几何体之间的距离为0
+      // 因为simplex仅包含1或2个顶点，这时候会遇到浮点数精度问题，
+      // 很难判断这2个几何体是碰撞了还是距离非常近
 			break;
 		}
 
@@ -356,9 +354,10 @@ void b2Distance(b2DistanceOutput* output,
     // Minkowski差 
 		vertex->w = vertex->wB - vertex->wA; 
 
-		// Iteration count is equated to the number of support point calls.
+		// iter的值等同于被计算出来的support point数量
 		++iter;
-		// Check for duplicate support points. This is the main termination criteria.
+
+    // 判断是否重复，也是退出这个循环的主要条件
 		bool duplicate = false;
 		for (int32 i = 0; i < saveCount; ++i)
 		{
