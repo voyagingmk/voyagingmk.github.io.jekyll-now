@@ -211,8 +211,17 @@ NearestSimplex很不凡，做了很多事情。一是NearestSimplex可以判定2
 - 对于2D空间，单纯形s需是2-simplex，即s要含有3个顶点，才能判断s是否包含原点origin；
 - 对于3D空间，单纯形s需是3-simplex，即s要含有4个顶点，构成一个4面体，才能判断s是否包含原点origin。
 
-2. 更新单纯形，目的是保证s满足k-simplex的定义。例如在2D空间，四边形并不是2-simplex，三角形才是2-simplex。当s包含4个
+所以执行到NearestSimplex时，如果s里只有不到3个顶点的话，肯定不算碰撞。
 
+2. 更新单纯形，目的是保证s满足k-simplex的定义。
+
+例如在2D空间，四边形并不是2-simplex，三角形才是2-simplex。假设s包含4个顶点的时候，就需要去掉1个顶点，才能构成2-simplex。
+
+对于NearestSimplex函数，它有一些小动作。以2D空间为例：
+
+因为构成2-simplex仅需要3个顶点，如果最新push进s的点，构成的2-simplex并没有包含原点，那么可以直接丢弃s里的上上个顶点，使得s退化到1-simplex，即s是一条线段。
+
+而如果构成的2-simplex包含了原点，GJK_intersection就可以直接返回true了。所以就是说，**s变成2-simplex的时候，就是GJK_intersection返回true的时候**。
 
 ## GJK主循环
 
