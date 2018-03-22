@@ -106,34 +106,16 @@ GJK使用的第三条公式。
 
 # GJK算法原理
 
-## 几何体的定义：连续or离散
 
-从GJK用到的数学知识来看，GJK并不要求输入的2个几何体必须是离散定义的几何体。
+## 划重点：来自wiki的GJK伪代码
 
-所以GJK的一个优点是，GJK是支持曲面几何体的碰撞检测的。曲面是什么？曲面就是用数学公式描述的连续几何体。
-
-实际上在计算机领域，连续几何体总可以转换成离散的点集合。
-
-继续下面的讨论之前，先定义一下本文中的几何体：由离散的有限的n个顶点唯一确定的凸几何体(Convex)。
-
-
-## GJK的时间复杂度问题
-
-假设2个几何体的顶点数分别为n和m，最坏情况时，GJK要进行n x m次Minkowski减法运算，非常慢。然而，GJK不至于这么暴力。
-
-GJK实际上是一个**迭代式**的算法，迭代次数上限就是n x m。
-
-为了优化迭代次数，GJK定义了一个方向向量\\(d\\)，\\(d\\)贯穿了整个GJK算法。\\(d\\)如何选取，基本就决定了GJK的收敛速度。
-
-
-
-## 来自wiki的GJK伪代码
+经过查阅大量资料，发现还是wiki对GJK的解释一语中的，所以下面介绍下wiki给出的GJ伪代码：
 
 ```js
-function GJK_intersection(shape p, shape q, vector initial_axis):
-    vector  A = Support(p, initial_axis) - Support(q, -initial_axis)
+function GJK_intersection(shape p, shape q, vector D):
+    vector  A = Support(p, D) - Support(q, -D)
     simplex s = {A}
-    vector  D = -A
+    D = -A
     loop:
         A = Support(p, D) - Support(q, -D)
         if dot(A, D) < 0:
@@ -143,6 +125,26 @@ function GJK_intersection(shape p, shape q, vector initial_axis):
         if contains_origin:
           accept
 ```
+
+这份代码准确描述了**原始**GJK的核心逻辑：**只需要输入2个shape和一个初始方向，就能告诉你这2个shape有没碰撞**
+
+1. 分别沿着初始方向D和反方向-D，求出p和q的supporting point，并计算Minkowski差，得到向量A。
+
+2. 把A输入单纯形s，此时单纯形为0-simplex (如果你不知道是什么，说明没看上文)
+
+3. D重新设置为-A (这一步操作不是很关键，可以不深究为什么)
+
+4. 进入循环:
+
+  1. 同步骤1类似，计算下一个Minkowski差，并依然赋值给A（这里要注意到，A永远是最新计算得到的Minkowski差向量）
+
+  2. 判断A和D的点积是否小于0，实际上就是判断A和D的夹角是不是大于90度。或者换句话说，A在D方向上的投影距离，是否小于0，小于0说明投影在了D的反方向上。所以，如果点积小于0，说明不能在DO方向上找到离原点Origin更近的Minkowski差顶点，这个A被reject，GJK返回false，2个shape没有碰撞。
+
+  3. 到了这里，说明新的A离原点更近了，那么把A加进单纯形，此时单纯形含有2个顶点，所以是1-simplex
+
+  4. 经过NearestSimplex过滤，得到新的单纯形s，以及更新了方向向量D，contains_origin表示这个单纯形是否包含原点。
+
+  5. 如果contains_origin为true，那么说明2个shape里分别存在2个点，坐标相同，使得Minkowski差为0（原点），也就意味着2个shape发生了碰撞，GJK返回true。
 
 ## Support函数
 
@@ -288,6 +290,22 @@ void b2Distance(b2DistanceOutput* output,
 
 
 ```
+
+# GJK的其他想法
+
+
+## 几何体的定义：连续or离散
+
+从GJK用到的数学知识来看，GJK并不要求输入的2个几何体必须是离散顶点定义的几何体。
+
+所以GJK的一个优点是，GJK是支持非离散几何体的碰撞检测的，例如参数方程\\(x\^\{2\} + y\^\{2\} = r\^\{2\} \\)定义的圆，或者样条曲线、NURBS曲线定义的曲面几何体。
+
+至于如何抽象，切入点就是GJK的support函数。只有support函数使用到了输入参数Shape p和q，所以，可以针对非离散Shape设计特殊的support函数，从而泛化GJK算法。
+
+## GJK的时间复杂度问题
+
+GJK中的方向向量\\(d\\)，\\(d\\)如何选取，基本就决定了GJK的收敛速度。
+
 
 
 
