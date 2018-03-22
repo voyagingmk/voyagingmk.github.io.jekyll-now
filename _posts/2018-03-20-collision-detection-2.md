@@ -385,7 +385,7 @@ void b2Distance(b2DistanceOutput* output,
 
 ```
 
-# GJK的其他细节
+# <div id="4">GJK的其他细节</div>
 
 
 ## 几何体的定义：连续or离散
@@ -403,7 +403,7 @@ GJK中的方向向量\\(d\\)，\\(d\\)如何选取，基本就决定了GJK的收
 
 
 
-## 参考资料
+## <div id="5">参考资料</div>
 
 [Gilbert–Johnson–Keerthi distance algorithm](https://en.wikipedia.org/wiki/Gilbert%E2%80%93Johnson%E2%80%93Keerthi_distance_algorithm)
 
@@ -413,7 +413,7 @@ Minkowski difference](file:///Users/wyman/Downloads/Tomiczkova.pdf)
 http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/
 
 
-## GJK各种实现
+## <div id="5.1">GJK各种实现</div>
 
 (Warning: 如果不能先参透GJK的原理，看下面这些代码的时候是非常折磨人的)
 
