@@ -146,23 +146,73 @@ function GJK_intersection(shape p, shape q, vector D):
 
   5. 如果contains_origin为true，那么说明2个shape里分别存在2个点，坐标相同，使得Minkowski差为0（原点），也就意味着2个shape发生了碰撞，GJK返回true。
 
+
+下面章节继续介绍伪代码里出现的**Support和NearestSimplex函数**。
+
 ## Support函数
 
-伪代码：
+在不同的资料中，Support函数可能有不同的定义，函数声明如下：
+
+- Point support(Shape& shape, Vector& d)
+
+- Point support(Shape& shape1, Shape& shape2, Vector& d)
+
+可以把上面的第二个support改名为supprot2，方便区分。supprot2其实是对supprot的一层封装。
+
+先介绍support。用伪代码表示：
+
+```c
+// wiki：returns the point on shape which has the highest dot product with d
+// 即找出shape里的一个点，把这个点投影到d方向向量上，它离原点的距离最大（要区分正负）
+Point support(Shape& shape, Vector& d) {
+  // 具体实现可以自行设计，这里展示的是暴力遍历算法，brute-force
+  VertexID p, maxp;
+  p = maxp = FirstVertex(shape);
+  REAL maxv = dot(shape.vertices[maxp], d);
+  while ( ++p != shape.end() ) {
+    REAL v = dot(shape.vertices[p], d);
+    if ( v > maxv ) {
+      maxv = v;
+      maxp = p;
+    }
+  }
+  return shape.vertices[maxp];
+}
+```
+
+support的返回值，就是所谓的supporting point。
+
+有了support，就可以实现supprot2了：
 
 ```c
 // 给定2个静态几何形状和一个方向向量，求出经过Minkowski减法运算得到的点（唯一）
-Point support(Shape& shape1, Shape& shape2, Vector& d) {
+Point support2(Shape& shape1, Shape& shape2, Vector& d) {
   // 沿着d方向找出shape1中最远的点p1
-  Point p1 = shape1.getFarthestPointInDirection(d);
+  Point p1 = support(shape1, d);
   // 沿着-d方向找出shape2中最远的点p2
-  Point p2 = shape2.getFarthestPointInDirection(d.negative());
-  // Minkowski减法运算（这里其实只是普通的向量运算）
-  Point p3 = p1.subtract(p2);
-  // p3刚好就在shape1、shape2闵可夫斯基差的这个新几何体的边上
+  Point p2 = support(shape2, -d);
+  // Minkowski减法运算（其实只是普通的向量运算）
+  Point p3 = p1 - p2;
+  // p3刚好就落在shape1、shape2闵可夫斯基差的凸包的边上
   return p3;
 }
 ```
+
+## NearestSimplex函数
+
+wiki:
+
+>  takes a simplex **s** and returns the simplex on **s** closest to the origin, and a direction toward the origin normal to the new simplex. If **s** itself contains the origin, **NearestSimplex** accepts **s** and the two shapes are determined to intersect.
+
+NearestSimplex很不凡，做了很多事情。一是NearestSimplex可以判定2个shape是否碰撞；二是更新单纯形s；三是给出新的迭代方向d。
+
+1. 要判定2个shape是否碰撞，有前提条件：
+
+- 对于2D空间，单纯形s需是2-simplex，即s要含有3个顶点，才能判断s是否包含原点origin；
+- 对于3D空间，单纯形s需是3-simplex，即s要含有4个顶点，构成一个4面体，才能判断s是否包含原点origin。
+
+2. 更新单纯形，目的是保证s满足k-simplex的定义。例如在2D空间，四边形并不是2-simplex，三角形才是2-simplex。当s包含4个
+
 
 ## GJK主循环
 
