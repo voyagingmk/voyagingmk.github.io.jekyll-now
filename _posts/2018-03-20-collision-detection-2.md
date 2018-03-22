@@ -429,31 +429,28 @@ op（即向量\\(\\mathbf p\\)）必然垂直于w1w2，所以有：
 
 \\[ a\_\{1\} (\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\}) + a\_\{2\} (\\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\}) = 0\\]
 
+
+解得：
+
+\\[ a\_\{1\} = \\frac \{ \\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\} \} \{ -\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\}  + \\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\} \} \\]
+
+\\[ a\_\{2\} = \\frac \{ -\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\} \} \{ -\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\} + \\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\} \} \\]
+
+设:
+
+\\[ d12\\_2 = -\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\} \\]
+
+\\[ d12\\_1 = \\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\} \\]
+
+\\( a\_\{1\} 、 a\_\{2\} \\) 就可以表示成:
+
+\\[ a_1 = \frac { d12\\_1 } { d12\\_2  + d12\\_1 } \\]
+
+\\[ a_2 = \frac { d12\\_2 } { d12\\_2 + d12\\_1 } \\]
+
+
 ```c++
 
-// Solve a line segment using barycentric coordinates.
-//
-// p = a1 * w1 + a2 * w2
-// a1 + a2 = 1
-//
-// The vector from the origin to the closest point on the line is
-// perpendicular to the line.
-// e12 = w2 - w1
-// dot(p, e) = 0
-// a1 * dot(w1, e) + a2 * dot(w2, e) = 0
-//
-// 2-by-2 linear system
-// [1      1     ][a1] = [1]
-// [w1.e12 w2.e12][a2] = [0]
-//
-// Define
-// d12_1 =  dot(w2, e12)
-// d12_2 = -dot(w1, e12)
-// d12 = d12_1 + d12_2
-//
-// Solution
-// a1 = d12_1 / d12
-// a2 = d12_2 / d12
 void b2Simplex::Solve2()
 {
 	b2Vec2 w1 = m_v1.w;
@@ -464,8 +461,9 @@ void b2Simplex::Solve2()
 	float32 d12_2 = -b2Dot(w1, e12);
 	if (d12_2 <= 0.0f)
 	{
+    // p在w1区域，那么保留w1，干掉w2，单纯形退化成0-simplex
 		// a2 <= 0, so we clamp it to 0
-		m_v1.a = 1.0f;
+  	m_v1.a = 1.0f;
 		m_count = 1;
 		return;
 	}
@@ -474,14 +472,15 @@ void b2Simplex::Solve2()
 	float32 d12_1 = b2Dot(w2, e12);
 	if (d12_1 <= 0.0f)
 	{
+    // p在w2区域，那么保留w2，干掉w1，单纯形退化成0-simplex
 		// a1 <= 0, so we clamp it to 0
+    // p在w2区域
 		m_v2.a = 1.0f;
 		m_count = 1;
-		m_v1 = m_v2;
+		m_v1 = m_v2; // 保留下来的顶点需要放到数组第一个位置
 		return;
 	}
-
-	// Must be in e12 region.
+  // p必然在w1w2中间了，求出a1、a2，并分别保存进m_v1 m_v2里
 	float32 inv_d12 = 1.0f / (d12_1 + d12_2);
 	m_v1.a = d12_1 * inv_d12;
 	m_v2.a = d12_2 * inv_d12;
