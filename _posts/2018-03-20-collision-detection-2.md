@@ -265,7 +265,7 @@ NearestSimplex很不凡，做了很多事情。一是NearestSimplex可以判定2
 # <div id="3">GJK算法实现</div>
 
 
-为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为参考对象。（找到的其他GJK代码都觉得奇奇怪怪的）
+为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为学习对象。（找到的其他GJK代码都觉得奇奇怪怪的）
 
 b2Distance不仅实现了GJK算法，还实现了Simplex Cache机制，即支持时间相干性，从而提升计算效率。
 
@@ -400,6 +400,76 @@ void b2Distance(b2DistanceOutput* output,
 
 ## <div id="3.2">b2Simplex::GetSearchDirection</div>
 
+根据算法上下文，执行到GetSearchDirection时，单纯形顶点数只能是1或2。
+
+如果顶点数为1，下个搜索方向就是该顶点向量的反方向。so easy。
+
+如果顶点数为2，需要判断原点在\\( e_{12} \\)的哪一侧，然后返回那一侧的垂向量。
+
+这个问题的解决，需要用到2D叉积公式。现先从3D叉积公式说起。
+
+叉积([cross product](https://en.wikipedia.org/wiki/Cross_product))运算\\( \times \\)，本是3D空间特有的一种向量二元运算。执行\\( \mathbf a \times \mathbf b \\)，会得到一个同时和\\( \mathbf a 、 \mathbf b \\)正交的向量\\( \mathbf c\\)，\\( \mathbf c\\)的方向可以按右手规则推知：
+
+![10.png](../images/2018.3/10.png)
+
+可把\\( \mathbf a 、 \mathbf b \\)用标准基[Standard basis](https://en.wikipedia.org/wiki/Standard_basis) \\( \mathbf i、  \mathbf j 、 \mathbf k\\)表示：
+
+\\[ \mathbf a = u_1 \mathbf i + u_2 \mathbf j + u_3 \mathbf k \\]
+
+\\[ \mathbf b = v_1 \mathbf i + v_2 \mathbf j + v_3 \mathbf k \\]
+
+此时，\\( \mathbf a 、 \mathbf b \\)的叉积可以用矩阵秩(determinant)表示：
+
+{% assign Det = "\mathbf i , \mathbf j , \mathbf k , u_1 ,  u_2 , u_3 , v_1 , v_2 , v_3" | split: ',' %}
+\\[ \mathbf a \times \mathbf b = {% include render_det_raw.html mat = Det row = 3 col = 3 %}  \\]
+
+展开这个式子，得到向量形式的公式：
+
+{% assign Det1 = "u_2 , u_3 , v_2 , v_3" | split: ',' %}
+{% assign Det2 = "u_1 , u_3 , v_1 , v_3" | split: ',' %}
+{% assign Det3 = "u_1 , u_2 , v_1 , v_2" | split: ',' %}
+
+
+\\[ \mathbf a \times \mathbf b = {% include render_det_raw.html mat = Det1 row = 2 col = 2 %}  \mathbf i - {% include render_det_raw.html mat = Det2 row = 2 col = 2 %}  \mathbf j + {% include render_det_raw.html mat = Det3 row = 2 col = 2 %}  \mathbf k  \\]
+
+对于2D空间下的\\( \mathbf a 、 \mathbf b \\)，可认为它们是z分部为0的3D向量，从而可以套进上述公式：
+
+\\[ \mathbf a = u_1 \mathbf i + u_2 \mathbf j + 0 \mathbf k \\]
+
+\\[ \mathbf b = v_1 \mathbf i + v_2 \mathbf j + 0 \mathbf k \\]
+
+\\[ \mathbf a \times \mathbf b = {% include render_det_raw.html mat = Det1 row = 2 col = 2 %}  \mathbf i - {% include render_det_raw.html mat = Det2 row = 2 col = 2 %}  \mathbf j + {% include render_det_raw.html mat = Det3 row = 2 col = 2 %}  \mathbf k  \\]
+
+\\[ = 0\mathbf i - 0\mathbf j + {% include render_det_raw.html mat = Det3 row = 2 col = 2 %}  \mathbf k \\]
+
+\\[ = {% include render_det_raw.html mat = Det3 row = 2 col = 2 %} \\]
+
+\\[ = u_1 v_2 - u_2 v_1 \\]
+
+最后一步用到了2阶的determinant公式：
+
+![9.png](../images/2018.3/9.png)
+
+
+
+对于给定的\\( \mathbf a 、 \mathbf b \\)
+
+```c++
+
+// 正常的2D向量叉积公式
+inline float32 b2Cross(const b2Vec2& a, const b2Vec2& b)
+{
+	return a.x * b.y - a.y * b.x;
+}
+
+// 这条公式其实是为了得到和a正交的向量，s的值一般为1
+inline b2Vec2 b2Cross(float32 s, const b2Vec2& a)
+{
+	return b2Vec2(-s * a.y, s * a.x);
+}
+```
+
+
 ```c
 b2Vec2 GetSearchDirection() const
 {
@@ -440,7 +510,7 @@ Solve2主要目的：找出原点在当前这个1-simplex的哪个区域。
 
 ![8.png](../images/2018.3/8.png)
 
-w12就是w1和w22个顶点夹住的那片黄色。
+w12就是w1和w2两个顶点夹住的那片黄色。
 
 solve2的原理是，通过求原点在w1w2的投影点p（最近点），从而知道原点和线段w1w2的关系。
 
