@@ -5,16 +5,17 @@ tags: ['collision detection']
 published: true
 ---
 
+GJK，全称[Gilbert–Johnson–Keerthi distance algorithm](https://en.wikipedia.org/wiki/Gilbert%E2%80%93Johnson%E2%80%93Keerthi_distance_algorithm)，是非常常用的碰撞检测算法。
+
+
+原始GJK的功能：准确地告诉调用者2个几何体**是否**碰撞。
+
 GJK的主要特性：
 
-- 只适用于凸包几何体
+- 只适用于凸体
 - GJK算法与维度无关，2D、3D都可以用
 - 不要求对顶点数组做排序
 - 存在一些技巧可以大大优化GJK的性能
-
-原始GJK的功能：
-
-准确地告诉调用者2个几何体**是否**碰撞。
 
 本文将详解原始GJK的来龙去脉。
 
@@ -134,6 +135,12 @@ GJK使用的第三条公式。
 我想读者做的都是2D或3D的项目，2D项目最多用到2-Simplex，3D项目最多用到3-Simplex。k>3的Simplex，忽略吧。
 
 #  <div id="2">GJK算法原理</div>
+
+GJK算法，本质就是利用Minkowski差来判断2个几何体有没碰撞。
+
+因为如果碰撞了，那么2个几何体至少包含了同一个点，也就意味着它们的Minkowski差必然包含原点。
+
+明白这一点后，GJK其实就已经学到大半了。
 
 
 ## <div id="2.1">划重点：来自wiki的GJK伪代码</div>
