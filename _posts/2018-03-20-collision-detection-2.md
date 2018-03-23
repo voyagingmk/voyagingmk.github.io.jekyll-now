@@ -446,9 +446,13 @@ void b2Distance(b2DistanceOutput* output,
 
 \\[ = u_1 v_2 - u_2 v_1 \\]
 
-最后一步用到了2阶的determinant公式：
+最后一步用到了2阶的determinant公式([from wiki](https://en.wikipedia.org/wiki/Determinant)) ：
 
-![9.png](../images/2018.3/9.png)
+![9.png](../images/2018.3/9.png)  
+
+这就是所谓的2D叉积公式了，其实只是3D叉积的一种特殊情况。
+
+2D叉积公式有什么用呢？请注意，2D叉积后得到的是一个标量s。这个标量的正负号，就告诉了我们\\( \mathbf a \times \mathbf b \\)得到的向量( \\( 0\mathbf i - 0\mathbf j + s\mathbf k \\) )在z轴上的朝向。
 
 
 
