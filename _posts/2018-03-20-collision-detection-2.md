@@ -391,9 +391,9 @@ void b2Distance(b2DistanceOutput* output,
 }
 ```
 
-下面继续介绍这段代码里出现的GetSearchDirection、Solve2、Solve3函数。
+下面继续介绍这段代码里出现的GetSearchDirection、Solve2、Solve3、GetSupport函数。
 
-## simplex.GetSearchDirection
+## b2Simplex::GetSearchDirection
 
 ```c
 b2Vec2 GetSearchDirection() const
@@ -426,7 +426,7 @@ b2Vec2 GetSearchDirection() const
 }
 ```
 
-## simplex.Solve2
+## b2Simplex::Solve2
 
 
 Solve2主要目的：找出原点在当前这个1-simplex的哪个区域。
@@ -526,7 +526,7 @@ void b2Simplex::Solve2()
 ```
 
 
-## simplex.Solve3
+## b2Simplex::Solve3
 
 ```c++
 
@@ -644,6 +644,29 @@ void b2Simplex::Solve3()
 	m_count = 3;
 }
 
+```
+
+## b2DistanceProxy::GetSupport函数
+
+b2DistanceProxy的GetSupport和上面章节给出的support伪代码，几乎是一样的：
+
+```c++
+inline int32 b2DistanceProxy::GetSupport(const b2Vec2& d) const
+{
+	int32 bestIndex = 0;
+	float32 bestValue = b2Dot(m_vertices[0], d);
+	for (int32 i = 1; i < m_count; ++i)
+	{
+		float32 value = b2Dot(m_vertices[i], d);
+		if (value > bestValue)
+		{
+			bestIndex = i;
+			bestValue = value;
+		}
+	}
+
+	return bestIndex;
+}
 ```
 
 
