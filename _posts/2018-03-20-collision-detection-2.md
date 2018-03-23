@@ -12,19 +12,9 @@ GJK的主要特性：
 - 不要求对顶点数组做排序
 - 存在一些技巧可以大大优化GJK的性能
 
-原始GJK包含的知识点：
+原始GJK的功能：
 
-- 闵可夫斯基和 Minkowski sum
-- 向量混合积 vector triple product
-- k阶单纯形 k-Simplex
-- supporting point和Support函数
-
-增强GJK的知识点:
-- witness point
-- [EPA](http://www.dyn4j.org/2010/05/epa-expanding-polytope-algorithm/)算法
-
-
-原始GJK告诉调用者2个几何体有没发生碰撞，而增强GJK不仅告知有没碰撞，还返回了碰撞点、碰撞距离信息。
+准确地告诉调用者2个几何体**是否**碰撞。
 
 本文将详解原始GJK的来龙去脉。
 
@@ -53,6 +43,18 @@ GJK的主要特性：
 <!--more-->
 
 # <div id="1">数学知识点</div>
+
+原始GJK包含的知识点：
+
+- 闵可夫斯基和 Minkowski sum
+- 向量混合积 vector triple product
+- 2D叉积公式
+- 质心坐标公式
+- k阶单纯形 k-Simplex
+- supporting point和Support函数
+
+其中有几个点放到后面的算法实现一节再介绍。
+
 
 ## <div id="1.1">闵可夫斯基数学 Minkowski Math</div>
 
