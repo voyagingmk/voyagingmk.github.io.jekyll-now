@@ -29,7 +29,7 @@ GJK的主要特性：
 	- [GJK伪代码](#2.1)
   - [Support函数](#2.2)
   - [NearestSimplex函数](#2.3)
-- [GJK算法实现](#3) 
+- [二维平面的GJK算法实现](#3) 
 	- [b2Distance核心逻辑](#3.1)
 	- [b2Simplex::GetSearchDirection](#3.2)
 	- [b2Simplex::Solve2](#3.3)
@@ -264,7 +264,7 @@ NearestSimplex很不凡，做了很多事情。一是NearestSimplex可以判定2
 
 
 
-# <div id="3">GJK算法实现</div>
+# <div id="3">二维平面的GJK算法实现</div>
 
 
 为了学到真正靠谱的GJK算法，所以下面使用Box2D的b2Distance函数，作为学习对象。（找到的其他GJK代码都觉得奇奇怪怪的）
@@ -278,8 +278,6 @@ b2Distance不仅实现了GJK算法，还实现了Simplex Cache机制，即支持
 ## <div id="3.1">b2Distance核心逻辑</div>
 
 ```c++
-
-
 void b2Distance(b2DistanceOutput* output,
 				b2SimplexCache* cache,
 				const b2DistanceInput* input)
@@ -573,6 +571,31 @@ op（即向量\\(\\mathbf p\\)）必然垂直于w1w2，所以有：
 
 \\[ a_2 = \frac { d12\\_2 } { d12\\_2 + d12\\_1 } \\]
 
+因为\\( a_1 、a_2 \\)之和等于1，所以\\( a_1 、a_2 \\)不可能同时小于0，可列出所有情况：
+
+\\(a_1 、a_2  \\)都大于0时，p点在线段w1w2里面；
+
+\\(a_1 \\) 小于0时，p在w2区域里面；
+
+\\(a_2 \\) 小于0时，p在w1区域里面。
+
+（后面2个，不好解释，最好自己画图理解下）
+
+这里可能会有个担忧：如果d12_1、d12_2都小于0的话，分母会小于0，结果会如何？
+
+实际上是不可能的，可以反证下：
+
+ \\[ d12\\_2 + d12\\_1 < 0 \\]
+
+ \\[ -\\mathbf w\_\{1\} \cdot \\mathbf e\_\{12\} +  \\mathbf w\_\{2\} \cdot \\mathbf e\_\{12\}  < 0 \\]
+
+ \\[ ( \\mathbf w\_\{2\} - \\mathbf w\_\{1\} ) \cdot \\mathbf e\_\{12\}  < 0 \\]
+
+ \\[ \\mathbf e\_\{12\} \cdot \\mathbf e\_\{12\}  < 0 \\]
+
+\\[ \| \\mathbf e\_\{12\} \|\^\{2\} < 0 \\]
+
+显然不成立。
 
 ```c++
 
@@ -586,9 +609,10 @@ void b2Simplex::Solve2()
 	float32 d12_2 = -b2Dot(w1, e12);
 	if (d12_2 <= 0.0f)
 	{
-    // p在w1区域，那么保留w1，干掉w2，单纯形退化成0-simplex
-		// a2 <= 0, so we clamp it to 0
-  	m_v1.a = 1.0f;
+		// 根据上面的公式，可知此时a2也是<=0
+    	// 所以p在w1区域
+		// 保留w1，干掉w2，单纯形退化成0-simplex
+  		m_v1.a = 1.0f;
 		m_count = 1;
 		return;
 	}
@@ -617,6 +641,8 @@ void b2Simplex::Solve2()
 
 
 ## <div id="3.4">b2Simplex::Solve3</div>
+
+Solve3大同小异，
 
 ```c++
 
@@ -840,3 +866,7 @@ https://github.com/juhl/collision-detection-2d
 - Bullet，重量级引擎，全局搜btGjkPairDetector可找到GJK代码
 
 https://github.com/bulletphysics/bullet3
+
+- reactphysics3d，非产品级的轻量物理引擎，适合学习用：
+
+https://github.com/DanielChappuis/reactphysics3d
