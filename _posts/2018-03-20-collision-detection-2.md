@@ -40,6 +40,11 @@ GJK的主要特性：
   - [Support函数](#2.2)
   - [NearestSimplex函数](#2.3)
 - [GJK算法实现](#3) 
+	- [b2Distance核心逻辑](#3.1)
+	- [b2Simplex::GetSearchDirection](#3.2)
+	- [b2Simplex::Solve2](#3.3)
+	- [b2Simplex::Solve3](#3.4)
+	- [b2DistanceProxy::GetSupport](#3.5)
 - [其他细节](#4) 
 - [参考资料](#5) 
 	- [GJK各种实现](#5.1)
@@ -268,7 +273,7 @@ b2Distance不仅实现了GJK算法，还实现了Simplex Cache机制，即支持
 
 下面将精简b2Distance代码（去掉了Simplex Cache、input->useRadii等），只保留和GJK相关的，来方便读者理解b2Distance。
 
-## b2Distance核心逻辑
+## <div id="3.1">b2Distance核心逻辑</div>
 
 ```c++
 
@@ -393,7 +398,7 @@ void b2Distance(b2DistanceOutput* output,
 
 下面继续介绍这段代码里出现的GetSearchDirection、Solve2、Solve3、GetSupport函数。
 
-## b2Simplex::GetSearchDirection
+## <div id="3.2">b2Simplex::GetSearchDirection</div>
 
 ```c
 b2Vec2 GetSearchDirection() const
@@ -426,7 +431,7 @@ b2Vec2 GetSearchDirection() const
 }
 ```
 
-## b2Simplex::Solve2
+## <div id="3.3">b2Simplex::Solve2</div>
 
 
 Solve2主要目的：找出原点在当前这个1-simplex的哪个区域。
@@ -526,7 +531,7 @@ void b2Simplex::Solve2()
 ```
 
 
-## b2Simplex::Solve3
+## <div id="3.4">b2Simplex::Solve3</div>
 
 ```c++
 
@@ -646,7 +651,7 @@ void b2Simplex::Solve3()
 
 ```
 
-## b2DistanceProxy::GetSupport函数
+## <div id="3.5">b2DistanceProxy::GetSupport</div>
 
 b2DistanceProxy的GetSupport和上面章节给出的support伪代码，几乎是一样的：
 
