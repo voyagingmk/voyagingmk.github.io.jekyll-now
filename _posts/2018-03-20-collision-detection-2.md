@@ -643,15 +643,18 @@ void b2Simplex::Solve2()
 
 ## <div id="3.4">b2Simplex::Solve3</div>
 
-Solve3大同小异，
+Solve3大同小异，也是各种找原点在simplex的哪个区域，用一个图来表示：
+
+![11.png](../images/2018.3/11.png)
+
+如果原点落在w1、w2、w3区域，会导致simplex退化成0-simplex；
+
+如果原点落在e12、e13、e23区域，会导致simplex退化成1-simplex；
+
+否则，原点必然落在三角形内部，simplex仍然是2-simplex。
 
 ```c++
 
-// Possible regions:
-// - points[2]
-// - edge points[0]-points[2]
-// - edge points[1]-points[2]
-// - inside the triangle
 void b2Simplex::Solve3()
 {
 	b2Vec2 w1 = m_v1.w;
