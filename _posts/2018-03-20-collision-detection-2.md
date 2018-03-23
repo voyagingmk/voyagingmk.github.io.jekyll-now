@@ -404,9 +404,9 @@ void b2Distance(b2DistanceOutput* output,
 
 如果顶点数为1，下个搜索方向就是该顶点向量的反方向。so easy。
 
-如果顶点数为2，需要判断原点在\\( e_{12} \\)的哪一侧，然后返回那一侧的垂向量。
+如果顶点数为2，需要判断原点在\\( e_{12} \\)的哪一侧，并计算朝向那一侧的垂直于w1w2的向量。
 
-这个问题的解决，需要用到2D叉积公式。现先从3D叉积公式说起。
+这个问题的解决，需要用到2D叉积公式。读者可能不清楚这是什么但没关系。现先从3D叉积公式说起。
 
 叉积([cross product](https://en.wikipedia.org/wiki/Cross_product))运算\\( \times \\)，本是3D空间特有的一种向量二元运算。执行\\( \mathbf a \times \mathbf b \\)，会得到一个同时和\\( \mathbf a 、 \mathbf b \\)正交的向量\\( \mathbf c\\)，\\( \mathbf c\\)的方向可以按右手规则推知：
 
@@ -471,10 +471,7 @@ inline b2Vec2 b2Cross(float32 s, const b2Vec2& a)
 {
 	return b2Vec2(-s * a.y, s * a.x);
 }
-```
 
-
-```c
 b2Vec2 GetSearchDirection() const
 {
   switch (m_count)
