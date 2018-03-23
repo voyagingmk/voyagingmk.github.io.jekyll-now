@@ -597,6 +597,8 @@ op（即向量\\(\\mathbf p\\)）必然垂直于w1w2，所以有：
 
 显然不成立。
 
+下面展示的Box2D的Solve2，就用到了说到的这些数学知识。其中，Solve2用d12_2、d12_1的正负来等价表示\\( a_1 、a_2 \\)的正负。
+
 ```c++
 
 void b2Simplex::Solve2()
@@ -621,15 +623,14 @@ void b2Simplex::Solve2()
 	float32 d12_1 = b2Dot(w2, e12);
 	if (d12_1 <= 0.0f)
 	{
-    // p在w2区域，那么保留w2，干掉w1，单纯形退化成0-simplex
-		// a1 <= 0, so we clamp it to 0
-    // p在w2区域
+    	// p在w2区域，那么保留w2，干掉w1，单纯形退化成0-simplex
+    	// p在w2区域
 		m_v2.a = 1.0f;
 		m_count = 1;
 		m_v1 = m_v2; // 保留下来的顶点需要放到数组第一个位置
 		return;
 	}
-  // p必然在w1w2中间了，求出a1、a2，并分别保存进m_v1 m_v2里
+  	// p必然在w1w2中间了，求出a1、a2，并分别保存进m_v1 m_v2里
 	float32 inv_d12 = 1.0f / (d12_1 + d12_2);
 	m_v1.a = d12_1 * inv_d12;
 	m_v2.a = d12_2 * inv_d12;
