@@ -454,19 +454,29 @@ void b2Distance(b2DistanceOutput* output,
 
 2D叉积公式有什么用呢？请注意，2D叉积后得到的是一个标量s。这个标量的正负号，就告诉了我们\\( \mathbf a \times \mathbf b \\)得到的向量( \\( 0\mathbf i - 0\mathbf j + s\mathbf k \\) )在z轴上的朝向。
 
+但知道朝向后又有什么意义呢？这时，要结合右手坐标系来理解（可回顾下上面的手势图）：
 
+- 当标量s符号为正时，根据右手坐标系规则，可知\\( \mathbf b \\)在\\( \mathbf a \\)的左侧（记住观察视角是从+z到-z）
 
-对于给定的\\( \mathbf a 、 \mathbf b \\)
+- 当标量s符号为负时，根据右手坐标系规则，可知\\( \mathbf b \\)在\\( \mathbf a \\)的右侧
+
+理解2D叉积后，GetSearchDirection理解起来就轻松了：
 
 ```c++
 
-// 正常的2D向量叉积公式
+// 2D叉积公式
 inline float32 b2Cross(const b2Vec2& a, const b2Vec2& b)
 {
 	return a.x * b.y - a.y * b.x;
 }
 
-// 这条公式其实是为了得到和a正交的向量，s的值一般为1
+// 这2条公式其实是为了得到和a正交的向量，s的值一般为1
+// b2Cross(a, 1.0)返回一个在a右侧的正交向量
+inline b2Vec2 b2Cross(const b2Vec2& a, float32 s)
+{
+	return b2Vec2(s * a.y, -s * a.x);
+}
+// b2Cross(1.0, a)返回一个在a左侧的正交向量
 inline b2Vec2 b2Cross(float32 s, const b2Vec2& a)
 {
 	return b2Vec2(-s * a.y, s * a.x);
@@ -477,20 +487,22 @@ b2Vec2 GetSearchDirection() const
   switch (m_count)
   {
   case 1:
+    // 直接取w1的反方向就行了
     return -m_v1.w;
 
   case 2:
     {
       b2Vec2 e12 = m_v2.w - m_v1.w;
+      // 计算2D叉积
       float32 sgn = b2Cross(e12, -m_v1.w);
       if (sgn > 0.0f)
-      {
-        // Origin is left of e12.
+      { 
+        // -m_v1.w在e12左侧，即原点也在左侧
         return b2Cross(1.0f, e12);
       }
       else
       {
-        // Origin is right of e12.
+        // -m_v1.w在e12右侧，即原点也在右侧
         return b2Cross(e12, 1.0f);
       }
     }
