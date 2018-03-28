@@ -33,13 +33,6 @@ enet是一个神奇的库，它把udp通信做了一层封装，使得通过enet
 
 第二个问题的处理就是写driver，forwarder对收发的packet包一层scheme，用于做加密等功能，而web端既然无法使用forwarder的代码，那么就只能写一个scheme parser和一套简易的forwarder-js接口，实现解包、压包；node.js的话也实现了一个[forwarder-node](https://www.npmjs.com/package/forwarder-node)了；而spidermonkey或者说cocos2d-x中的spidermonkey，我也写了一套driver用于项目中。
 
-汇总下目前已经实现的driver：
-
-- node.js
-- spidermonkey(cocos2d-x)
-- unity
-    - windows
-    - ios
 
 还有一个driver是web-js。因为浏览器不支持native代码，所以我实现了一个纯js版本的forwarder协议解析器，并封装了和其他driver一样的forwarder接口。但这个解析器暂时不支持上述的加密、压缩等功能。要实现这些功能需要接入web版的AES加密插件等，暂时还不必要。
 
@@ -49,25 +42,6 @@ enet是一个神奇的库，它把udp通信做了一层封装，使得通过enet
 加密使用了AES算法，密钥要求128位；压缩使用了zlib库；动态长度header是指，在不开启任何功能时，单个packet的header最少需要8个字节，根据开启的flag，header会动态增长。（初期写了固定长度的header，发现很不好使，中间重构了一遍）
 
 
-### 以后计划
-
-目前forwarder代码比较稳定，可以实际使用了，开发速度将放缓。
-
-forwarder目前待做的事项：
-
-- 完善log代码
-- 完善API
-- 规范文档
-- 做新的通信模式：基于epoll
-- 针对各种需求，实现更多的driver层
-- 写测试代码
-- protobuf插件？
-
-log这个东西必须得弄好，一是因为forwarder本身开发调试很需要看log情况，二是对于用户来说，让用户更好地中控forwarder的运行情况也是很有利的。API的设计，需要结合实际需求，最近因为项目需要，强行扩展了几个接口，之后还需要想办法弄好点。
-
-开发新通信模式，必要性在于，forwarder需要有属于自己的底层通信代码，就可以减少对第三方库的依赖了，例如可以把websocket、enet都变成插件代码，用户可以设置编译选项，决定要不要把websocket、enet编译进来。这样就可以减少forwarder代码体积了。
-
-
-
+总的来说，forwarder还是一个临时做的小东西，没什么技术含量，只是应付目前的工作需要。
 
 
