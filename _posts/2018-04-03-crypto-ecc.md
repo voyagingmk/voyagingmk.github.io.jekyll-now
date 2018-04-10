@@ -44,7 +44,7 @@ published: true
 
 ### key exchange例子（ [from here](https://scotthelme.co.uk/perfect-forward-secrecy/) )：
 
-1. Alice和Bob首先线下商量好，使用**质数p = 23、基数g = 5**作为通讯基础（p和g不需要绝对的保密，泄露了也没事）
+1. Alice和Bob首先线下商量好，使用**p (prime, 质数) = 23、g (generator, 生成器) = 5**作为通讯基础（p和g不需要绝对的保密，泄露了也没事）
 2. 每次Alice和Bob想要建立通讯(连接)时，Alice自己随机生成一个在范围[1, p - 1]的数：a = 6
 3. 同样，Bob自己也随机一个：b = 15
 4. Alice计算： \\( A = ( g\^\{a\} ) \% p = ( 5\^\{6\} ) \% 23 =  15625 \% 23 = 8 \\)，把A发给Bob
@@ -112,4 +112,23 @@ published: true
 关键在于**p这个素数要足够大**，那么以现在的计算机计算速度，就很难通过A（或B）、g、p这3个参数算出a，这被称为[离散对数难题](https://en.wikipedia.org/wiki/Discrete_logarithm)。
 
 
+### p、g的选取问题
 
+涉及到了一些数论的概念：
+
+- [最大公约数gcd](https://en.wikipedia.org/wiki/Greatest_common_divisor)
+- [数论阶](https://en.wikipedia.org/wiki/Multiplicative_order)
+- [原根](https://en.wikipedia.org/wiki/Primitive_root_modulo_n)
+
+首先明确下：
+
+- p必须是素数，且必须是大数(1024-2048bits)，算法才安全
+- g不需要是素数，且不需要很大
+
+p、g不需要自己挑选，可以直接用[rfc5114](https://tools.ietf.org/html/rfc5114)给定的值。
+
+例如[1024-bit MODP Group with 160-bit Prime Order Subgroup](https://tools.ietf.org/html/rfc5114#section-2.1):
+
+![3.png](../images/2018.4/3.png)
+
+再讲下去就是深入密码学、数论了，按住不表。
