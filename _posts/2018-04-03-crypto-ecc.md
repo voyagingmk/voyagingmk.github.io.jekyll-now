@@ -9,19 +9,19 @@ published: true
 
 ## 几种加密算法
 
-### RSA
+### [RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem)) （Rivest–Shamir–Adleman)（1977年）
 
 基于大数质因子分解问题。
 
-### ECC
+### [DH](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)（Diffie-Hellman key exchange）（1976年）
 
-基于在椭圆曲线上的离散对数的求取问题。
-
-### DH（Diffie-Hellman）（1976年）
-
-密钥协商协议。
+密钥交换算法。
 
 基于离散对数问题。
+
+### [ECC](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography)（Elliptic-curve cryptography） （1985年）
+
+基于在椭圆曲线上的离散对数的求取问题。
 
 ## **完全前向保密** PFS(Perfect Forward Secrecy)
 
@@ -41,6 +41,7 @@ published: true
 - 因为公钥私钥没有用来加密对称密钥了，所以即使服务器私钥被盗了也不会导致历史对称密钥被破解
 - 即使单次会话的对称密钥被破解了，也不会影响到别的会话
 
+## DH算法
 
 ### key exchange例子（ [from here](https://scotthelme.co.uk/perfect-forward-secrecy/) )：
 
