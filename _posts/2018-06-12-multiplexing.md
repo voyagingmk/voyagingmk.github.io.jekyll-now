@@ -132,7 +132,7 @@ struct epitem{
 1. 当监听的事件发生时，会回调ep_poll_callback，把事件信息添加到双向链表rdlist
 2. 当调用epoll_wait检查是否有事件发生时，只需检查eventpoll的rdlist链表中是否有epitem元素即可。
 
-1、2点已经凸显了epoll_wwit的高效，这是一种基于驱动回调的技术，epoll_wait的成本只是获取这个rdlist而已。
+1、2点已经凸显了epoll_wait的高效，这是一种基于驱动回调的技术，epoll_wait的成本只是获取这个rdlist而已。
 
 另外，为了保证不会重复添加同个fd的epitem，只能遍历内核的epitem数组，但这是个O(n)的操作，所以就需要红黑树，可以快速找出某个fd是否已被监听，并且也用于快速找到epitem从而修改fd的监听事件。这可是log(n)的复杂度，性能大大提高。
 
