@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 各种多路复用API用法总结
+title: select和epoll多路复用用法总结
 tags: ['c++']
 published: true
 ---
@@ -51,9 +51,6 @@ int select(int maxfdp, fd_set *readfds, fd_set *writefds, fd_set *errorfds, stru
 总结：
 
 select是基于位掩码的设计，所以fd_set有固定长度。长度由FD_SETSIZE确定，FD_SETSIZE可以用户自己定。默认只有1024。
-
-
-## poll
 
 
 ## epoll
