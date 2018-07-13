@@ -29,11 +29,13 @@ published: true
 
 ### 分布式缓存
 
-## LFU和LRU
+#### LFU
 
-Least Frequently Used（LFU），计算使用频率，优先淘汰最不常用的缓存条目。
+Least Frequently Used（LFU），如果一个数据在最近一段时间内使用**次数**很少，那么在将来一段时间内被使用的可能性也很小。
 
-Least Recently Used（LRU），淘汰最近最少使用的条目。
+#### LRU
+
+Least Recently Used（LRU），如果一个数据在最近一段时间**没有被访问到**，那么在将来它被访问的可能性也很小。
 
 
 ### 分布式锁
