@@ -1,0 +1,373 @@
+CONNECTED(00000003)
+SSL_connect:before SSL initialization
+Sent Record
+Header:
+  Version = TLS 1.0 (0x301)
+  Content Type = Handshake (22)
+  Length = 310
+    ClientHello, Length=306
+      client_version=0x303 (TLS 1.2)
+      Random:
+        gmt_unix_time=0x9743BD8C
+        random_bytes (len=28): 645FF0AFDE178CF5BA06AA64ACA3038E1AE49350CEEEA6BA5DF3A281
+      session_id (len=32): 1B417614428FE9AB215C1FB8C898038D4A42B01C3A1086CCB9E7F0CE9DBC4E35
+      cipher_suites (len=62)
+        {0x13, 0x02} TLS_AES_256_GCM_SHA384
+        {0x13, 0x03} TLS_CHACHA20_POLY1305_SHA256
+        {0x13, 0x01} TLS_AES_128_GCM_SHA256
+        {0xC0, 0x2C} TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        {0xC0, 0x30} TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        {0x00, 0x9F} TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+        {0xCC, 0xA9} TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xCC, 0xA8} TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xCC, 0xAA} TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xC0, 0x2B} TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x2F} TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        {0x00, 0x9E} TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x24} TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        {0xC0, 0x28} TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        {0x00, 0x6B} TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        {0xC0, 0x23} TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+        {0xC0, 0x27} TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x67} TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        {0xC0, 0x0A} TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+        {0xC0, 0x14} TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x39} TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        {0xC0, 0x09} TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+        {0xC0, 0x13} TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0x33} TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0x9D} TLS_RSA_WITH_AES_256_GCM_SHA384
+        {0x00, 0x9C} TLS_RSA_WITH_AES_128_GCM_SHA256
+        {0x00, 0x3D} TLS_RSA_WITH_AES_256_CBC_SHA256
+        {0x00, 0x3C} TLS_RSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x35} TLS_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x2F} TLS_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0xFF} TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+      compression_methods (len=1)
+        No Compression (0x00)
+      extensions, length = 171
+        extension_type=server_name(0), length=14
+          0000 - 00 0c 00 00 09 6c 6f 63-61 6c 68 6f 73 74      .....localhost
+        extension_type=ec_point_formats(11), length=4
+          uncompressed (0)
+          ansiX962_compressed_prime (1)
+          ansiX962_compressed_char2 (2)
+        extension_type=supported_groups(10), length=12
+          ecdh_x25519 (29)
+          secp256r1 (P-256) (23)
+          ecdh_x448 (30)
+          secp521r1 (P-521) (25)
+          secp384r1 (P-384) (24)
+        extension_type=session_ticket(35), length=0
+        extension_type=encrypt_then_mac(22), length=0
+        extension_type=extended_master_secret(23), length=0
+        extension_type=signature_algorithms(13), length=48
+          ecdsa_secp256r1_sha256 (0x0403)
+          ecdsa_secp384r1_sha384 (0x0503)
+          ecdsa_secp521r1_sha512 (0x0603)
+          ed25519 (0x0807)
+          ed448 (0x0808)
+          rsa_pss_pss_sha256 (0x0809)
+          rsa_pss_pss_sha384 (0x080a)
+          rsa_pss_pss_sha512 (0x080b)
+          rsa_pss_rsae_sha256 (0x0804)
+          rsa_pss_rsae_sha384 (0x0805)
+          rsa_pss_rsae_sha512 (0x0806)
+          rsa_pkcs1_sha256 (0x0401)
+          rsa_pkcs1_sha384 (0x0501)
+          rsa_pkcs1_sha512 (0x0601)
+          ecdsa_sha224 (0x0303)
+          ecdsa_sha1 (0x0203)
+          rsa_pkcs1_sha224 (0x0301)
+          rsa_pkcs1_sha1 (0x0201)
+          dsa_sha224 (0x0302)
+          dsa_sha1 (0x0202)
+          dsa_sha256 (0x0402)
+          dsa_sha384 (0x0502)
+          dsa_sha512 (0x0602)
+        extension_type=supported_versions(43), length=13
+          TLS 1.3 (draft 28) (32540)
+          TLS 1.3 (draft 27) (32539)
+          TLS 1.3 (draft 26) (32538)
+          TLS 1.2 (771)
+          TLS 1.1 (770)
+          TLS 1.0 (769)
+        extension_type=psk_key_exchange_modes(45), length=2
+          psk_dhe_ke (1)
+        extension_type=key_share(51), length=38
+            NamedGroup: ecdh_x25519 (29)
+            key_exchange:  (len=32): C07702A78AE28D9DE6EE35820C7339F7436887562D2677DB423294EF05875412
+
+SSL_connect:SSLv3/TLS write client hello
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 122
+SSL_connect:SSLv3/TLS write client hello
+    ServerHello, Length=118
+      server_version=0x303 (TLS 1.2)
+      Random:
+        gmt_unix_time=0x9A824242
+        random_bytes (len=28): D931144AC27A66F61A9D804A10310D380C8060C85CAAA35997C1489B
+      session_id (len=32): 1B417614428FE9AB215C1FB8C898038D4A42B01C3A1086CCB9E7F0CE9DBC4E35
+      cipher_suite {0x13, 0x02} TLS_AES_256_GCM_SHA384
+      compression_method: No Compression (0x00)
+      extensions, length = 46
+        extension_type=supported_versions(43), length=2
+            TLS 1.3 (draft 28) (32540)
+        extension_type=key_share(51), length=36
+            NamedGroup: ecdh_x25519 (29)
+            key_exchange:  (len=32): 6E5A58BE91D68FA8BAD5EF35473D0210ADD667D5A8B202EA39117F1FAC07D21C
+
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ChangeCipherSpec (20)
+  Length = 1
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 23
+  Inner Content Type = Handshake (22)
+SSL_connect:SSLv3/TLS read server hello
+    EncryptedExtensions, Length=2
+      extensions, length = 0
+
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 963
+  Inner Content Type = Handshake (22)
+SSL_connect:TLSv1.3 read encrypted extensions
+    Certificate, Length=942
+      context (len=0): 
+      certificate_list, length=938
+        ASN.1Cert, length=933
+------details-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            1f:41:69:a3:f4:a7:7a:05:e3:f5:4a:22:1e:ae:53:1b:09:35:40:cc
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+        Validity
+            Not Before: Jul 19 08:15:58 2018 GMT
+            Not After : Jul 19 08:15:58 2019 GMT
+        Subject: CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:c1:e6:58:8f:c6:f2:6a:cc:56:5e:7c:05:98:30:
+                    e7:09:cc:6a:94:8c:70:58:33:0b:88:95:59:b9:10:
+                    83:55:26:30:92:1f:6a:35:02:a1:04:ca:0d:c5:a4:
+                    fc:57:b6:ef:e1:bf:e5:6d:be:e4:2e:6f:de:d8:ba:
+                    04:1c:69:bd:80:81:42:80:7d:60:68:a5:7c:15:9c:
+                    39:f0:9c:da:77:0d:7f:71:3b:4e:17:45:d9:6b:f0:
+                    7d:9a:0d:59:a9:65:f9:5a:ea:80:52:92:d8:c1:4e:
+                    08:80:dc:32:00:e3:23:31:53:ce:3d:88:4b:ce:3c:
+                    b6:09:e7:1b:b1:0e:1c:c5:3a:81:f7:d4:68:23:95:
+                    e0:65:75:e7:f1:b2:9a:90:9b:0f:b7:fa:14:27:d6:
+                    72:a2:4c:3d:97:64:6d:56:ce:56:f1:a2:ab:b7:4e:
+                    b9:c8:61:fa:4f:c0:e2:e5:a5:20:71:c8:04:1b:0e:
+                    d3:a8:e1:3e:6e:ba:08:0a:5f:8b:33:f9:49:ba:39:
+                    d5:64:5c:3c:47:e1:90:f1:9d:98:1c:04:bc:f4:42:
+                    fe:1c:03:85:5c:c7:d2:50:30:0c:80:0a:54:7a:e5:
+                    87:1b:40:08:a6:9a:2f:b4:16:a6:93:21:cc:64:cc:
+                    c4:71:fd:c1:c4:97:72:df:0b:21:f5:ba:33:77:c8:
+                    04:83
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                D2:5D:57:25:1C:EE:6B:C6:71:8D:24:72:A5:FD:A9:87:D4:76:53:35
+            X509v3 Authority Key Identifier: 
+                keyid:D2:5D:57:25:1C:EE:6B:C6:71:8D:24:72:A5:FD:A9:87:D4:76:53:35
+
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: sha256WithRSAEncryption
+         a0:28:a4:16:b3:11:7d:eb:92:7a:81:42:20:ca:b1:68:77:34:
+         12:38:6b:e7:58:2d:4a:50:77:23:e1:c9:ba:de:9d:e3:ed:11:
+         29:da:c7:d6:ca:f8:82:fd:fc:24:84:3b:82:d0:70:ef:10:9f:
+         e8:c6:bc:0d:e0:cb:c6:2a:0c:39:fe:af:29:27:d6:a8:e1:5d:
+         d9:93:b3:6c:9c:98:ab:c1:8a:a5:8f:9d:bc:32:67:43:9e:75:
+         15:8b:3d:81:93:a9:d5:2f:5f:b7:d1:32:70:62:1c:94:ee:d7:
+         f7:fd:0b:2f:00:3c:9b:e8:45:96:1a:ef:bc:13:6c:c6:f3:11:
+         88:77:f9:3c:97:e3:8b:a7:52:f9:8f:10:4c:67:e2:d1:f8:26:
+         d6:65:09:11:f7:b4:09:dc:db:65:f2:2a:38:ba:bb:40:7e:72:
+         99:a1:80:db:97:ac:b6:25:45:d0:31:9c:22:f9:d1:33:41:df:
+         e8:62:6f:83:29:04:ec:29:16:e6:34:f1:6b:95:7f:a4:4d:e9:
+         ec:f3:83:29:74:a5:ac:24:35:26:49:c5:c3:78:24:fd:35:19:
+         2e:30:e2:5c:b9:f5:43:54:f9:da:6f:e8:89:6c:a8:6f:55:3c:
+         a6:9c:99:8e:d1:77:9c:6f:1e:40:2f:54:ea:41:38:85:03:f0:
+         a3:cf:94:67
+-----BEGIN CERTIFICATE-----
+MIIDoTCCAomgAwIBAgIUH0Fpo/SnegXj9UoiHq5TGwk1QMwwDQYJKoZIhvcNAQEL
+BQAwYDEWMBQGA1UEAwwNd3d3Lm15ZG9tLmNvbTEVMBMGA1UECgwMTXkgRG9tLCBJ
+bmMuMQswCQYDVQQGEwJVUzEPMA0GA1UECAwGT3JlZ29uMREwDwYDVQQHDAhQb3J0
+bGFuZDAeFw0xODA3MTkwODE1NThaFw0xOTA3MTkwODE1NThaMGAxFjAUBgNVBAMM
+DXd3dy5teWRvbS5jb20xFTATBgNVBAoMDE15IERvbSwgSW5jLjELMAkGA1UEBhMC
+VVMxDzANBgNVBAgMBk9yZWdvbjERMA8GA1UEBwwIUG9ydGxhbmQwggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDB5liPxvJqzFZefAWYMOcJzGqUjHBYMwuI
+lVm5EINVJjCSH2o1AqEEyg3FpPxXtu/hv+VtvuQub97YugQcab2AgUKAfWBopXwV
+nDnwnNp3DX9xO04XRdlr8H2aDVmpZfla6oBSktjBTgiA3DIA4yMxU849iEvOPLYJ
+5xuxDhzFOoH31GgjleBldefxspqQmw+3+hQn1nKiTD2XZG1Wzlbxoqu3TrnIYfpP
+wOLlpSBxyAQbDtOo4T5uuggKX4sz+Um6OdVkXDxH4ZDxnZgcBLz0Qv4cA4Vcx9JQ
+MAyAClR65YcbQAimmi+0FqaTIcxkzMRx/cHEl3LfCyH1ujN3yASDAgMBAAGjUzBR
+MB0GA1UdDgQWBBTSXVclHO5rxnGNJHKl/amH1HZTNTAfBgNVHSMEGDAWgBTSXVcl
+HO5rxnGNJHKl/amH1HZTNTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUA
+A4IBAQCgKKQWsxF965J6gUIgyrFodzQSOGvnWC1KUHcj4cm63p3j7REp2sfWyviC
+/fwkhDuC0HDvEJ/oxrwN4MvGKgw5/q8pJ9ao4V3Zk7NsnJirwYqlj528MmdDnnUV
+iz2Bk6nVL1+30TJwYhyU7tf3/QsvADyb6EWWGu+8E2zG8xGId/k8l+OLp1L5jxBM
+Z+LR+CbWZQkR97QJ3Ntl8io4urtAfnKZoYDbl6y2JUXQMZwi+dEzQd/oYm+DKQTs
+KRbmNPFrlX+kTens84MpdKWsJDUmScXDeCT9NRkuMOJcufVDVPnab+iJbKhvVTym
+nJmO0Xecbx5AL1TqQTiFA/Cjz5Rn
+-----END CERTIFICATE-----
+------------------
+        extensions, length = 0
+
+depth=0 CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+verify error:num=18:self signed certificate
+verify return:1
+depth=0 CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+verify return:1
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 281
+  Inner Content Type = Handshake (22)
+SSL_connect:SSLv3/TLS read server certificate
+    CertificateVerify, Length=260
+      Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+      Signature (len=256): 75EC505451B5435D135CEFE1B4BB44E25B84CDAE3259530EA3DD9226962163D841ACDC8924E94808CAA4F75CD9E7FFFC3F4222645FF451ADE22DBF51BF51DB845C0DD2DDC2C8EC53775C5DEDDE40E28A564A1F7AB48C45CCBACD1AB05B59027841FED0BEF91BDBC6A621C56AC14F75AC57D1535A4289609F20080775FB34FED1539103301B80333D4B286122BDEC16C8CFA7487B5C63AC85FEBA6B3ABA5C82C2F602C62D1F29253BE2A825E0ACC59A7470B705910CE6CAA5D0496DA78B2BE2FBA828FFDD2C27C947AD514C0CE3E4AB1B8775B5B4157B71EBDBE50E71E063D8407CD78490D6966FF2E0D0BD71AFB085DDD17310ADE59D362F4C9CDA37EB451712
+
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 69
+  Inner Content Type = Handshake (22)
+SSL_connect:TLSv1.3 read server certificate verify
+    Finished, Length=48
+      verify_data (len=48): ADFD1CE5C1E1859D2E6E71749D5316BE0323C046AC4B41FA657726D78FEC583A0A0506889985FA6E905001E42B3C4F8D
+
+SSL_connect:SSLv3/TLS read finished
+Sent Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ChangeCipherSpec (20)
+  Length = 1
+    change_cipher_spec (1)
+
+SSL_connect:SSLv3/TLS write change cipher spec
+Sent Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 69
+  Inner Content Type = Handshake (22)
+    Finished, Length=48
+      verify_data (len=48): 3E99616E4D076D6D9A8E8A81A2D71E055827A82E3F91A84895DA185A5BA90CEB794F02D79EF9D5D1C6E2FA7FA5FE6DDD
+
+SSL_connect:SSLv3/TLS write finished
+---
+Certificate chain
+ 0 s:CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+   i:CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDoTCCAomgAwIBAgIUH0Fpo/SnegXj9UoiHq5TGwk1QMwwDQYJKoZIhvcNAQEL
+BQAwYDEWMBQGA1UEAwwNd3d3Lm15ZG9tLmNvbTEVMBMGA1UECgwMTXkgRG9tLCBJ
+bmMuMQswCQYDVQQGEwJVUzEPMA0GA1UECAwGT3JlZ29uMREwDwYDVQQHDAhQb3J0
+bGFuZDAeFw0xODA3MTkwODE1NThaFw0xOTA3MTkwODE1NThaMGAxFjAUBgNVBAMM
+DXd3dy5teWRvbS5jb20xFTATBgNVBAoMDE15IERvbSwgSW5jLjELMAkGA1UEBhMC
+VVMxDzANBgNVBAgMBk9yZWdvbjERMA8GA1UEBwwIUG9ydGxhbmQwggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDB5liPxvJqzFZefAWYMOcJzGqUjHBYMwuI
+lVm5EINVJjCSH2o1AqEEyg3FpPxXtu/hv+VtvuQub97YugQcab2AgUKAfWBopXwV
+nDnwnNp3DX9xO04XRdlr8H2aDVmpZfla6oBSktjBTgiA3DIA4yMxU849iEvOPLYJ
+5xuxDhzFOoH31GgjleBldefxspqQmw+3+hQn1nKiTD2XZG1Wzlbxoqu3TrnIYfpP
+wOLlpSBxyAQbDtOo4T5uuggKX4sz+Um6OdVkXDxH4ZDxnZgcBLz0Qv4cA4Vcx9JQ
+MAyAClR65YcbQAimmi+0FqaTIcxkzMRx/cHEl3LfCyH1ujN3yASDAgMBAAGjUzBR
+MB0GA1UdDgQWBBTSXVclHO5rxnGNJHKl/amH1HZTNTAfBgNVHSMEGDAWgBTSXVcl
+HO5rxnGNJHKl/amH1HZTNTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUA
+A4IBAQCgKKQWsxF965J6gUIgyrFodzQSOGvnWC1KUHcj4cm63p3j7REp2sfWyviC
+/fwkhDuC0HDvEJ/oxrwN4MvGKgw5/q8pJ9ao4V3Zk7NsnJirwYqlj528MmdDnnUV
+iz2Bk6nVL1+30TJwYhyU7tf3/QsvADyb6EWWGu+8E2zG8xGId/k8l+OLp1L5jxBM
+Z+LR+CbWZQkR97QJ3Ntl8io4urtAfnKZoYDbl6y2JUXQMZwi+dEzQd/oYm+DKQTs
+KRbmNPFrlX+kTens84MpdKWsJDUmScXDeCT9NRkuMOJcufVDVPnab+iJbKhvVTym
+nJmO0Xecbx5AL1TqQTiFA/Cjz5Rn
+-----END CERTIFICATE-----
+subject=CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+
+issuer=CN = www.mydom.com, O = "My Dom, Inc.", C = US, ST = Oregon, L = Portland
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 1489 bytes and written 395 bytes
+Verification error: self signed certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: 
+    Session-ID-ctx: 
+    Master-Key: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1531995933
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self signed certificate)
+    Extended master secret: no
+---
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 250
+  Inner Content Type = Handshake (22)
+SSL_connect:SSL negotiation finished successfully
+SSL_connect:SSL negotiation finished successfully
+    NewSessionTicket, Length=229
+        ticket_lifetime_hint=7200
+        ticket_age_add=2894827838
+        ticket_nonce (len=8): 0000000000000000
+        ticket (len=208): E25FECAB79E1BD3FD0D5B21B83AF57D96E124CED67C1BBE6D7FB726B99C5D26F76B0AE44D2CC2FDC310F1E599D0CC7A93822589E3C87777EDB2748B0FE2B625B4E05FC0DC5033AD53299CA20DB5E1AB5EAAA0FDB2BC7CF70A118EE82A7569AA45CCED63E768C6BE3AD0EA4410B875589F6B12CEEC5558B27D13FF459190622AA936891F51A507466181F35494838FEBC144E6667B49A9869EEE7CC1B40E98E7821455C80CF6920364F7FEBB6FD7CEE19B97D07FEDDD317450226258B39D031753DFF3C7F3B7B7B6550D5E9FB262B2BE8
+        extensions, length = 0
+
+SSL_connect:SSLv3/TLS read server session ticket
+read R BLOCK
+Received Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 250
+  Inner Content Type = Handshake (22)
+SSL_connect:SSL negotiation finished successfully
+SSL_connect:SSL negotiation finished successfully
+    NewSessionTicket, Length=229
+        ticket_lifetime_hint=7200
+        ticket_age_add=2644128613
+        ticket_nonce (len=8): 0000000000000001
+        ticket (len=208): E25FECAB79E1BD3FD0D5B21B83AF57D902E2026498B15DAA71A3F9F3E015B145DBC445DC1E20038EA54DEA0BB5DD498CCC65DBBD217710ABCE070C7CE5CA7D6CF0BE47D49E746E479B91485667B6235DDBAA9DA5F65EA54112CDF56EA88E4C114B8F8F058A8029439C6269BF8E15CD754EADC6C08ABCA16F877653D23119421C0E69E44F74F8997880EBB7C4966B3DDD69B75EDF82984B5960718E540F19E90FFFA15307AD7579F33771B1521ED13D596178AE0ABB9E7F4E30350147E2A7F33CD308807D93E7BD8CBC8A383601550755
+        extensions, length = 0
+
+SSL_connect:SSLv3/TLS read server session ticket
+read R BLOCK
