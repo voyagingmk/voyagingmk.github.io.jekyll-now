@@ -2,7 +2,7 @@
 layout: post_latex
 title: 基数计数与hyperloglog算法
 tags: ['redis']
-published: false
+published: true
 ---
 
 
@@ -37,7 +37,40 @@ published: false
 10 * 16 * 1000 000 = 160 MB
 
 
-可能和如今的内存、硬盘容量比起来不大，但如果现在需求变成统计10000个关键词、统计周期一个月，内存就撑不住了。
+可能和如今的内存、硬盘容量比起来不大，但如果现在需求变成统计几万个关键词、统计周期一个月，内存就撑不住了。
 
 关键问题在于：统计能力和存储空间密切相关。存储空间越大，能统计的东西就越多。
+
+存储也不一定能存在硬盘中，因为很可能统计是实时、高并发的，应在内存中进行统计。（不过也可能实现某种内存统计局部数据、定期硬盘合并的计数方式）
+
+除了存储问题，还有查找问题，即如何确定一个用户是否已经被统计过了？
+
+总之，基数计数一个和算法、数学、数据结构密切相关的问题。
+
+
+# 传统精确基数计数
+
+## 基于B树
+
+## 基于bitmap
+
+
+# 基于概率的尽量精确基数计数
+
+## Linear Counting（1990年）
+
+
+
+
+
+# 资料
+
+http://blog.codinglabs.org/articles/algorithms-for-cardinality-estimation-part-i.html
+
+http://blog.codinglabs.org/articles/algorithms-for-cardinality-estimation-part-ii.html
+
+http://blog.codinglabs.org/articles/algorithms-for-cardinality-estimation-part-iii.html
+
+http://blog.codinglabs.org/articles/algorithms-for-cardinality-estimation-part-iv.html
+
 
