@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: 矩阵微分（一）
-tags: ['matrix','linear algebra','calculus']
+tags: ['math']
 published: true
 ---
 

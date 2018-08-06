@@ -1,7 +1,7 @@
 ---
 layout: post
 title: windows 7 下编译 nopoll
-published: true
+published: false
 tags: ['nopoll']
 ---
 

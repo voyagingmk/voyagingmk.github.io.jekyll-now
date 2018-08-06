@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: 最小二乘估计(Least Squares Estimator)的公式的推导
-tags: ['matrix','linear algebra','math']
+tags: ['math']
 published: true
 ---
 
