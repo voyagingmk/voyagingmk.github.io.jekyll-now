@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 渲染器开发笔记2-延迟渲染下的天空盒
-tags: ['renderer']
+tags: ['computer graphics']
 published: true
 ---
 

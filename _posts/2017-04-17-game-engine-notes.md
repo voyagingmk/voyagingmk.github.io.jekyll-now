@@ -1,7 +1,7 @@
 ---
 layout: post_latex
 title: mini引擎开发备忘
-tags: ['game engine']
+tags: ['computer graphics']
 published: true
 ---
 

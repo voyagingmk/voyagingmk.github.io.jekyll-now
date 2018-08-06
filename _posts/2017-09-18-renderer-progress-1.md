@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 渲染器开发笔记1-ECS框架实现
-tags: ['renderer']
+tags: ['computer graphics']
 published: true
 ---
 
