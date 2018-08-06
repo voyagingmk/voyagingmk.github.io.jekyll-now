@@ -24,7 +24,7 @@ published: true
 
 \\[ p = (\\vec o, r, x, y, z) \\]
 
-参数可以进一步，第一个方法是应用球坐标系（Spherical coordinate），即用2个角\\(\\theta \\)、\\(\\phi \\)定位球面上的一个点：
+参数可以进一步简化，第一个方法是应用球坐标系（Spherical coordinate），即用2个角\\(\\theta \\)、\\(\\phi \\)定位球面上的一个点：
 
 \\[ p = (\\vec o, r, \\theta, \\phi ) ， 0 \\leq \\theta \\leq π， 0 \\leq \\phi \\leq 2π  \\]
 
