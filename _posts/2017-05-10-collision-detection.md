@@ -36,7 +36,7 @@ broad phase其中有一个简单算法叫[sweep and prune(SAP)](https://en.wikip
 
 ## 相交判定算法
 
-根据我的调研，在2维情况下，可以用SAT算法做任意凸多边形的碰撞检测，十分简单；但在3维情况下，只能GJK算法，因为SAT相对毕竟暴力、慢，以及GJK算法还有更多的SAT不具备的高级特性。另外，Box2D用的是GJK算法，所以证明了GJK算法是可以应用到2维情况的。除了SAT和GJK，还有一个sweep line算法可以求出多边形的相交点，此算法内部需要用到排序算法。
+根据我的调研，在2、3维情况下，可以用SAT、GJK算法做任意凸多边形的碰撞检测；但SAT各方面都不如GJK，并且GJK算法还有更多的SAT不具备的高级特性。另外，Box2D用的是GJK算法，所以证明了GJK算法是可以应用到2维情况的。除了SAT和GJK，还有一个sweep line算法可以求出多边形的相交点，此算法内部需要用到排序算法。
 
 ### [Separating Axis Theorem, SAT, 分离轴算法](https://en.wikipedia.org/wiki/Hyperplane_separation_theorem) 
 
