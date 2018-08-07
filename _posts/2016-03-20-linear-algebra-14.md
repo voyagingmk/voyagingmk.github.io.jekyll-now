@@ -73,15 +73,16 @@ published: true
 \\[ \\vec v\_\{\\parallel \} = (\\vec v\\cdot \\vec n) \\vec n \\]
 
 
-- 上一步已经解决了\\( \\vec v\_\{\\parallel \} \\)，剩下的就是求\\( \\vec v'\_\{\\perp \} \\)。求\\( \\vec v'\_\{\\perp \} \\)之前需要先求出\\( \\vec v\_\{\\perp \} \\)，而显然\\( \\vec v\_\{\\perp \} = v - \\vec v\_\{\\parallel\} \\) 
+上一步已经解决了\\( \\vec v\_\{\\parallel \} \\)，剩下的就是求\\( \\vec v'\_\{\\perp \} \\)。求\\( \\vec v'\_\{\\perp \} \\)之前需要先求出\\( \\vec v\_\{\\perp \} \\)，而显然\\( \\vec v\_\{\\perp \} = v - \\vec v\_\{\\parallel\} \\) 
 
 
-- 接着，需要计算一个新的向量\\(\\vec w \\)，\\( \\vec w = \\vec n \\times \\vec v\_\{\\perp \} \\) （注意叉乘的顺序不能错），所以\\(\\vec w \\)是一个垂直于\\(  \\vec n \\)、\\( \\vec v\_\{\\perp \} \\)所构成平面的向量。
+接着，需要计算一个新的向量\\(\\vec w \\)，\\( \\vec w = \\vec n \\times \\vec v\_\{\\perp \} \\) （注意叉乘的顺序不能错），所以\\(\\vec w \\)是一个垂直于\\(  \\vec n \\)、\\( \\vec v\_\{\\perp \} \\)所构成平面的向量。
 
-- 把\\( \\vec v\_\{\\perp \}\\)、\\(\\vec w \\) 分别当做是垂直于\\(  \\vec n \\)的平面的x、y轴(2D坐标系)，那么\\( \\vec v'\_\{\\perp \} \\)的含义就是指\\( \\vec v\_\{\\perp \} \\)在这个2D坐标系下绕原点旋转\\(\\theta \\)度。从而得到等式：
+把\\( \\vec v\_\{\\perp \}\\)、\\(\\vec w \\) 分别当做是垂直于\\(  \\vec n \\)的2D平面的x、y轴（因为已经有正交关系），那么\\( \\vec v'\_\{\\perp \} \\)的含义就是指\\( \\vec v\_\{\\perp \} \\)在这个2D坐标系下绕原点旋转\\(\\theta \\)度（[Rotation of axes](https://en.wikipedia.org/wiki/Rotation_of_axes)）。从而得到等式：
 
 \\[ \\vec v'\_\{\\perp \} =  cos\\theta \\vec v\_\{\\perp \} + sin\\theta \\vec w \\]
 
+可以这么理解：首先因为 \\(\\vec w = \\vec n \\times \\vec v\_\{\\perp \}\\)，可知 \\(\\vec w \\)和\\(  \\vec v\_\{\\perp \} \\)等长，假设长度为r，那么可用极坐标表示\\(\\vec v'\_\{\\perp \} = (r, \\theta) \\)，极坐标用笛卡尔坐标表示就是示\\(\\vec v'\_\{\\perp \} = (r cos\\theta, r sin\\theta) = r cos\\theta\\vec x + r sin\\theta \\vec y，\\vec x = (1,0)，\\vec y = (0,1) \\)，换成自定义的正交坐标系后就是\\( cos\\theta \\vec v\_\{\\perp \} + sin\\theta \\vec w \\)。
 
 好了，所有变量都得到了，总结下最终的公式：
 
@@ -144,3 +145,6 @@ published: true
 # 资料
 
 [Rodrigues' rotation formula](https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula)
+
+
+[Rotation of axes](https://en.wikipedia.org/wiki/Rotation_of_axes)
