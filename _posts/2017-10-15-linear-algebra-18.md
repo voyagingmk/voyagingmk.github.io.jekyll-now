@@ -9,7 +9,7 @@ published: true
 
 normal的变换并不能直接使用vertex的变换。如果直接使用的话，就会放了一个定时炸弹在你的shader里面，当哪天你的object做了一个不uniform的缩放变换时，例如x、y轴放大1.5倍，而z轴放大3倍，输出的normal就会出错，进而导致光照计算出错。
 
-下面开始推导正确的只属于的normal的变换矩阵。
+下面开始推导正确的只属于normal的变换矩阵。
 
 
 <!--more-->
