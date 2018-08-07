@@ -84,14 +84,14 @@ struct SkeletonPose {
 对每个关节都做一遍这个公式，就能得到一个全局关节姿势数组。然后就可以写入SkeletonPose：
 
 ```c
-
 struct SkeletonPose {
     size_t jointCount; // 关节数量
     JointPose* localPoses; // 多个局部关节姿势 JointPose
-    Matrix44* globalPoses; // 多个全局关节姿势 全局关节姿势的存储，并不只限定于用RTS，而是既可以用RTS也可以用矩阵。因为实时渲染里矩阵更通用快速，所以得存成矩阵。
+    Matrix44* globalPoses; // 多个全局关节姿势
 }
-
 ```
+
+全局关节姿势的存储，并不只限定于用RTS，而是既可以用RTS也可以用矩阵。因为实时渲染里矩阵更通用快速，所以得存成矩阵。
 
 ### 绑定姿势矩阵、绑定姿势逆矩阵 Bind Poses Matrix 、Inversed Bind Poses Matrix 
 
