@@ -68,7 +68,7 @@ published: true
 \\[ \\vec A\\cdot \\vec B = |\\vec A||\\vec B|cos\\alpha  \\]
 
 
-代入\\(\\vec v\\)、\\(\\vec n\\)后，得到：\\( \\vec v\\cdot \\vec n = |\\vec v||\\vec n|cos\\alpha = |\\vec v|cos\\alpha = |\\vec v\_\{\\parallel \}| \\)，即算出了\\( \\vec v\_\{\\parallel \} \\)的长度，又因为\\vec v\_\{\\parallel \} \\)和\\(\\vec n\\)方向一致、\\(\\vec n\\)长度为1，所以有:
+代入\\(\\vec v\\)、\\(\\vec n\\)后，得到：\\( \\vec v\\cdot \\vec n = |\\vec v||\\vec n|cos\\alpha = |\\vec v|cos\\alpha = |\\vec v\_\{\\parallel \}| \\)，即算出了\\( \\vec v\_\{\\parallel \} \\)的长度，又因为\\( \\vec v\_\{\\parallel \} \\)和\\(\\vec n\\)方向一致、\\(\\vec n\\)长度为1，所以有:
 
 \\[ \\vec v\_\{\\parallel \} = (\\vec v\\cdot \\vec n) \\vec n \\]
 
@@ -78,7 +78,7 @@ published: true
 
 - 接着，需要计算一个新的向量\\(\\vec w \\)，\\( \\vec w = \\vec n \\times \\vec v\_\{\\perp \} \\) （注意叉乘的顺序不能错），所以\\(\\vec w \\)是一个垂直于\\(  \\vec n \\)、\\( \\vec v\_\{\\perp \} \\)所构成平面的向量。
 
-- 把\\( \\vec v\_\{\\perp \}\\)、\\(\\vec w \\) 分别当做是\\(  \\vec n \\)、\\( \\vec v\_\{\\perp \} \\)平面的x、y轴(2D坐标系)，那么\\( \\vec v'\_\{\\perp \} \\)的含义就是指\\( \\vec v\_\{\\perp \} \\)在这个2D坐标系下旋转\\(\\theta \\)度。从而得到等式：
+- 把\\( \\vec v\_\{\\perp \}\\)、\\(\\vec w \\) 分别当做是垂直于\\(  \\vec n \\)的平面的x、y轴(2D坐标系)，那么\\( \\vec v'\_\{\\perp \} \\)的含义就是指\\( \\vec v\_\{\\perp \} \\)在这个2D坐标系下绕原点旋转\\(\\theta \\)度。从而得到等式：
 
 \\[ \\vec v'\_\{\\perp \} =  cos\\theta \\vec v\_\{\\perp \} + sin\\theta \\vec w \\]
 
@@ -93,7 +93,7 @@ published: true
 
 \\( = \\vec n \\times (\\vec v - \\vec v\_\{\\parallel\}) \\) 
 
-\\( = \\vec n \\times \\vec v - \\vec n \\times \\vec v\_\{\\parallel\}) \\) 
+\\( = \\vec n \\times \\vec v - \\vec n \\times \\vec v\_\{\\parallel\} \\) 
 
 \\( = \\vec n \\times \\vec v \\) 
 
@@ -104,15 +104,18 @@ published: true
 \\( =  cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v)  \\)
 
 
-\\( \\vec v' = \\vec v'\_\{\\perp \} + \\vec v\_\{\\parallel \} \\)
+\\( \\vec v' = \\vec v'\_\{\\perp \} + \\vec v'\_\{\\parallel \} = \\vec v'\_\{\\perp \} + \\vec v\_\{\\parallel \} \\)
 
-\\( = cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) + (\\vec v\\cdot \\vec n) \\vec n \\)
+\\( = cos\\theta (\\vec v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) + (\\vec v\\cdot \\vec n) \\vec n \\)
+
+\\( = cos\\theta \\vec v + (1 - cos\\theta)(\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) \\)
 
 加粗并居中：
 
-**\\[ \\vec v' = cos\\theta (v - (\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) + (\\vec v\\cdot \\vec n) \\vec n \\]**
+**\\[ \\vec v' = cos\\theta \\vec v + (1 - cos\\theta)(\\vec v\\cdot \\vec n) \\vec n) + sin\\theta (\\vec n \\times \\vec v) \\]**
 
-这就是绕任意轴的旋转公式了。
+
+这就是绕任意轴的旋转公式了。 可以在这个[wiki](https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula)看到这条公式，一模一样。
 
 接下来是把这个公式转换成矩阵的形式。方法是，把\\(v\_\{x\} = (1,0,0) \\)、\\(v\_\{y\} = (0,1,0) \\)、\\(v\_\{z\} = (0,0,1) \\)，分别代入上面的公式，分别得到：
 
@@ -136,3 +139,8 @@ published: true
 {% assign R = "n\_\{x\}\^\{2\}(1-cos\\theta )+cos\\theta ,  n\_\{x\}n\_\{y\}(1-cos\\theta )+n\_\{z\}sin\\theta ,  n\_\{x\}n\_\{z\}(1-cos\\theta )-n\_\{y\}sin\\theta ,0,     n\_\{x\}n\_\{y\}(1-cos\\theta )-n\_\{z\}sin\\theta ,n\_\{y\}\^\{2\}(1-cos\\theta )+cos\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )+n\_\{x\}sin\\theta ,0,    n\_\{x\}n\_\{z\}(1-cos\\theta )+n\_\{y\}sin\\theta ,n\_\{y\}n\_\{z\}(1-cos\\theta )-n\_\{x\}sin\\theta ,n\_\{z\}\^\{2\}(1-cos\\theta )+cos\\theta ,0,   0,0,0,1" | split: ',' %}
 
 \\[ R(\\vec n, \\theta ) = {% include render_matrix_raw.html mat = R row = 4 col = 4 %} \\]
+
+
+# 资料
+
+[Rodrigues' rotation formula](https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula)
