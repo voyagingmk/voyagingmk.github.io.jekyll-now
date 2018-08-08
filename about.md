@@ -4,9 +4,11 @@ title: About
 permalink: /about/
 ---
 
-I would try to share what I've learnt systematically, hope to help somebody.
+### typos/mistakes/bugs
 
-In a nutshell, It'd be great for me to make new friend. ^_^
+In fact, I review my posts sometimes and have found some unexpected wrong contents. I keep  trying to correct these contents or disable the posts temporarily.
+
+So please tell me about any typos/mistakes/bugs you found in my articles ASAP. Thanks!
 
 
 ### Contact me
