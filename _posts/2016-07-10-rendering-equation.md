@@ -382,3 +382,9 @@ wiki的渲染方程太规范了，下面展示一个简化的渲染方程：
 
 
 [RGB/XYZ Matrices](http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html)
+
+http://www.joshbarczak.com/blog/?p=272
+
+https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+
+http://www.codinglabs.net/article_physically_based_rendering.aspx
