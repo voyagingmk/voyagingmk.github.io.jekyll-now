@@ -281,24 +281,30 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 （因为已经明确限定了\\(\\theta \\)的取值范围，所以\\( cos\\theta \\)必然大于等于0，可去掉绝对值符号）
 
-如果\\(L\_\{i\} (p,\\theta ,\\phi ) \\)是一个常量值，那么就意味着来自任意方向的辐射亮度L都是相等的，于是上式可以求出积分：
+注意，这条积分公式省略了一个东西：物体表面的反射系数f。即默认f=1，且因为同时假定了能量守恒，那么有：
+
+\\[  E(p, n) = M(p, n) = \\int \_\{0 \}\^\{ 2π \} \\int \_\{0 \}\^\{ \\frac \{π\}\{2\} \}  L\_\{o\} (p,\\theta ,\\phi ) cos\\theta sin\\theta d\\theta d\\phi \\]
+
+这么简单的公式，特别适合用来模拟简单的有方向光照：漫反射光（diffuse）。
+
+在微分尺度下，diffuse光的\\(L\_\{o\} (p,\\theta ,\\phi ) \\)是一个常量值，意味着发射到任意方向的辐射亮度L都是相等的，于是上式可以求出积分：
 
 
-\\[ E(p, n) = L\_\{i\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} \\int \_\{0 \}\^\{ \\frac \{π\}\{2\} \}  cos\\theta sin\\theta d\\theta d\\phi \\]
+\\[ M(p, n) = L\_\{o\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} \\int \_\{0 \}\^\{ \\frac \{π\}\{2\} \}  cos\\theta sin\\theta d\\theta d\\phi \\]
 
-\\[ = L\_\{i\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} (\\frac \{1\}\{2\}sin\^\{2\}\\theta )\\rvert \^\{\\frac \{π\}\{2\}\}\_\{0\} d\\phi \\]
+\\[ = L\_\{o\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} (\\frac \{1\}\{2\}sin\^\{2\}\\theta )\\rvert \^\{\\frac \{π\}\{2\}\}\_\{0\} d\\phi \\]
 
-\\[ = L\_\{i\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} (\\frac \{1\}\{2\}sin\^\{2\}\\frac \{π\}\{2\} - \\frac \{1\}\{2\}sin\^\{2\}0  ) d\\phi \\]
+\\[ = L\_\{o\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} (\\frac \{1\}\{2\}sin\^\{2\}\\frac \{π\}\{2\} - \\frac \{1\}\{2\}sin\^\{2\}0  ) d\\phi \\]
 
-\\[ = L\_\{i\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} \\frac \{1\}\{2\} d\\phi \\]
-
-
-\\[ = L\_\{i\} (p,\\theta ,\\phi ) \\frac \{1\}\{2\}( 2π - 0) \\]
+\\[ = L\_\{o\} (p,\\theta ,\\phi ) \\int \_\{0 \}\^\{ 2π \} \\frac \{1\}\{2\} d\\phi \\]
 
 
-\\[ = L\_\{i\} (p,\\theta ,\\phi ) π  \\]
+\\[ = L\_\{o\} (p,\\theta ,\\phi ) \\frac \{1\}\{2\}( 2π - 0) \\]
 
-这个公式叫做[lambertian's reflectance](https://en.wikipedia.org/wiki/Lambertian_reflectance)，很重要。例如若要计算一个点到摄像机的出L，可以假设已知E、且认为任意方向的出L是一致的、且能量守恒，能量守恒这个前提下可以认为\\( L\_\{i\} = L\_\{o\} \\), 就可以直接求出\\( L\_\{o\} = L\_\{i\} = \\frac \{E\}\{\\pi \} \\)。
+
+\\[ = L\_\{o\} (p,\\theta ,\\phi ) π  \\]
+
+这个公式叫做[lambertian's reflectance](https://en.wikipedia.org/wiki/Lambertian_reflectance)，很重要。例如若要计算一个点到摄像机的diffuse，就可以直接求出\\( L\_\{o\} = \\frac \{M\}\{\\pi \} \\)。
 
 关于这个公式我找到的最佳资料是[这个](https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading)。
 
