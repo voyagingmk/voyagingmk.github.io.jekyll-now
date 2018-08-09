@@ -298,8 +298,9 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 \\[ = L\_\{i\} (p,\\theta ,\\phi ) π  \\]
 
-注意，这个简化公式在渲染中很重要。因为若要计算一个点到摄像机的出L，可以假设出L等于入L，那么第一步就是先求这个点的入射E（求E的过程可能很复杂），当求出E之后，就可以认为这个点对任意方向的出射Radiance是均等的，也就是\\( L\_\{o\} = L\_\{i\} = \\frac \{E\}\{\\pi \} \\)。
+这个公式叫做[lambertian's reflectance](https://en.wikipedia.org/wiki/Lambertian_reflectance)，很重要。因为若要计算一个点到摄像机的出L，可以假设出L等于入L，那么第一步就是先求这个点的入射E（求E的过程可能很复杂），当求出E之后，就可以认为这个点对任意方向的出射Radiance是均等的，也就是\\( L\_\{o\} = L\_\{i\} = \\frac \{E\}\{\\pi \} \\)。
 
+关于这个公式我找到的最佳资料是[这个](https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading)。
 
 # 渲染方程 Rendering Equation
 
@@ -388,3 +389,5 @@ http://www.joshbarczak.com/blog/?p=272
 https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
 
 http://www.codinglabs.net/article_physically_based_rendering.aspx
+
+http://www.codinglabs.net/article_physically_based_rendering_cook_torrance.aspx

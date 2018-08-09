@@ -52,7 +52,7 @@ halfway vector(简称h)等于光线方向矢量l加上视角方向矢量v并单�
 
 渲染方程的详细讨论已经写在[渲染基础理论的介绍](http://www.qiujiawei.com/rendering-equation/)一文。
 
-## 双向反射分布函数BRDF
+## 双向反射分布函数BRDF(Cook-Torrance)
 
 
 在[渲染基础理论的介绍](http://www.qiujiawei.com/rendering-equation/)一文里，没有详细讨论到的是brdf这个东西。简单地说，brdf是个控制系数，这个系数并不是常量，需要根据平面属性、光线属性计算得到，是个动态属性。基于PBR渲染，关键点就是选择合理的brdf函数。brdf函数将囊括上文提到的各个概念。
@@ -65,7 +65,7 @@ brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
 
  \\[ f\_\{lambert\} = \frac \{c\}\{\pi \} \\]
 
- 这里的c是指平面自身的颜色值，一般就是指采样纹理贴图出来的颜色。
+\\( f\_\{lambert\} \\)被称为lambertian's reflectance，在我的[渲染基础理论的介绍(1)](https://www.qiujiawei.com/rendering-equation/)一文中有详细的推导过程。这里的c是指光源颜色。
 
  右边的镜面光部分才是最复杂的：
 
