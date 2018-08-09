@@ -307,7 +307,7 @@ dE = \\frac \{  d\\Phi  cos\\theta  \}\{ dA\^\{\\perp \}  \}
 
 \\[ = L\_\{o\} (p,\\theta ,\\phi ) π  \\]
 
-这个公式叫做[lambertian's reflectance](https://en.wikipedia.org/wiki/Lambertian_reflectance)，很重要。例如若要计算一个点到摄像机的diffuse，就可以直接求出\\( L\_\{o\} = \\frac \{M\}\{\\pi \} \\)。
+这个公式叫做[lambertian's reflectance](https://en.wikipedia.org/wiki/Lambertian_reflectance)，很重要。例如若要计算一个点到摄像机的diffuse，就可以直接求出\\( L\_\{o\} = \\frac \{M\}\{\\pi \} \\)。其中的M其实很简单，因为M表示的只是来自一个光源一个方向的入射光，认为是一个RGB值就行了。
 
 关于这个公式我找到的最佳资料是[这个](https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading)。
 
