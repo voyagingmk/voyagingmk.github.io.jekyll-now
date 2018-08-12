@@ -123,7 +123,6 @@ Least Recently Used（LRU），如果一个数据在最近一段时间**没有�
 
 更高级的：MessagePack、Protocol Buffers、FlatBuffers。
 
-### 消息队列
 
 ### 分布式数据库拆分
 
