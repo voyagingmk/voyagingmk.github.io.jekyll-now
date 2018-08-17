@@ -67,7 +67,7 @@ brdf很多种，最主流的是cook-Torrance BRDF，其基本框架公式是：
 
 \\( f\_\{lambert\} \\)被称为lambertian's reflectance，在我的[渲染基础理论的介绍(1)](https://www.qiujiawei.com/rendering-equation/)一文中有详细的推导过程。这里的c是指光源颜色。
 
- 右边的镜面光部分才是最复杂的：
+ 右边的部分才是最复杂的：
 
  \\[ f\_\{cook−torrance\} = \\frac \{ DFG \}\{ 4 (\omega \_\{o\} \\cdot \\mathbf n)(\omega \_\{i\} \\cdot \\mathbf n) \} \\]
 
