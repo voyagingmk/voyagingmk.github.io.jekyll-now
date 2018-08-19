@@ -188,3 +188,8 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float k)
 有了brdf函数后，之前的渲染方程就可以变成：
 
 \\[ L\_\{o\}(p, \omega \_\{o\}) = L\_\{e\}(p, \omega \_\{o\})  + \\int \_\{\Omega \} (k\_\{d\}\frac \{c\}\{\pi \} + k\_\{s\}\\frac \{ DFG \}\{ 4 (\omega \_\{o\} \\cdot \\mathbf n)(\omega \_\{i\} \\cdot \\mathbf n) \} ) L\_\{i\}(p, \omega \_\{i\}) |cos \theta \_\{i\}|d\omega \_\{i\} \\]
+
+
+http://www.codinglabs.net/article_physically_based_rendering_cook_torrance.aspx
+
+http://www.codinglabs.net/article_physically_based_rendering.aspx
