@@ -331,3 +331,5 @@ published: true
 https://zhuanlan.zhihu.com/p/24709748
 
 http://cherishlc.iteye.com/blog/1765932
+
+http://tutorial.math.lamar.edu/Classes/CalcIII/GradientVectorTangentPlane.aspx
