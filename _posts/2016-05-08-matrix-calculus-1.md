@@ -12,13 +12,13 @@ published: true
 
 1) 自变量是一个标量(Scalar)时：
 
-\\[ Df(x) = \\lim \_\{t\\to 0\} \\frac \{f(x+t)-f(t)\}\{t\} \\]
+\\[ Df(x) = \\lim \_\{t\\to 0\} \\frac \{f(x+t)-f(x)\}\{t\} \\]
 
 
 
 2) 自变量是一个向量(Vector)时：
 
-\\[ D\_\{\\textbf \{w\}\}f(\\textbf \{x\}) = \\lim \_\{t\\to 0\} \\frac \{f(\\textbf \{x\} + t\\textbf \{w\}) - f(t)\}\{t\} \\]
+\\[ D\_\{\\textbf \{w\}\}f(\\textbf \{x\}) = \\lim \_\{t\\to 0\} \\frac \{f(\\textbf \{x\} + t\\textbf \{w\}) - f(\\textbf \{x\})\}\{t\} \\]
 
 
 
@@ -242,8 +242,15 @@ published: true
 
 ![https://upload.wikimedia.org/math/1/e/7/1e761891d19891ff75670424341b8425.png](https://upload.wikimedia.org/math/1/e/7/1e761891d19891ff75670424341b8425.png)
 
-它最后得到的式子和我的推导似乎不一样，但其实是一样的，用trace的性质1\\( tr(A) = tr(A\^\{T\}) \\)可以转换得到。
+它最后得到的式子和我的推导似乎不一样，但其实是一样的，用trace的性质1\\( tr(A) = tr(A\^\{T\}) \\)可以转换得到。（误)
 
+上面这个最终等式是错的，zhangyifeng童鞋已更正wiki，可以自己看下wiki的修改历史。
+
+正确的等式为：
+
+![a.png](https://wikimedia.org/api/rest_v1/media/math/render/svg/62d25cb1609fc051df7d17cf84eabecc194404aa)
+
+和我的推导完全一致。
 
 ## 性质7
 
