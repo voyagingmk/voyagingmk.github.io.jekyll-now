@@ -123,12 +123,17 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 
 \\[ \\alpha = \\vec y\^\{T\}A\\vec x \\]
 
+（MatrixCalculus.pdf的Proposition 5）
+
+
 则有：
 
 \\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec x\} = \\vec y\^\{T\}A  【公式2】 \\]
 
 
 \\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec y\} = \\vec x\^\{T\}A\^\{T\}  【公式3】 \\]
+
+（MatrixCalculus.pdf的Proposition 7）
 
 
 设：
@@ -141,7 +146,7 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 
 \\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec x\} = 2\\vec x\^\{T\}A  【公式4】 \\]
 
-
+（MatrixCalculus.pdf的Proposition 9）
 
 
 ## 应用矩阵微分公式
