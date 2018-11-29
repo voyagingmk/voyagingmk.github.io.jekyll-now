@@ -125,18 +125,31 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 
 \\[ \\alpha = \\vec y\^\{T\}A\\vec x \\]
 
+其中的\\( \\vec y\\)是m x 1，\\( \\vec x\\)是n x 1, \\( A \\)是m x n, 因此\\( \\alpha  \\) 是一个标量(scalar)。
 
-则有：
+
+可以得到：
 
 \\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec x\} = \\vec y\^\{T\}A  【公式2】 \\]
 
+（MatrixCalculus.pdf的Proposition 7）
+
+把\\( \\vec y\^\{T\}A \\)看成一个A'，就是公式1了，很好理解。
+
+然后还有：
 
 \\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec y\} = \\vec x\^\{T\}A\^\{T\}  【公式3】 \\]
 
 （MatrixCalculus.pdf的Proposition 7）
 
+这个是基于\\( \\alpha  \\) 是一个标量(scalar)的事实，标量转置后不变：
 
-设：
+
+\\[ \\alpha = \\alpha \^\{T\} = \\vec x \^\{T\}A\^\{T\} \\vec y \\]
+
+再应用公式1就得到了公式3。
+
+再设：
 
 \\[ \\alpha = \\vec x\^\{T\}A\\vec x \\]
 
@@ -146,9 +159,12 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 
 \\[ \\frac \{\\partial \\alpha \}\{\\partial \\vec x\} = 2\\vec x\^\{T\}A  【公式4】 \\]
 
-（MatrixCalculus.pdf的Proposition 9）
+（MatrixCalculus.pdf的Proposition 8和9）
 
-公式2、3、4都可以在文末的MatrixCalculus.pdf链接里找到推导过程。
+Proposition 9的证明基于Proposition 8，Proposition 8的证明比较复杂建议看原文。Proposition 9只是基于A是对称矩阵A的转置等于A这个事实。
+
+
+公式2、3、4都可以在文末的MatrixCalculus.pdf链接里找到推导过程。下文将会用到这几条公式，敬请注意。
 
 
 ## 应用矩阵微分公式
