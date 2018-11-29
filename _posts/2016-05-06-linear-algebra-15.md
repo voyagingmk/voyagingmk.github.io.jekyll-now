@@ -115,6 +115,8 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 
 \\[ \\frac \{\\partial \\vec y\}\{\\partial \\vec x\} = A 【公式1】 \\]
 
+（MatrixCalculus.pdf的Proposition 5）
+
 这是如何得到的呢？实际上超级简单，上面这个式子指的是，\\(\\vec y \\)的每一个分量对\\(\\vec x \\)的每一个分量的微分，结果显然就是一个\\(m \\times n\\)矩阵。
 
 扩展公式：
@@ -122,8 +124,6 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 设：
 
 \\[ \\alpha = \\vec y\^\{T\}A\\vec x \\]
-
-（MatrixCalculus.pdf的Proposition 5）
 
 
 则有：
