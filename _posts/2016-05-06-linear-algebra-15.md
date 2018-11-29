@@ -148,6 +148,8 @@ y是一个\\(m \\times 1\\)的矩阵，A是一个\\(m \\times n\\)的矩阵，x�
 
 （MatrixCalculus.pdf的Proposition 9）
 
+公式2、3、4都可以在文末的MatrixCalculus.pdf链接里找到推导过程。
+
 
 ## 应用矩阵微分公式
 
