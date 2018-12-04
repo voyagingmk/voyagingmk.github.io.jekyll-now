@@ -54,7 +54,7 @@ Spherical Coordinates坐标系下的单位球，可用2个**弧度变量**来定
 
 \\[ y = sin\\theta sin\\phi \\]
 
-\\[ x = cos\\theta \\]
+\\[ z = cos\\theta \\]
 
 简单验证下。把上面3个式子代入单位球公式:\\(x\^\{2\}+y\^\{2\}+z\^\{2\} = 1\\)，可得：
 
