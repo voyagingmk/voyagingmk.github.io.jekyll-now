@@ -50,6 +50,8 @@ published: true
 
 y轴范围是[-1,1]，x轴范围是[-ar,ar]，因为ar = 视平面width/视平面height，其实也就是ar=屏幕width/屏幕height，因为大部分屏幕都是宽屏，所以ar的值一般是大于1的。当屏幕宽高一致时，视平面才是上面这幅图的样子。
 
+# 矩阵推导
+
 现在，换成侧视角来观察这个视锥体(yz平面)：
 
 ![2.png](../images/2016.3/2.png)
@@ -239,3 +241,264 @@ static inline mat4 perspective(float fovy, float aspect, float n, float f)
 
 
 
+# 左右手坐标系问题
+
+上面的透视矩阵是右手坐标系下的，例如OpenGL的情况。而DX用的是左手坐标系，这就导致z值要取反，上面的透视矩阵就变成：
+
+{% assign matM4 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{NearZ + FarZ\}\{FarZ - NearZ\},\\frac \{2*FarZ*NearZ\}\{NearZ - FarZ\},0,0,1,0" | split: ',' %}
+
+\\[ M = {% include render_matrix_raw.html mat = matM4 row = 4 col = 4 %} \\]
+
+仔细对比能发现，m22和m32的值取反了，m22取反是因为：
+
+\\[ kz + lw = Az + B \\]
+
+这里面的A是m22，而B是m23，A乘了z，所以只有A要取反，B不变。
+
+m32也类似的意思。
+
+
+# 投影z的范围问题
+
+上面讨论的是把世界空间的z投影到[-1, 1]范围，这种情况下的投影矩阵。
+
+如果要投影到[0, 1]范围，那么投影矩阵就要重新推导了。还是用右手坐标系：
+
+
+
+\\[z\_\{p\} = A + \\frac \{B\}\{-z\} , z\_\{p\}\\in [0,1] \\]
+
+
+
+\\[ A + \\frac \{B\}\{-NearZ\} = 1 \\]
+
+\\[ A + \\frac \{B\}\{-FarZ\} = 0 \\]
+
+两式相减：
+
+\\[  \\frac \{B\}\{-NearZ\} - \\frac \{B\}\{-FarZ\} = 1 \\]
+
+\\[  \\frac \{B\}\{-NearZ\} - \\frac \{B\}\{-FarZ\} = 1 \\]
+
+\\[  B = \\frac \{FarZ * NearZ\}\{NearZ - FarZ\} \\]
+
+\\[  A = \\frac \{B\}\{FarZ\} = \\frac \{FarZ * NearZ\}\{FarZ*(NearZ - FarZ)\} \\]
+
+\\[  A = \\frac \{NearZ\}\{NearZ - FarZ\} \\]
+
+得到右手坐标系的01范围投影z的透视矩阵：
+
+{% assign matM5 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{NearZ\}\{NearZ - FarZ\},\\frac \{FarZ * NearZ\}\{NearZ - FarZ\},0,0,-1,0" | split: ',' %}
+
+\\[ M = {% include render_matrix_raw.html mat = matM5 row = 4 col = 4 %} \\]
+
+
+左手坐标系的情况：
+
+
+\\[z\_\{p\} = A + \\frac \{B\}\{z\} , z\_\{p\}\\in [0,1] \\]
+
+
+
+\\[ A + \\frac \{B\}\{NearZ\} = 0 \\]
+
+\\[ A + \\frac \{B\}\{FarZ\} = 1 \\]
+
+两式相减：
+
+\\[  \\frac \{B\}\{FarZ\} - \\frac \{B\}\{NearZ\} = 1 \\]
+
+
+\\[  B = \\frac \{FarZ * NearZ\}\{NearZ - FarZ\} \\]
+
+\\[  A = -\\frac \{B\}\{NearZ\} = -\\frac \{ \\frac \{FarZ * NearZ\}\{NearZ - FarZ\} \}\{NearZ\}  \\]
+
+\\[  A = \\frac \{-FarZ\}\{NearZ - FarZ\} = \\frac \{FarZ\}\{FarZ - NearZ\} \\]
+
+得到左手坐标系的01范围投影z的透视矩阵：
+
+{% assign matM6 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{FarZ\}\{FarZ - NearZ\},\\frac \{FarZ * NearZ\}\{NearZ - FarZ\},0,0,1,0" | split: ',' %}
+
+\\[ M = {% include render_matrix_raw.html mat = matM6 row = 4 col = 4 %} \\]
+
+
+# 另一种形式的透视矩阵
+
+在上面的推导过程中，透视矩阵的某些参数直接默认成0了，然而并非必须为0。
+
+于是理论上是存在其他形式的透视矩阵的，例如这篇文章中的OpenGL透视矩阵：
+
+[The Perspective and Orthographic Projection Matrix](https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/opengl-perspective-projection-matrix)
+
+![1.png](../images/2021.12/1.png)
+
+对比我在上文中推导出来的第一个透视矩阵：
+
+\\[  {% include render_matrix_raw.html mat = matM3 row = 4 col = 4 %} \\]
+
+发现第三四行时完全一样的。
+
+那么区别之处在于第一二行。
+
+这里面的关键是，OpenGL先假设了视椎体的**近平面就是视窗口**，视窗口大小的单位是像素，于是用(bottom, left)和(top, right)表示了它的边界位置（注意，坐标轴原点在窗口中心，bottom和left一般是负值）：
+
+![3.png](../images/2021.12/3.png)
+
+意思就是把投影后的p约束到[left, right]和[bottom, top]参数化范围，而不是[-1, 1]亦或者[0, 1]的单位化范围。
+
+**这也是TAA算法的jitter操作关键点：TAA对(bottom, left)和(top, right)做了微小的偏移**。
+
+
+于是可以列出不等式，并做一些变换，把最小值和最大值变换成单位化的[-1,1]：
+
+![2.png](../images/2021.12/2.png)
+
+其中的\\( P\_\{sx\} \\) 是世界坐标P在near平面上的投影点的x分量。需要另外求。
+
+
+![4.png](../images/2021.12/4.png)
+
+从上面的视椎侧视图中可以得到：
+
+\\[  \\frac \{AB\}\{DE\} = \\frac \{BC\}\{EF\} \\]
+
+(A和D重叠)
+
+其中BC是未知数\\( P\_\{sy\} \\)，AB等于near，DE等于\\( P\_z \\)绝对值，因为是右手坐标系，所以DE等于\\( -P\_z \\)，EF等于\\( P\_y \\)（不用取反）。
+
+
+![5.png](../images/2021.12/5.png)
+
+同理，x分量也可以求得：
+
+![6.png](../images/2021.12/6.png)
+
+
+\\( P\_\{sx\} \\)代入上面的不等式，得到：
+
+![7.png](../images/2021.12/7.png)
+
+因为**Perspective Divide**的存在，上面的不等式可等价换成下面的形式：
+
+\\[ -1 \\leq \\frac \{ \\frac \{2nP\_x\}\{r-l\} + \\frac \{P\_z(r + l)\}\{r-l\} \}\{ -P\_z \} \\leq -1 \\]
+
+又因为在透视矩阵中，是去除掉**Perspective Divide**的，所以再简写成：
+
+
+\\[ -1 \\leq  \\frac \{2nP\_x\}\{r-l\} + \\frac \{P\_z(r + l)\}\{r-l\}  \\leq -1 \\]
+
+可以发现中间的部分是P点的x、z分量与2个系数的点积式：
+
+\\[ \\frac \{2n\}\{r-l\} \\]
+
+\\[ \\frac \{r + l\}\{r-l\} \\]
+
+这不就是透视矩阵的m00和m02系数了吗：
+
+![7.png](../images/2021.12/8.png)
+
+第二行也同理，先列出类似的不等式：
+
+![7.png](../images/2021.12/9.png)
+
+于是第二行也解出来了：
+
+![7.png](../images/2021.12/10.png)
+
+第三行其实和上文第一个透视矩阵是一样的，因为用的是一样的near、far参数，最终得到OpenGL的透视矩阵：
+
+![7.png](../images/2021.12/11.png)
+
+# 如何将TAA抗锯齿算法中的jitter值应用到透视矩阵
+
+上一节讲到了近平面用[left, right]和[bottom, top]表示，我们可以假设视窗口是对称的，那么:
+
+\\[ r = 窗口半径x \\] 
+
+\\[ l = -r = -窗口半径x \\] 
+
+\\[ t = 窗口半径y \\] 
+
+\\[ b = -t = -窗口半径y \\] 
+
+做jitter时，是整体往一个方向动的，视窗口大小不变，于是有：
+
+\\[ r' = x + \triangle x \\] 
+
+\\[ l' = -x + \triangle x \\] 
+
+\\[ t' = y + \triangle y \\] 
+
+\\[ b' = -y + \triangle y \\] 
+
+代入OpenGL透视矩阵，有：
+
+\\[ \\frac \{r' + l'\}\{r' - l'\} = \\frac \{x + \triangle x + (-x + \triangle x)\}\{x + \triangle x - (-x + \triangle x)\} = \\frac \{ \triangle x \} \{ x \}\\] 
+
+\\[ \\frac \{t' + b'\}\{t' - b'\} = \\frac \{y + \triangle y + (-y + \triangle y)\}\{y + \triangle y - (-y + \triangle y)\} = \\frac \{ \triangle y \} \{ y \}\\] 
+
+这里注意下，如果\\(  \triangle x \\) 和 \\(  \triangle y \\) 为0，即没有jitter存在，相机正常绘制，那么这个透视矩阵就退化成上文第一个透视矩阵的形式了。
+
+继续推导。因为：
+
+\\[ 窗口半径x = 0.5 * width \\] 
+
+\\[ 窗口半径y = 0.5 * height \\] 
+
+所以有：
+
+\\[ \\frac \{r' + l'\}\{r' - l'\} =  \\frac \{ \triangle x \} \{ 0.5 * width \} = \frac \{ 2 \triangle x \} \{ width \} \\] 
+
+\\[ \\frac \{t' + b'\}\{t' - b'\} =  \\frac \{ \triangle y \} \{ 0.5 * height  \} = \frac \{ 2 \triangle y \} \{ height \}  \\] 
+
+对比下UE4的相应代码：
+
+```c++
+····
+
+View.ViewMatrices.HackAddTemporalAAProjectionJitter(FVector2D(SampleX * 2.0f / View.ViewRect.Width(), SampleY * -2.0f / View.ViewRect.Height()));
+
+····
+```
+
+SampleX、SampleY就是上面的\\(  \triangle x \\)、\\(  \triangle y \\)。
+
+View.ViewRect.Width()、 View.ViewRect.Height()就是上面的width、height。
+
+唯一有点不同的就是SampleY乘以了负的2.0f，这里我没深究，可能是y方向有什么翻转吧。有大佬看到这里的话求分析下。
+
+
+HackAddTemporalAAProjectionJitter函数很简单，直接把jitter叠加到m20和m21：
+
+```c++
+	void HackAddTemporalAAProjectionJitter(const FVector2D& InTemporalAAProjectionJitter)
+	{
+		ensure(TemporalAAProjectionJitter.X == 0.0f && TemporalAAProjectionJitter.Y == 0.0f);
+
+		TemporalAAProjectionJitter = InTemporalAAProjectionJitter;
+
+		ProjectionMatrix.M[2][0] += TemporalAAProjectionJitter.X;
+		ProjectionMatrix.M[2][1] += TemporalAAProjectionJitter.Y;
+		InvProjectionMatrix = InvertProjectionMatrix(ProjectionMatrix);
+
+		RecomputeDerivedMatrices();
+	}
+```
+
+再看下UE4的投影矩阵初始化方法：
+
+```c++
+FORCEINLINE FPerspectiveMatrix::FPerspectiveMatrix(float HalfFOVX, float HalfFOVY, float MultFOVX, float MultFOVY, float MinZ, float MaxZ)
+	: FMatrix(
+		FPlane(MultFOVX / FMath::Tan(HalfFOVX),	0.0f,								0.0f,																	0.0f),
+		FPlane(0.0f,							MultFOVY / FMath::Tan(HalfFOVY),	0.0f,																	0.0f),
+		FPlane(0.0f,							0.0f,								((MinZ == MaxZ) ? (1.0f - Z_PRECISION) : MaxZ / (MaxZ - MinZ)),			1.0f),
+		FPlane(0.0f,							0.0f,								-MinZ * ((MinZ == MaxZ) ? (1.0f - Z_PRECISION) : MaxZ / (MaxZ - MinZ)),	0.0f)
+	)
+{ }
+```
+
+发现和上文的**左手坐标系的01范围投影z的透视矩阵**对得上：
+
+
+\\[ M = {% include render_matrix_raw.html mat = matM6 row = 4 col = 4 %} \\]
