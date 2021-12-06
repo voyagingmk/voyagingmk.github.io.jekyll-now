@@ -286,7 +286,7 @@ m32也类似的意思。
 
 \\[  A = \\frac \{NearZ\}\{NearZ - FarZ\} \\]
 
-得到右手坐标系的01范围投影z的透视矩阵：
+得到右手坐标系的01范围投影的透视矩阵：
 
 {% assign matM5 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{NearZ\}\{NearZ - FarZ\},\\frac \{FarZ * NearZ\}\{NearZ - FarZ\},0,0,-1,0" | split: ',' %}
 
@@ -315,7 +315,7 @@ m32也类似的意思。
 
 \\[  A = \\frac \{-FarZ\}\{NearZ - FarZ\} = \\frac \{FarZ\}\{FarZ - NearZ\} \\]
 
-得到左手坐标系的01范围投影z的透视矩阵：
+得到左手坐标系的01范围投影的透视矩阵：
 
 {% assign matM6 = "\\frac \{ 1 \} \{ ar * tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{ 1 \} \{ tan(\\frac \{\alpha \} \{ 2 \} ) \},0,0,0,0,\\frac \{FarZ\}\{FarZ - NearZ\},\\frac \{FarZ * NearZ\}\{NearZ - FarZ\},0,0,1,0" | split: ',' %}
 
@@ -498,7 +498,7 @@ FORCEINLINE FPerspectiveMatrix::FPerspectiveMatrix(float HalfFOVX, float HalfFOV
 { }
 ```
 
-发现和上文的**左手坐标系的01范围投影z的透视矩阵**对得上：
+发现和上文的**左手坐标系的01范围投影的透视矩阵**对得上：
 
 
 \\[ M = {% include render_matrix_raw.html mat = matM6 row = 4 col = 4 %} \\]
