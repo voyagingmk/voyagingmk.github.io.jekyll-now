@@ -34,15 +34,23 @@ published: true
 
 (from wiki)
 
- spherical cap面积等于\\(2\\pi rh \\)，所以上式可变成：
+[Spherical-Cap](https://redcrab-software.com/en/Calculator/Spherical-Cap)相关公式如下：
+
+
+![25.png](../images/2016.7/25.png)
+
+
+
+
+spherical cap面积等于\\(2\\pi rh \\)，所以上式可变成：
 
 \\[ \\Omega = \\frac \{2\\pi rh\}\{r\^\{2\} \} sr \\]
 
-当h等于r时，得到：
+当球帽等于半个球时，h等于r，可以得到：
 
 \\[ \\Omega = \\frac \{2\\pi rr\}\{r\^\{2\} \} sr = 2\\pi \ sr \\]
 
-此时得到的是半球的立体角，那么就可以知道整个球的立体角为\\(4\\pi  \\)，和上述结论一致。
+此时得到的是半球的立体角。可以知道整个球的立体角为\\(4\\pi  \\)，和上述结论一致。
 
 
 
