@@ -1,10 +1,13 @@
 ---
 layout: default
 ---
+<script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>{{ page.title }}</h1>
+ <h3>Tags: {{ page | tags }}</h3>
 <article class="post">
-    <h1>{{ page.title }}</h1>
-    <h3>Tags: {{ page | tags }}</h3>
+    
     <div class="entry">
         {{ content }}
     </div>

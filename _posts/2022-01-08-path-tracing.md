@@ -1,11 +1,28 @@
 ---
 layout: post_latex
-title: 路径追踪算法
+title: 路径追踪渲染器
 tags: ['path tracing']
 published: true
 ---
 
 <!--more-->
+
+学习离线渲染最好从这99行代码开始：
+
+[smallpt: Global Illumination in 99 lines of C++](http://www.kevinbeason.com/smallpt/)
+
+但这份代码有些小问题：
+
+- 所有对象都是sphere。如果场景基于mesh的话，代码要改不少。
+- 为了压缩行数，一些代码的理解不太直观。
+
+
+进阶一点的话看：
+
+[Ray Tracing in One Weekend](https://raytracing.github.io/)
+
+
+
 
 # 为什么叫路径追踪[Path tracing](https://en.wikipedia.org/wiki/Path_tracing)
 
@@ -25,6 +42,98 @@ published: true
 
 
 # 算法关键点
+
+假设开发一个基于path tracing积分器、输入为mesh模型、包含几种基本材质的离线渲染器，下面是需要掌握的点。
+
+
+## 每个像素的光线发射流程
+
+1. 根据该像素的屏幕坐标、摄像机空间位置，算出Ray的o和d
+2. 初始化Li为Color::Black。Li是指这根光线最终返回时收集到的Radiance，因为假设场景中没有光源（自发光物体认为是区域光源），那么场景必然是黑的。
+3. 初始化pathThroughput为Color::White。pathThroughput大概就是指反射率，但是是要累乘的，每次光线反弹，要不断乘以材质的反射率。
+4. 开始进入无限递归Loop（物理上也可认为光线能无限弹射）
+   1. Scene.Intersect(ray)，光线和场景做相交判定。
+   2. 如果不相交，那么 Li += pathThroughput * 环境贴图的Radiance（非必要功能，且这里面很复杂），并退出循环，否则继续后续步骤
+   3. Li += pathThroughput * 相交点的自发光Radiance（区域光）
+   4. 根据相交点的BSDF是不是specular
+
+
+## 空间加速结构
+
+现在显卡从硬件上支持了空间加速结构，软渲的话直接找个BVH的开源实现比较省事，也方便后面直接移植GPU。不过要注意传给BVH的ray的起点坐标，要沿着ray的朝向偏移一点点，不然可能会自相交。
+
+
+## 几何数学
+
+### Barycentric Coordinates 和 Cramer's rule
+
+bvh intersect的结果如果只返回了距离t，那么只能知道碰撞点P在ray.o + t * ray.d，并不能知道P点的法线。
+
+法线有两种情况：
+
+1. mesh没有顶点法线。这种可以根据3个顶点坐标，叉积算出面法线，P点的法线和面法线一样。
+2. mesh有顶点法线。此时需要根据P点的Barycentric Coordinates，插值得到P点法线。
+
+Barycentric Coordinates，除了用面积法算之外，还可以用Cramer's rule（克莱姆法则）算（更快）：
+
+```c++
+void Barycentric(const Vector3& hitPoint, float& u, float& v, float& w) const
+{
+	/*
+	P_hit = p_1 + u * (p_2 - p_1) + v * (p_3 - p_1)
+	u * (p_2 - p_1) + v * (p_3 - p_1) = P_hit - p_1
+	B = p_2 - p_1
+	C = p_3 - p_1
+	A = P_hit - p_1
+	=>
+	u * B + v * C = A   （it is vector！）
+	convert to linear system =>
+	(u * B + v * C)·B = A·B		（it is scalar！）
+	(u * B + v * C)·C = A·C
+
+	u * B·B  +  v * C·B = A·B
+	u * B·C  +  v * C·C = A·C
+
+	【 B·B  C·B 】 【 u 】   A·B
+	【 B·C  C·C 】 【 v 】 = A·C
+
+	【 d00  d01 】 【 u 】   d20
+	【 d01  d11 】 【 v 】 = d21
+
+	det   = | d00  d01 |
+			| d01  d11 |
+
+	det_u = | d20  d01 |
+			| d21  d11 |
+
+	det_v = | d00  d20 |
+			| d01  d21 |
+	*/
+	Vector3 B = point_[1] - point_[0], C = point_[2] - point_[0], A = hitPoint - point_[0];
+	float d00 = B.dot(B);
+	float d01 = C.dot(B);
+	float d11 = C.dot(C);
+	float d20 = A.dot(B);
+	float d21 = A.dot(C);
+	float denom = d00 * d11 - d01 * d01;
+	float denom_u = d20 * d11 - d01 * d21;
+	float denom_v = d00 * d21 - d20 * d01;
+	float inv_denom = 1 / denom;
+	float u1 = denom_u * inv_denom;
+	float v1 = denom_v * inv_denom;
+	// P_hit = p_1 + u * (p_2 - p_1) + v * (p_3 - p_1)
+	// =>
+	// P_hit = (1 - u - v) * p_1 + u * p_2 + v * p_3 
+	u = 1 - u1 - v1;
+	v = u1;
+	w = v1;
+}
+```
+
+（参考：https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf ）
+
+这个一般的
+
 
 ## 用俄罗斯轮盘赌算法（Russian Roulette）终止递归
 
@@ -49,12 +158,25 @@ published: true
 
 因为P是递归的概率，只要P小于1，那么就不可能无限递归。
 
+## 光源
 
-## 光源远或面积过小时，采样不足
+### 光源数据结构问题
+
+光源是point light（无体积）。
+
+光源是一个三角面片模型，那么采样光源时，需要随机采样光源投影后的面积上的点，比较复杂。
+
+光源是area light，即一个quad面片，做采样也不会太复杂。
+
+光源是方向光，Emmm。
+
+
+
+### 光源远或面积过小时，采样不足
 
 均匀随机的光线，很难命中过小的光源，就会产生很强烈的噪点。解决该问题的办法叫**emitter sampling**，即从intersection point直接发射一条到光源的光线。因为光源有面积，所以目标点不是光源原点，而是需要在光源面积范围上随机出一个目标点，从而得到随机化的光线方向。
 
-## 光源被遮挡问题
+### 光源被遮挡问题
 
 上面说的emitter sampling，是假设了intersection point和光源之间无遮挡。如果存在遮挡，那么不应该直接采样获得光源的Radiance。为了避免这个问题，需要搜索下BVH，判断是否有遮挡，有的话终止。
 
@@ -65,9 +187,26 @@ published: true
 
 ## 材质问题
 
-### 材质分类
+### dielectrics
 
-基本材质类型:
+即电介质， 或称 non-metallic surfaces
+
+电介质大部分是固体，包括：瓷器，玻璃，塑料，氧化后的金属；液体包括：水、油；气体包括：空气、氮。
+
+纯水是电介质，不纯的水可以导电（变成了导体）。
+
+电介质（dielectrics）不完全等于绝缘体（insulators）。
+
+电介质和绝缘体之间的区别在于，在电场中存储或保存电能的材料是电介质材料，而在另一方面，阻止电场中电子流动的材料是绝缘体。
+
+
+![6.png](../images/2022.1/6.png)
+
+### conductors
+
+即导体，或称 metallic surfaces 
+
+### 材质细分
 
 - 粗糙材质（LambertianDiffuse）
 - 镜面材质（Mirror）
@@ -78,97 +217,16 @@ published: true
 - 粗糙导体（RoughConductor)
 - 粗糙电介质（RoughDielectric)
 - 迪士尼材质（Disney）
+- 次表面材质
+
+材质的不同，不止是参数不同，往往代码都是差了十万八千里。
+
 
 ### BSDF、BRDF、BTDF
 
 BSDF 是 BRDF和BTDF的统称。
 
 BSDF这个东西其实就是个系数。
-
-### Lambertian Diffuse
-
-例如假设有一束光达到一个白色木板上，并且该白色木板不吸收热辐射，那么白色木板应该反射多少光（能量）出去？显然是100%，因为假定了白色木板不吸收能量，并且木板也不是电介质，没有产生折射，
-光必然100%反射到各个方向去了。此时BSDF是多少呢？这就要看白色模板的材质。
-
-假设白色木板是用的Lambertian Diffuse材质，即一束光会均匀地散射到所有方向。
-
-直接搬出Lambertian Diffuse BSDF公式：
-
-\\[ f = \\frac {ρ\_{albedo}}{\pi } \\]
-
-其中的\\(ρ\_{albedo}\\)是指diffuse物体的**反射率**。
-
-这个其实就是3D模型基本都会有的albedo纹理，是同个东西。例如如果给白色木板画个纹理，那就是一张纯白色的图片，反射率为(1.0, 1.0, 1.0)，表示打到木板上的光线全部反射，不吸收。
-
-当albedo不等于(1.0, 1.0, 1.0)时，例如(0.5, 0.5, 0.5)，说明木板吸收了光束一半的辐射；当albedo等于(0,0,0)时，木板完全不反射，光的能量全部吸收掉。
-
-至于为什么要除以π才是diffuse物体的BSDF，得从渲染方程说起。
-
-（在我的这篇 [渲染基础理论的介绍](https://www.qiujiawei.com/rendering-equation/) 文章中有介绍相关的公式推导 ）
-
-先看下wiki里的渲染方程：
-
-![18.png](../images/2016.7/18.png)
-
-这公式是在说，已知出射方向\\(w\_o\\)，那么把被渲染的点(shading point)自身沿着\\(w\_o\\)方向发射的radiance部分、以及接收到的radiance并且要反射出去的部分，通通加起来，就是总共的要沿着\\(w\_o\\)发射出去的radiance。
-
-再看我的无伤大雅的简化版（去掉了波长变量以及时间变量）：
-
-\\[ L\_\{o\}(p, \omega \_\{o\}) = L\_\{e\}(p, \omega \_\{o\})  + \\int \_\{\Omega \}f(p, \omega \_\{o\}, \omega \_\{i\}) L\_\{i\}(p, \omega \_\{i\}) |cos \theta \_\{i\}|d\omega \_\{i\} \\]
-
-因为现在讨论的是diffuse材质，没有自发光，可以去掉自发光项；另外把公式改成用spherical angle表达（需要一点[立体角](http://127.0.0.1:4000/solid-angle/)的知识），结果如下：
-
-\\[ L\_\{o\} = \\int \_\{0 \}\^\{ 2π \} \\int \_\{0 \}\^\{ \\frac \{π\}\{2\} \} f(p, \\theta ,\\phi ) L\_\{i\} (p,\\theta ,\\phi ) cos\\theta sin\\theta d\\theta d\\phi \\]
-
-再因为diffuse材质会吧把收到的光线均匀地散射出去，即\\(L\_i\\)不影响后面的反射，同时因为均匀性，f也是个常数，所以右边的积分里，可以把\\(L\_i\\)、f当成常量提到外面去，只关注剩下的积分式：
-
-\\[  \\int \_\{0 \}\^\{ 2π \} \\int \_\{0 \}\^\{ \\frac \{π\}\{2\} \}   cos\\theta sin\\theta d\\theta d\\phi \\]
-
-这是个可以算出来的式子，结果等于π。于是有：
-
-
-\\[ L\_\{o\} =  L\_\{i\} \cdot f \cdot π \\]
-
-因为能量要守恒，所以 f必须等于 \\( \frac {1}{\pi } \\)。但在渲染里既然要模拟光被吸收，使得物体呈现不同的颜色，能量应该是允许不守恒的，那么f应该等于多少呢？答案在上文其实已经给出了：
-
-\\[ f = \\frac {ρ\_{albedo}}{\pi } \\]
-
-再搬出那块白色木板，它百分百反射所有光，\\(ρ\_{albedo} \\)为1，所以它的f为 \\( \frac {1}{\pi } \\)。
-
-
-（这篇文章也很好地解释了diffuse BSDF公式的推导：
-[Deriving Lambertian BRDF from first principles](https://sakibsaikia.github.io/graphics/2019/09/10/Deriving-Lambertian-BRDF-From-First-Principles.html) ）
-
-
-### 非Lambertian Diffuse
-
-Lambertian Diffuse直接认为Diffuse材质时完全均匀反射所有光线，然而这个假设过于笼统了。Disney研究了现实世界Diffuse材质后发现，可以用一种更复杂的公式模拟Diffuse，使得Diffuse材质更真实。
-
-它的公式如下：
-
-![4.png](../images/2022.1/4.png)
-
-(from disney的论文)
-
-其中\\(\theta \_l \\)和\\(\theta \_v \\)分别是光线l、视线v与法线n的夹角，\\(\theta \_d \\)是光线l和半程向量h的夹角（h一般为0.5*(v + l) ）。
-
-baseColor就是上一节的\\(ρ\_{albedo} \\)，可见disney的这个公式还是没有脱离上一节的推导的，只是在Lambertian Diffuse的f后面加了一坨计算。
-
-
-相应代码如下：
-
-```c++
-
-float3 Diffuse_Burley_Disney( float3 DiffuseColor, float Roughness, float NoV, float NoL, float VoH ) 
-{ 
-       float FD90 = 0.5 + 2 * VoH * VoH * Roughness; 
-       float FdV = 1 + (FD90 - 1) * Pow5( 1 - NoV ); 
-       float FdL = 1 + (FD90 - 1) * Pow5( 1 - NoL ); 
-       return DiffuseColor * ( (1 / PI) * FdV * FdL ); 
-} 
-
-```
-
 
 ### 电介材质问题
 
@@ -215,9 +273,9 @@ float3 Diffuse_Burley_Disney( float3 DiffuseColor, float Roughness, float NoV, f
 
 上面只解决了光通过电介质时的折射方向，但是究竟多少能量被折射（以及剩下多少能量反射），是不知道的。
 
-假定折射率为x，那么根据能量守恒可以知道反射率为1-x。
+假定反射率为x，那么根据能量守恒可以知道折射率为1-x。
 
-折射率一般用近似公式算([Schlick's approximation](https://en.wikipedia.org/wiki/Schlick%27s_approximation))。
+反射率一般用近似公式算([Schlick's approximation](https://en.wikipedia.org/wiki/Schlick%27s_approximation))。
 
 
 
