@@ -136,7 +136,22 @@ vec3 isotropicLobe(const PixelParams pixel, const Light light, const vec3 h,
 
 ## 几个材质关键参数的计算
 
-```c++
+MaterialInputs是用户端的参数，即给美术编辑用的：
+
+```glsl
+struct MaterialInputs {
+    vec4  baseColor;
+    float roughness;
+    float metallic;
+    float reflectance;
+    float ior;
+    ...
+}
+```
+
+PixelParams存了每个着色点的基本系数，一般这些系数和具体的着色算法无关：
+
+```glsl
 struct PixelParams {
     vec3  diffuseColor;
     float perceptualRoughness;
@@ -147,16 +162,12 @@ struct PixelParams {
     vec3  energyCompensation;
     ...
 }
+```
 
-struct MaterialInputs {
-    vec4  baseColor;
-    float roughness;
-    float metallic;
-    float reflectance;
-    float ior;
-    ...
-}
+根据MaterialInputs计算出PixelParams的代码：
 
+
+```glsl
 vec3 computeDiffuseColor(const vec4 baseColor, float metallic) {
     return baseColor.rgb * (1.0 - metallic);
 }
@@ -175,3 +186,8 @@ void getCommonPixelParams(const MaterialInputs material, inout PixelParams pixel
     ...
 }
 ```
+
+从computeDiffuseColor可见，metallic越大，基本颜色就越小。
+
+
+
