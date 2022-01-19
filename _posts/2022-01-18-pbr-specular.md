@@ -182,6 +182,8 @@ void getCommonPixelParams(const MaterialInputs material, inout PixelParams pixel
 3. F90必然等于1.0，F90表示当光线以grazing angles打到表面时，100%发生镜面反射，无论是电介质还是金属都一样
 4. 一般来说，大部分电介质的F0是4%；水是2%；F0最高的电介质是宝石(gemstones)，16%左右。
 
+![7.png](../images/2022.1/7.png)
+
 ### F0计算方法1
 
 为了方便美术调节F0，于是业界大佬发明了映射公式：
