@@ -14,7 +14,7 @@ $(window).resize(sectionHeight);
 
 $(function() {
   
-  $("article h1, article h2, article h3").each(function(){
+  $("article h1, article h2").each(function(){
     console.log( "======"  + $(this).text().replace(/ /g, '-') );
     $(".nav2 ul").append("<li class='tag-" + this.nodeName.toLowerCase() + "'><a href='#" + $(this).text().replace(/ /g, '-') + "'>" + $(this).text() + "</a></li>");
     $(this).attr("id",$(this).text().replace(/ /g, '-'));

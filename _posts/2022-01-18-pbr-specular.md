@@ -31,7 +31,7 @@ vec3 specularLobe(const PixelParams pixel, const Light light, const vec3 h,
 
 本文的目标是理解这里面的代码。
 
-## Filament的FS shader流程结构
+# Filament的着色流程
 
 代码都在shaders/src目录，根据宏变体，会组合这里面的代码，最终生成目标shader。
 
@@ -111,7 +111,7 @@ void evaluateDirectionalLight(const MaterialInputs material,
 surfaceShading的代码在shading_model_standard.fs，这个就已经是pbr的核心代码了。
 
 
-## isotropic specular
+# isotropic specular
 
 先从各向同性开始：
 
@@ -134,7 +134,7 @@ vec3 isotropicLobe(const PixelParams pixel, const Light light, const vec3 h,
 
 \\( 4 (n \cdot v)(n \cdot l) \\)被放进了V项中了。
 
-## 几个材质关键参数的计算
+# 几个材质关键参数的计算
 
 MaterialInputs是用户端的参数，即给美术编辑用的：
 
@@ -164,7 +164,7 @@ struct PixelParams {
 }
 ```
 
-根据MaterialInputs计算出PixelParams的代码：
+根据MaterialInputs计算PixelParams的代码，主要是算了pixel.diffuseColor和pixel.f0 ：
 
 
 ```glsl
@@ -172,9 +172,14 @@ vec3 computeDiffuseColor(const vec4 baseColor, float metallic) {
     return baseColor.rgb * (1.0 - metallic);
 }
 
+vec3 computeF0(const vec4 baseColor, float metallic, float reflectance) {
+    return baseColor.rgb * metallic + (reflectance * (1.0 - metallic));
+}
+
 void getCommonPixelParams(const MaterialInputs material, inout PixelParams pixel) {
     vec4 baseColor = material.baseColor;
     pixel.diffuseColor = computeDiffuseColor(baseColor, material.metallic);
+
 #if !defined(SHADING_MODEL_SUBSURFACE) && (!defined(MATERIAL_HAS_REFLECTANCE) && defined(MATERIAL_HAS_IOR))
     float reflectance = iorToF0(max(1.0, material.ior), 1.0);
 #else
@@ -187,7 +192,86 @@ void getCommonPixelParams(const MaterialInputs material, inout PixelParams pixel
 }
 ```
 
-从computeDiffuseColor可见，metallic越大，基本颜色就越小。
+## pixel.diffuseColor 
+
+从computeDiffuseColor可见，metallic越大，pixel.diffuseColor就越接近黑色，黑色即表示几乎没有漫反射光。
+
+## pixel.f0 
+
+首先是理解什么是F0, F0等于 **Fresnel Reflectance at 0 Degrees**，是一个介于0到1的数，它表示**当入射光线和表面垂直时，有x%的radiance变成镜面反射出去**（剩下的1-x%发生折射）。
+
+为什么要知道F0呢，因为pbr计算过程中有一个费涅尔项F（Fresnel term），需要用到F0。
+
+有几个重要知识点要记一下：
+
+1. 电介质(dielectrics)的F0是非彩色的(achromatic)，即认为RGB各分量相等
+2. 金属(metallic)的F0是彩色的(chromatic)，RGB分量不相等
+3. F90必然等于1.0，F90表示当光线以grazing angles打到表面时，100%发生镜面反射，无论是电介质还是金属都一样
+4. 一般来说，大部分电介质的F0是4%；水是2%；F0最高的电介质是宝石(gemstones)，16%左右。
+
+### F0计算方法1
+
+为了方便美术调节F0，于是业界大佬发明了映射公式：
+
+\\[ f\_0 = 0.16 \cdot f\_\{linear\} \^2 \\]
+
+\\(f\_\{linear\}\\)是个0到1的线性值，其中0.5对应水的F0（2%），1.0对应宝石的F0(16%)。Filament shader里的material.reflectance即是\\(f\_\{linear\}\\)，computeDielectricF0就是做这个映射的接口：
+
+```glsl
+float computeDielectricF0(float reflectance) {
+    return 0.16 * reflectance * reflectance;
+}
+```
+
+### F0计算方法2
+
+另一种算法是基于材质的[ior](https://en.wikipedia.org/wiki/Refractive_index)。ior是指光穿过两种介质界面时的折射率，例如空气\\(\\rightarrow \\)水界面的ior是1.33。
+
+ior也是一个给美术调节的系数，即Filament shader里的material.ior。
+
+ior涉及到两种介质，但在游戏里一般其中一种介质是空气，因此可以认为，各种介质相对空气的ior，即为该介质的ior，记为\\(n\_\{ior\}\\)。空气的(n\_\{ior\}\\)即为1。
+
+由ior算F0的公式如下：
+
+\\[  f\_0 ( n\_\{ior\} ) =  ( \\frac \{n\_\{ior\} - 1\}\{n\_\{ior\} + 1\} ) \^2 \\]
+
+这条公式不是随便拟合出的，是真实的物理公式简化得到的。详情可阅读：
+
+- [Fresnel equations](https://en.wikipedia.org/wiki/Fresnel_equations)
+ 
+- [Light at Interfaces](http://www1.udel.edu/chem/sneal/sln_tchng/CHEM620/CHEM620/Chi_4._Light_at_Interfaces.html#:~:text=For%20water%20and%20diamond%2C%20which,to%20see%20glass%20in%20air.)
+ 
+涉及到极化性质什么的，就不细究了。
+
+总之能简化成上述公式的原因是，\\(f\_\{0\}\\)描述的是垂直角度的反射率。
+
+另外补充一下，当其中一种介质并不是空气时，此时也可以根据这两种介质相对空气的ior，来算\\(f\_\{0\}\\)，公式如下：
 
 
+\\[  f\_0 = ( \\frac \{ n\_\{1\} - n\_\{2\} \}\{ n\_\{1\} + n\_\{2\} \} ) \^2 \\]
+
+分子分母同时除以\\(n\_\{2\}\\)，就和前一条公式差不多了：
+
+\\[  f\_0 = ( \\frac \{ \\frac \{n\_\{1\} \} \{ n\_\{2\} \} - 1 \}\{ \\frac \{n\_\{1\} \} \{ n\_\{2\} \} + 1 \} ) \^2 \\]
+
+当\\(n\_\{2\}\\)为空气的ior 1.0时，就是第一条公式了。
+
+Filament中的实现代码如下：
+
+```glsl
+float iorToF0(float transmittedIor, float incidentIor) {
+    return sq((transmittedIor - incidentIor) / (transmittedIor + incidentIor));
+}
+
+```
+
+transmittedIor即\\(n\_\{1\}\\)，incidentIor即\\(n\_\{2\}\\)。
+
+调用代码：
+
+```glsl
+float reflectance = iorToF0(max(1.0, material.ior), 1.0);
+```
+
+可见，Filament直接约束了transmittedIor不低于1，且让incidentIor固定为空气ior 1.0。
 
