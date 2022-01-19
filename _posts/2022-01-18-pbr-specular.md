@@ -322,7 +322,7 @@ float distribution(float roughness, float NoH, const vec3 h) {
 }
 ```
 
-## G项（V项）
+## G项
 
 G项的话，Filament用了这篇论文里的equation 99： [Understanding the Masking-Shadowing Function
 in Microfacet-Based BRDFs](https://jcgt.org/published/0003/02/03/paper.pdf)。这条公式的好处推导相当复杂，直接用即可。
@@ -424,3 +424,6 @@ vec3 fresnel(const vec3 f0, float LoH) {
 ```
 
 代码里实现了一种更准确的F项，具体细节看这里: [Specular occlusion](https://google.github.io/filament/Filament.html#toc5.6.2)
+
+
+# anisotropic specular
