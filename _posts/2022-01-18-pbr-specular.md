@@ -9,7 +9,7 @@ published: true
 
 很久前总结了pbr公式内容：[PBR渲染原理](https://www.qiujiawei.com/pbr-rendering/)，但没有说到各向异性的问题。
 
-最近发现Filament详细介绍了pbr相关的知识，也有源码可读，可以好好学习一番。
+最近发现[Filament](https://google.github.io/filament/Filament.html)详细介绍了pbr相关的知识，也有源码可读，可以好好学习一番。
 
 pbr理论中，高光项的公式如下：
 
@@ -111,29 +111,6 @@ void evaluateDirectionalLight(const MaterialInputs material,
 surfaceShading的代码在shading_model_standard.fs，这个就已经是pbr的核心代码了。
 
 
-# isotropic specular
-
-先从各向同性开始：
-
-```c++
-vec3 isotropicLobe(const PixelParams pixel, const Light light, const vec3 h,
-        float NoV, float NoL, float NoH, float LoH) {
-
-    float D = distribution(pixel.roughness, NoH, h);
-    float V = visibility(pixel.roughness, NoV, NoL);
-    vec3  F = fresnel(pixel.f0, LoH);
-
-    return (D * V) * F;
-}
-```
-发现代码里少了\\( 4 (n \cdot v)(n \cdot l) \\)部分，这是因为Filament把specular公式拆成三部分：
-
-
-\\[ f\_ r(v,l) = D(h,\alpha ) \cdot  \\frac \{  G(v,l,\alpha ) \} \{ 4 (n \cdot v)(n \cdot l) \}  \cdot F(v,h,F\_0) = D \cdot V \cdot F \\]
-
-
-\\( 4 (n \cdot v)(n \cdot l) \\)被放进了V项中了。
-
 # 几个材质关键参数的计算
 
 MaterialInputs是用户端的参数，即给美术编辑用的：
@@ -170,10 +147,6 @@ struct PixelParams {
 ```glsl
 vec3 computeDiffuseColor(const vec4 baseColor, float metallic) {
     return baseColor.rgb * (1.0 - metallic);
-}
-
-vec3 computeF0(const vec4 baseColor, float metallic, float reflectance) {
-    return baseColor.rgb * metallic + (reflectance * (1.0 - metallic));
 }
 
 void getCommonPixelParams(const MaterialInputs material, inout PixelParams pixel) {
@@ -275,3 +248,41 @@ float reflectance = iorToF0(max(1.0, material.ior), 1.0);
 
 可见，Filament直接约束了transmittedIor不低于1，且让incidentIor固定为空气ior 1.0。
 
+
+### 根据material.metallic插值
+
+上面算出来的\\(f\_\{0\}\\)是个标量（scalar）（非彩色），只限定于电介质，为了和金属材质统一起来，所以还需要根据材质的metallic（金属度），做插值：
+
+```glsl
+vec3 computeF0(const vec4 baseColor, float metallic, float reflectance) {
+    return baseColor.rgb * metallic + (reflectance * (1.0 - metallic));
+}
+
+pixel.f0 = computeF0(baseColor, material.metallic, reflectance);
+```
+
+可见，金属度越高，pixel.f0越接近于材质属性里的baseColor（彩色）；金属度越低，越接近前面算出来的电介质reflectance（非彩色）。
+
+
+# isotropic specular
+
+先从各向同性开始：
+
+```c++
+vec3 isotropicLobe(const PixelParams pixel, const Light light, const vec3 h,
+        float NoV, float NoL, float NoH, float LoH) {
+
+    float D = distribution(pixel.roughness, NoH, h);
+    float V = visibility(pixel.roughness, NoV, NoL);
+    vec3  F = fresnel(pixel.f0, LoH);
+
+    return (D * V) * F;
+}
+```
+发现代码里少了\\( 4 (n \cdot v)(n \cdot l) \\)部分，这是因为Filament把specular公式拆成三部分：
+
+
+\\[ f\_ r(v,l) = D(h,\alpha ) \cdot  \\frac \{  G(v,l,\alpha ) \} \{ 4 (n \cdot v)(n \cdot l) \}  \cdot F(v,h,F\_0) = D \cdot V \cdot F \\]
+
+
+\\( 4 (n \cdot v)(n \cdot l) \\)被放进了V项中了。
