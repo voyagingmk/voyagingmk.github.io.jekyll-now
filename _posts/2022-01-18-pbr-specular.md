@@ -288,3 +288,139 @@ vec3 isotropicLobe(const PixelParams pixel, const Light light, const vec3 h,
 
 
 \\( 4 (n \cdot v)(n \cdot l) \\)被放进了V项中了。
+
+
+## D项
+
+Filament里只有GGX一种（说明够用）:
+
+![7.png](../images/2022.1/D.png)
+
+做一些变换，方便和代码对应：
+
+\\[ D = \frac \{1\}\{\pi \} \cdot (\frac \{\alpha  \} \{ (n\cdot h)\^ 2(\alpha \^ 2 - 1) + 1 \})\^ 2 \\]
+
+\\[  = \frac \{1\}\{\pi \}  (\frac \{\alpha  \} \{ (n\cdot h)\^ 2 \alpha \^ 2 - (n\cdot h)\^ 2 + 1 \})\^ 2 \\]
+
+\\[  = \frac \{1\}\{\pi \}  (\frac \{\alpha  \} \{ ( (n\cdot h) \alpha) \^ 2 + (1 - (n\cdot h)\^ 2)  \})\^ 2 \\]
+
+代码如下：
+
+```glsl
+float D_GGX(float roughness, float NoH, const vec3 h) {
+    float oneMinusNoHSquared = 1.0 - NoH * NoH;
+    float a = NoH * roughness;
+    float k = roughness / (oneMinusNoHSquared + a * a);
+    float d = k * k * (1.0 / PI);
+    return saturateMediump(d);
+}
+
+float distribution(float roughness, float NoH, const vec3 h) {
+#if BRDF_SPECULAR_D == SPECULAR_D_GGX
+    return D_GGX(roughness, NoH, h);
+#endif
+}
+```
+
+## G项（V项）
+
+G项的话，Filament用了这篇论文里的equation 99： [Understanding the Masking-Shadowing Function
+in Microfacet-Based BRDFs](https://jcgt.org/published/0003/02/03/paper.pdf)。这条公式的好处推导相当复杂，直接用即可。
+
+![G.png](../images/2022.1/G.png)
+
+里面的符号的解释：
+
+\\(\omega \_o\\), \\(\omega \_i\\), \\(\omega \_m\\)分别表示出射方向、入射方向、微平面法线方向。
+
+\\(\chi \^+ \\) 是指heaviside function，也叫unit step function，单位阶跃函数，值要么是0要么是1。
+
+![X.png](../images/2022.1/X.png)
+
+因为specular只考虑反射光，所以出入射方向和微平面法线夹角小于180°，分子等于1。
+
+另外因为\\( 4 (n \cdot v)(n \cdot l) \\)被合并到了G项里（所以就换了个名字叫V项）。
+
+最终的V公式如下：
+
+![V.png](../images/2022.1/V.png)
+
+
+```glsl
+float V_SmithGGXCorrelated(float roughness, float NoV, float NoL) {
+    float a2 = roughness * roughness;
+    float lambdaV = NoL * sqrt((NoV - a2 * NoV) * NoV + a2);
+    float lambdaL = NoV * sqrt((NoL - a2 * NoL) * NoL + a2);
+    float v = 0.5 / (lambdaV + lambdaL);
+    return saturateMediump(v);
+}
+```
+
+这里又有个经典技巧，牺牲精度换时间。因为开平方和平方操作都比较耗，直接干掉，公式变成：
+
+![V2.png](../images/2022.1/V2.png)
+
+这个只是近似公式，数学上是错的，但不用深究，用就是了。
+
+```glsl
+float V_SmithGGXCorrelated_Fast(float roughness, float NoV, float NoL) {
+    /*
+    float a = roughness;
+    float GGXV = NoL * (NoV * (1.0 - a) + a);
+    float GGXL = NoV * (NoL * (1.0 - a) + a);
+    return 0.5 / (GGXV + GGXL);
+    */
+    float v = 0.5 / mix(2.0 * NoL * NoV, NoL + NoV, roughness);
+    return saturateMediump(v);
+}
+
+float visibility(float roughness, float NoV, float NoL) {
+#if BRDF_SPECULAR_V == SPECULAR_V_SMITH_GGX
+    return V_SmithGGXCorrelated(roughness, NoV, NoL);
+#elif BRDF_SPECULAR_V == SPECULAR_V_SMITH_GGX_FAST
+    return V_SmithGGXCorrelated_Fast(roughness, NoV, NoL);
+#endif
+}
+```
+
+
+## F项
+
+![F.png](../images/2022.1/F.png)
+
+\\(f\_\{0\}\\)、\\(f\_\{90\}\\)上面已经分析过了，不再介绍。
+
+当\\(f\_\{90\}\\)为1时，有以下等价公式：
+
+\\[ f\_\{90\} = 1\\]
+
+\\[ f = (1 - v\cdot h)\^ 5 \\]
+
+\\[ F = f\_\{90\}(1 - v\cdot h)\^ 5 - f\_\{0\}( 1 - (1 - v\cdot h)\^ 5 ) \\]
+
+\\[ = (1 - v\cdot h)\^ 5 - f\_\{0\}( 1 - (1 - v\cdot h)\^ 5 ) \\]
+
+\\[ = f - f\_\{0\}( 1 - f ) \\]
+
+
+```glsl
+vec3 F_Schlick(const vec3 f0, float VoH) {
+    float f = pow(1.0 - VoH, 5.0);
+    return f + f0 * (1.0 - f);
+}
+
+float F_Schlick(float f0, float f90, float VoH) {
+    return f0 + (f90 - f0) * pow5(1.0 - VoH);
+}
+
+vec3 fresnel(const vec3 f0, float LoH) {
+#if FILAMENT_QUALITY == FILAMENT_QUALITY_LOW
+    return F_Schlick(f0, LoH); // f90 = 1.0
+#else
+    float f90 = saturate(dot(f0, vec3(50.0 * 0.33)));
+    return F_Schlick(f0, f90, LoH);
+#endif
+}
+```
+
+代码里实现了一种更准确的F项，具体细节看这里: [Specular occlusion](https://google.github.io/filament/Filament.html#toc5.6.2)
