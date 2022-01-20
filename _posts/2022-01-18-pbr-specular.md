@@ -165,6 +165,34 @@ void getCommonPixelParams(const MaterialInputs material, inout PixelParams pixel
 }
 ```
 
+## pixel.roughness和pixel.perceptualRoughness
+
+原文解释 [Roughness remapping and clamping](https://google.github.io/filament/Filament.html#toc4.8.3.3)
+
+material.roughness被叫做**用户设置的perceptualRoughness**，pixel.roughness是真正用于pbr计算的Roughness。
+
+\\[pixel.roughness = material.roughness \^2  \\]
+
+直观理解就是，当美术设置了0.5的粗糙度时，实际的渲染是用的0.25。0.25渲染出来的效果，会让美术好理解。
+
+如果直接让美术控制实际的粗糙度，那么当渲染比较光滑的物体时，粗糙度范围会小到很难设置，大约在[0, 0.05]之间。
+
+
+代码：
+
+```glsl
+float perceptualRoughnessToRoughness(float perceptualRoughness) {
+    return perceptualRoughness * perceptualRoughness;
+}
+
+void getRoughnessPixelParams(const MaterialInputs material, inout PixelParams pixel) {
+    float perceptualRoughness = material.roughness;
+    pixel.perceptualRoughnessUnclamped = perceptualRoughness;
+    pixel.perceptualRoughness = clamp(perceptualRoughness, MIN_PERCEPTUAL_ROUGHNESS, 1.0);
+    pixel.roughness = perceptualRoughnessToRoughness(pixel.perceptualRoughness);
+}
+```
+
 ## pixel.diffuseColor 
 
 从computeDiffuseColor可见，metallic越大，pixel.diffuseColor就越接近黑色，黑色即表示几乎没有漫反射光。
@@ -427,3 +455,106 @@ vec3 fresnel(const vec3 f0, float LoH) {
 
 
 # anisotropic specular
+
+各向异性的specular，也是基于pbr公式改的。
+
+## D项
+
+首先是D项发生了变化：
+
+![AD.png](../images/2022.1/AD.png)
+
+其中多了2个新的标量参数\\( \alpha \_{t}\\)和\\( \alpha \_{b}\\)， 即\\( \alpha \_{tangent}\\)和\\( \alpha \_{bitangent}\\)，切线方向的粗糙度和副切线方向的粗糙度。
+
+以及多了2个向量t和b，即切线和副切线。
+
+\\( \alpha \_{t}\\)和\\( \alpha \_{b}\\)的计算方法如下：
+
+![AA.png](../images/2022.1/AA.png)
+
+
+```glsl
+    float at = max(pixel.roughness * (1.0 + pixel.anisotropy), MIN_ROUGHNESS);
+    float ab = max(pixel.roughness * (1.0 - pixel.anisotropy), MIN_ROUGHNESS);
+```
+
+切线pixel.anisotropicT和副切线pixel.anisotropicB是在世界空间下的，它们的计算代码如下：
+
+```glsl
+void getAnisotropyPixelParams(const MaterialInputs material, inout PixelParams pixel) {
+    vec3 direction = material.anisotropyDirection;
+    pixel.anisotropy = material.anisotropy;
+    pixel.anisotropicT = normalize(shading_tangentToWorld * direction);
+    pixel.anisotropicB = normalize(cross(getWorldGeometricNormalVector(), pixel.anisotropicT));
+}
+```
+
+切线空间下的切线方向direction，本来应该是从纹理读的，但性能考虑，直接用材质参数material.anisotropyDirection了。
+
+再来看D项公式的化简：
+
+\\[ D\_\{aniso\}(h,\alpha ) = \frac\{1\}\{\pi \alpha \_t \alpha \_b\} \frac\{1\}\{ ((\frac \{t\cdot h\}\{\alpha \_t\})\^2 + (\frac \{b\cdot h\}\{\alpha \_b\})\^2 + (n\cdot h)\^2)\^2 \} \\]
+
+令：
+
+\\[ d = (\frac \{t\cdot h\}\{\alpha \_t\}, \frac \{b\cdot h\}\{\alpha \_b\}, n\cdot h) \\]
+
+得到：
+
+\\[ D\_\{aniso\}(h,\alpha ) = \frac\{1\}\{\pi \alpha \_t \alpha \_b\} \frac\{1\}\{  (d\cdot d)\^2 \} \\]
+
+再设d'：
+
+\\[ d' = \alpha \_t \alpha \_b d = (\alpha \_b t\cdot h,\alpha \_t b\cdot h, \alpha \_t \alpha \_b n\cdot h) \\]
+
+于是：
+
+\\[ d = \frac \{d'\}\{\alpha \_t \alpha \_b\} = \frac \{(\alpha \_b t\cdot h,\alpha \_t b\cdot h, \alpha \_t \alpha \_b n\cdot h)\}\{\alpha \_t \alpha \_b\} \\]
+
+
+\\[ d\cdot d = \frac \{d'\cdot d'\}\{(\alpha \_t \alpha \_b)\^2\} \\]
+
+\\[ (d\cdot d)\^2 =\frac \{ (d'\cdot d')\^2 \}\{(\alpha \_t \alpha \_b)\^4\} \\]
+
+
+\\[ \frac \{ 1 \} \{ (d\cdot d)\^2 \} = \frac \{ (\alpha \_t \alpha \_b)\^4 \}\{ (d'\cdot d')\^2 \} \\]
+
+
+
+\\[ D\_\{aniso\}(h,\alpha ) = \frac\{1\}\{\pi \alpha \_t \alpha \_b\} \frac \{ (\alpha \_t \alpha \_b)\^4 \}\{ (d'\cdot d')\^2 \} =  \frac\{1\}\{\pi \} \frac \{ (\alpha \_t \alpha \_b)\^3 \}\{ (d'\cdot d')\^2 \} \\]
+
+
+完整的D项代码如下，和推导出来的公式对得上：
+
+
+```glsl
+float D_GGX_Anisotropic(float at, float ab, float ToH, float BoH, float NoH) {
+    float a2 = at * ab;
+    highp vec3 d = vec3(ab * ToH, at * BoH, a2 * NoH);
+    highp float d2 = dot(d, d);
+    float b2 = a2 / d2;
+    return a2 * b2 * b2 * (1.0 / PI);
+}
+```
+
+## V项
+
+各向异性的V项公式贼复杂，就不研究了，直接套代码即可。需要的参数上面都介绍过了：
+
+```glsl
+float visibilityAnisotropic(float roughness, float at, float ab,
+        float ToV, float BoV, float ToL, float BoL, float NoV, float NoL) {
+#if BRDF_ANISOTROPIC_V == SPECULAR_V_SMITH_GGX
+    return V_SmithGGXCorrelated(roughness, NoV, NoL);
+#elif BRDF_ANISOTROPIC_V == SPECULAR_V_GGX_ANISOTROPIC
+    return V_SmithGGXCorrelated_Anisotropic(at, ab, ToV, BoV, ToL, BoL, NoV, NoL);
+#endif
+}
+```
+
+从代码里看出，可以直接用各向同性的V项。
+
+## F项
+
+
+各向异性的F项和各向同性的F项一样。
