@@ -318,7 +318,7 @@ vec3 isotropicLobe(const PixelParams pixel, const Light light, const vec3 h,
 \\( 4 (n \cdot v)(n \cdot l) \\)被放进了V项中了。
 
 
-## D项
+## isotropic-D项
 
 Filament里只有GGX一种（说明够用）:
 
@@ -350,7 +350,7 @@ float distribution(float roughness, float NoH, const vec3 h) {
 }
 ```
 
-## G项
+## isotropic-G项
 
 G项的话，Filament用了这篇论文里的equation 99： [Understanding the Masking-Shadowing Function
 in Microfacet-Based BRDFs](https://jcgt.org/published/0003/02/03/paper.pdf)。这条公式的好处推导相当复杂，直接用即可。
@@ -412,7 +412,7 @@ float visibility(float roughness, float NoV, float NoL) {
 ```
 
 
-## F项
+## isotropic-F项
 
 ![F.png](../images/2022.1/F.png)
 
@@ -458,7 +458,7 @@ vec3 fresnel(const vec3 f0, float LoH) {
 
 各向异性的specular，也是基于pbr公式改的。
 
-## D项
+## anisotropic-D项
 
 首先是D项发生了变化：
 
@@ -537,7 +537,7 @@ float D_GGX_Anisotropic(float at, float ab, float ToH, float BoH, float NoH) {
 }
 ```
 
-## V项
+## anisotropic-V项
 
 各向异性的V项公式贼复杂，就不研究了，直接套代码即可。需要的参数上面都介绍过了：
 
@@ -554,7 +554,7 @@ float visibilityAnisotropic(float roughness, float at, float ab,
 
 从代码里看出，可以直接用各向同性的V项。
 
-## F项
+## anisotropic-F项
 
 
 各向异性的F项和各向同性的F项一样。
