@@ -304,6 +304,7 @@ vec3 surfaceShading(const PixelParams pixel, const Light light, float occlusion)
 - light.colorIntensity.rgb是lcm.getColor(directionalLight)，这个就是美术指定的rgb而已
 - light.colorIntensity.w是lcm.getIntensity(directionalLight) * exposure
 - lcm.getIntensity就是直接光光源的光强度，单位是lux，美术指定
+- occlusion就是visibility，要用shadow map计算得到，本文不谈这个
 
 
 
