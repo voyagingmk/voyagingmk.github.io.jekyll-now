@@ -116,6 +116,7 @@ EV指的是拍摄参数（camera settings）的组合，而不是什么基本物
 
 当你想拍摄北极光时，则需要一个大约-5的EV，避免**曝光不足**（underexposure）。
 
+
 ## ISO 100和EV
 
 ISO 100是一个惯用标准，没什么复杂的，即那些拍摄参数参考表，都会默认拍摄时的ISO为100。
@@ -177,6 +178,45 @@ CameraInfo::CameraInfo(FCamera const& camera) noexcept {
 - camera.getAperture() 就是公式里的N，光圈
 - camera.getShutterSpeed() 是快门时间 t
 - camera.getSensitivity() 是感光度ISO
+
+
+## Exposure value 和 luminance 的关系
+
+上上节给出了一个脱离实际拍摄场景的EV公式。实际上EV还可以从场景亮度L转换得到：
+
+\\[ EV =  log\_2 \frac \{ L\cdot S\}\{ K \} \\]
+
+S是ISO，K是一个[反光校准常数](https://en.wikipedia.org/wiki/Light_meter#Calibration_constants)。K和摄像机制造商有关，以常见的Canon、Nikon为准的话，K等于12.5。
+
+上一节介绍了ISO 100这个惯用标准，那么可以得到：
+
+
+\\[ EV =  log\_2 \frac \{ L\cdot 100\}\{ 12.5 \} \\]
+
+此时可以想象一个游戏场景：这个场景特别黑，但是又需要让玩家看得清环境，那么把玩家视角当成相机的话，此时就是要提高曝光，也就是降EV（记住，**较高的EV会产生较暗的图像**）。具体要降多少的EV呢，可以先算出**画面平均亮度**，代入上面这条公式得到。
+
+有时候为了测试或验证，需要根据场景的EV100（一般是查表），算出场景对应的亮度：
+
+
+\\[ L =  2\^\{EV\_\{100\} \} \frac \{ 12.5 \}\{ 100  \}  = 2\^\{EV\_\{100\} \} 0.125 \\]
+
+用python求得：math.log(0.125,2) = -3，于是有：
+
+\\[ L  = 2\^\{EV\_\{100\}  - 3\}\\]
+
+翻译成代码就是：
+
+
+```glsl
+luminance = pow(2, EV - 3)
+EV = log2(luminance) + 3
+```
+
+## Exposure compensation 曝光补偿
+
+EC其实很简单，是指对EV做一个人为的偏移EC：
+
+\\[ EV\_\{100\}' = EV\_\{100\} - EC \\]
 
 
 ## photometric exposure（luminous exposure）
@@ -317,8 +357,63 @@ vec3 luminance = BSDF(v, l) * illuminance;
 return luminance;
 ```
 
+# 一些概念的补充
+
+### 白平衡
+
+todo
+
+### sRGB和CRT
+
+因为早期计算器存储数据带宽有限(8bits)，线性空间的RGB直接存到8bits的话，会导致亮度低的区域编码不足，导致色调过少，**且因为人眼对颜色的感知是非线性的，对低亮度的颜色更敏感**，于是发明了sRGB非线性颜色空间，使得8bits可以存储更多的低亮度色调。
+
+同时那时候发明的CRT显示器有个问题是，**输出的亮度和输入的电压并非线性关系**，即不支持输入什么颜色就显示什么颜色，有色差，并且是让颜色变暗，这就刚好可以和带宽问题互补：保存图片时提高亮度，CRT显示图片时降低亮度，使得亮度平衡。
+
+sRGB和linear RGB的大约换算关系：
+
+- linearRGB = pow(sRGB, 2.2)
+- sRGB = pow(linearRGB, 1/2.2)
+
+大部分美术输出的贴图都是sRGB。
+
+### gamma encoding
+
+gamma encoding指sRGB = pow(linearRGB, 1/2.2)这个操作。
+
+### gamma correction
+gamma correction指linearRGB = pow(sRGB, 2.2)这个操作。
+
+gamma矫正对于单位化到0到1的rgb值，显然会让颜色变暗。
+
+### 现代显示器
+
+现代显示器和CRT不一样，技术上是可以做到**颜色输入是linear RGB，显示就是linear RGB**。但为了兼容sRGB图片以及优化带宽（能省则省），现代显示器**大部分**还是有gamma的。
+
+### PBR和gamma
+
+PBR着色是在线性空间下算的，但大部分贴图都是sRGB空间，需要在采样时或者采样前，把贴图颜色做一次gamma correction，变换到线性空间。
+
+至于输入到显示器前需不需要做gamma encoding，得看显示器是否有gamma。
+
+### tone mapping
+
+pbr整个管线可以做到线性了，但是最终输出到屏幕，就还是有问题，因为显示器能显示的颜色范围有限。当亮度大于1时，要先tone mapping转到LDR，再做gamma encoding。
+
+
+### [Middle gray](https://en.wikipedia.org/wiki/Middle_gray) 和 [Gray card](https://en.wikipedia.org/wiki/Gray_card)
+
+
+中灰，也称为18%灰，是用来描述完美曝光质量的数值。本质上是指对可见光波段18%的反射率。Gray card是一个可以买到的卡片，它的颜色就是middle gray。
+
+### Light meters 测光计
+ 
+测光计会把拍摄场景转成灰度图，并算出灰度图的平均灰度值，也就是场景平均反射率。当反射率大于18%，就是过曝，小于18%就是曝光不足。
+
+测光计会用EV显示曝光度，当EV等于0，说明场景等于18%灰，也就是最佳曝光。
 
 
 # 参考资料
 
 https://photographylife.com/exposure-value
+
+https://pixelsandwanderlust.com/what-is-middle-grey-understanding-18-grey-reflectance/
