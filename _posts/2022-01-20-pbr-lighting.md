@@ -303,8 +303,19 @@ vec3 surfaceShading(const PixelParams pixel, const Light light, float occlusion)
 - color相当于反射率albedo，表示要反射多少direct light的光
 - light.colorIntensity.rgb是lcm.getColor(directionalLight)，这个就是美术指定的rgb而已
 - light.colorIntensity.w是lcm.getIntensity(directionalLight) * exposure
-- lcm.getIntensity就是直接光光源的光强度，单位是lux，美术指定
+- lcm.getIntensity就是直接光光源的光强度，单位是lux
 - occlusion就是visibility，要用shadow map计算得到，本文不谈这个
+
+
+Intensity由美术指定，也可以用光度计到目标环境测量，例如中午室外晴朗天气时是130000 lux。Intensity指的是入射角垂直于表面时的illuminance。所以公式还乘了NoL。
+
+假设去掉attenuation、occlusion，代码的含义会更清晰一些，如下：
+
+```glsl
+float illuminance = lightIntensity * NoL;
+vec3 luminance = BSDF(v, l) * illuminance;
+return luminance;
+```
 
 
 
