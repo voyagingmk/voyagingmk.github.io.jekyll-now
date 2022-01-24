@@ -1,5 +1,3 @@
 CNAME
 .txt
-feed.xml
-sitemap.xml
 .bat
