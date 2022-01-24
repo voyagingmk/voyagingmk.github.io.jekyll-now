@@ -393,11 +393,13 @@ gamma矫正对于单位化到0到1的rgb值，显然会让颜色变暗。
 
 PBR着色是在线性空间下算的，但大部分贴图都是sRGB空间，需要在采样时或者采样前，把贴图颜色做一次gamma correction，变换到线性空间。
 
-至于输入到显示器前需不需要做gamma encoding，得看显示器是否有gamma。
+至于输出到显示器前需不需要做gamma encoding，得看显示器是否有gamma。假设显示器gamma为2.2，那么就要做pow(linearRGB, 1/2.2)。
 
 ### tone mapping
 
-pbr整个管线可以做到线性了，但是最终输出到屏幕，就还是有问题，因为显示器能显示的颜色范围有限。当亮度大于1时，要先tone mapping转到LDR，再做gamma encoding。
+pbr整个管线可以做到线性了，但是HDR范围下，shading出来的亮度会大于1，还是要做一个映射，把亮度限制在0到1之间，然后才能做gamma encoding并输出到屏幕，毕竟LDR显示器还是8bits通道的。
+
+这个映射就叫tone mapping。含义是色调映射，毕竟在映射前是正确的linear color space。
 
 
 ### [Middle gray](https://en.wikipedia.org/wiki/Middle_gray) 和 [Gray card](https://en.wikipedia.org/wiki/Gray_card)
