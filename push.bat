@@ -1,4 +1,4 @@
-`jekyll _3.9.1_ build`
+
 git add -A .
 git commit -m "sync"
 git push origin master
