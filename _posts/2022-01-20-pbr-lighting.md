@@ -361,7 +361,88 @@ return luminance;
 
 ### 白平衡
 
-todo
+https://zhuanlan.zhihu.com/p/421424655
+
+用户设置白色温度，默认是6500K，UE4里可以翻到相关c++代码：
+
+```c++
+float WhiteTemp = 6500.0f;
+```
+
+然后是shader里算CIE 1931 xy 坐标，算法来源于wiki [Standard illuminant](https://en.wikipedia.org/wiki/Standard_illuminant)的Computation小节：
+
+```c++
+// Accurate for 4000K < Temp < 25000K
+// in: correlated color temperature
+// out: CIE 1931 chromaticity
+float2 D_IlluminantChromaticity( float Temp )
+{
+	// Correct for revision of Plank's law
+	// This makes 6500 == D65
+	Temp *= 1.4388 / 1.438;
+	float OneOverTemp = 1.0/Temp;
+	float x =	Temp <= 7000 ?
+				0.244063 + ( 0.09911e3 + ( 2.9678e6 - 4.6070e9 * OneOverTemp ) * OneOverTemp) * OneOverTemp:
+				0.237040 + ( 0.24748e3 + ( 1.9018e6 - 2.0064e9 * OneOverTemp ) * OneOverTemp ) * OneOverTemp;
+	
+	float y = -3 * x*x + 2.87 * x - 0.275;
+
+	return float2(x,y);
+}
+```
+这个算法只能算 4000K < Temp < 25000K的范围。对于Temp < 4000K范围，又有一套算法，来源于wiki [Planckian locus](https://en.wikipedia.org/wiki/Planckian_locus) 的Approximation小节，uv到xy的转换来源于wiki [CIE 1960 color space](https://en.wikipedia.org/wiki/CIE_1960_color_space) 的Relation to CIE XYZ小节：
+
+
+```c++
+// Accurate for 1000K < Temp < 15000K
+// [Krystek 1985, "An algorithm to calculate correlated colour temperature"]
+float2 PlanckianLocusChromaticity( float Temp )
+{
+	float u = ( 0.860117757f + 1.54118254e-4f * Temp + 1.28641212e-7f * Temp*Temp ) / ( 1.0f + 8.42420235e-4f * Temp + 7.08145163e-7f * Temp*Temp );
+	float v = ( 0.317398726f + 4.22806245e-5f * Temp + 4.20481691e-8f * Temp*Temp ) / ( 1.0f - 2.89741816e-5f * Temp + 1.61456053e-7f * Temp*Temp );
+
+	float x = 3*u / ( 2*u - 8*v + 4 );
+	float y = 2*v / ( 2*u - 8*v + 4 );
+
+	return float2(x,y);
+}
+```
+
+然后就可以实现白平衡了：
+
+```c++
+
+float3 WhiteBalance( float3 LinearColor )
+{
+	float2 SrcWhiteDaylight = D_IlluminantChromaticity( WhiteTemp );
+	float2 SrcWhitePlankian = PlanckianLocusChromaticity( WhiteTemp );
+
+	float2 SrcWhite = WhiteTemp < 4000 ? SrcWhitePlankian : SrcWhiteDaylight;
+	float2 D65White = float2( 0.31270,  0.32900 ); 
+
+	{
+		// Offset along isotherm
+		float2 Isothermal = PlanckianIsothermal( WhiteTemp, WhiteTint ) - SrcWhitePlankian;
+		SrcWhite += Isothermal;
+	}
+
+	if (!bIsTemperatureWhiteBalance)
+	{
+		float2 Temp = SrcWhite;
+		SrcWhite = D65White;
+		D65White = Temp;
+	}
+
+	float3x3 WhiteBalanceMat = ChromaticAdaptation( SrcWhite, D65White );
+	WhiteBalanceMat = mul( XYZ_2_sRGB_MAT, mul( WhiteBalanceMat, sRGB_2_XYZ_MAT ) );
+
+	return mul( WhiteBalanceMat, LinearColor );
+}
+```
+
+PlanckianIsothermal和PlanckianLocusChromaticity差不多，只是多了一步在uv空间下用Tint做一个便宜，再继续转到xy。
+
+D65White坐标来源于： [White points of standard illuminants](https://en.wikipedia.org/wiki/Standard_illuminant)。
 
 ### sRGB和CRT
 
