@@ -2,7 +2,8 @@
 git add -A .
 git commit -m "sync"
 git push origin master
-Xcopy  /E/C/I/Y/S/D  /exclude:excludedfileslist.txt _site ..\blog_release
+Xcopy  .\_site ..\blog_release  /E/C/I/Y/S/D  /exclude:excludedfileslist.txt
+Xcopy  _site\index.html ..\blog_release\index.html
 cd ..\blog_release
 git add -A .
 git commit -m "sync"

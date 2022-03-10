@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: <复习向>线性代数之投影矩阵
+title: 线性代数之投影矩阵
 tags: ['matrix','linear algebra']
 published: true
 ---

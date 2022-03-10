@@ -1,6 +1,6 @@
 ---
 layout: post_latex
-title: <复习向>线性代数之矩阵与行列式(2)
+title: 线性代数之矩阵与行列式(2)
 tags: ['matrix','linear algebra']
 published: true
 ---

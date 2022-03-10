@@ -78,7 +78,7 @@ published: true
 
 ### Step3 解开问题方程
 
-接下来使用大招——**克拉默(Cramer)法则**，来解方程。（在我的[<复习向>线性代数之矩阵与行列式(1)](http://www.qiujiawei.com/linear-algebra/) 一文中有介绍）
+接下来使用大招——**克拉默(Cramer)法则**，来解方程。（在我的[线性代数之矩阵与行列式(1)](http://www.qiujiawei.com/linear-algebra/) 一文中有介绍）
 
 克拉默(Cramer)法则：
 
