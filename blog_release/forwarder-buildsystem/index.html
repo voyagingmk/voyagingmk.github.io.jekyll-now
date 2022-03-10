@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>forwarder开发备忘 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="项目地址：https://github.com/voyagingmk/forwarder
+" />
+    <meta property="og:description" content="项目地址：https://github.com/voyagingmk/forwarder
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="forwarder开发备忘" />
+    <meta property="twitter:title" content="forwarder开发备忘" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/forwarder-buildsystem/',
+		  'title': 'forwarder开发备忘'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>forwarder开发备忘</h1>
+ <h3>Tags: <a href="/tag/c%2B%2B/" rel="tag">c++</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>项目地址：<a href="https://github.com/voyagingmk/forwarder">https://github.com/voyagingmk/forwarder</a></p>
+
+<!--more-->
+
+<h1>cmake</h1>
+
+<h3>1.windows下安装cmake</h3>
+
+<p><a href="https://cmake.org/files/v3.7/cmake-3.7.0-rc1-win64-x64.msi">https://cmake.org/files/v3.7/cmake-3.7.0-rc1-win64-x64.msi</a></p>
+
+<p>顺便可以下载cmake源码，源码里面有一个tests目录，有很多cmake工程可以参考，譬如官网的tutorials教程的代码都在tests里面了。</p>
+
+<h3>2.手写CMakeLists.txt</h3>
+
+<p>本文不谈cmake-gui的使用，原因是这东西界面有点怪，其次是cmake作为跨平台的构建系统，理应学习使用cmake的命令行模式，命令都是一致的，而cmake-gui是windows独有的。</p>
+
+<p>那么，在执行cmake构建指令前，需要在forwarder项目根目录下手写一个CMakeLists.txt文件。</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp"># 注：这个个CMakeLists.txt在将来的版本中会发生改动。
+</span><span class="n">cmake_minimum_required</span> <span class="p">(</span><span class="n">VERSION</span> <span class="mi">2</span><span class="p">.</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">project</span> <span class="p">(</span><span class="n">forwarder</span><span class="p">)</span>
+
+<span class="cp"># The version number.
+</span><span class="n">set</span> <span class="p">(</span><span class="n">FORWARDER_VERSION_MAJOR</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">set</span> <span class="p">(</span><span class="n">FORWARDER_VERSION_MINOR</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="n">include_directories</span><span class="p">(</span><span class="s">"${PROJECT_SOURCE_DIR}/include"</span><span class="p">)</span>
+
+<span class="n">include_directories</span><span class="p">(</span><span class="s">"${PROJECT_SOURCE_DIR}/enet"</span><span class="p">)</span>
+<span class="n">add_subdirectory</span> <span class="p">(</span><span class="n">enet</span><span class="p">)</span>
+<span class="n">set</span> <span class="p">(</span><span class="n">EXTRA_LIBS</span> <span class="err">$</span><span class="p">{</span><span class="n">EXTRA_LIBS</span><span class="p">}</span> <span class="n">libenet</span><span class="p">)</span>
+
+<span class="cp"># add the executable
+</span><span class="n">add_executable</span><span class="p">(</span><span class="n">forwarder</span> <span class="n">main</span><span class="p">.</span><span class="n">cpp</span><span class="p">)</span>
+<span class="n">target_link_libraries</span> <span class="p">(</span><span class="n">forwarder</span>  <span class="err">$</span><span class="p">{</span><span class="n">EXTRA_LIBS</span><span class="p">})</span>
+</code></pre></div>
+<p>（这里推荐用vscode来编辑CMakeLists.txt，vscode有编辑CMakeLists.txt文件的插件，支持语法高亮和智能提示，很爽）</p>
+
+<h3>3.构建</h3>
+
+<p>forwarder项目目前用到了3个第三方库：enet、spdlog、rapidjson。</p>
+
+<p>spdlog和rapidjson是头文件形式的第三方库，直接把头文件放到include就可以了。</p>
+
+<p>enet则打算用静态链接的方式引入。需要建一个子目录<strong>enet</strong>，然后添加enet的所有c文件、CMakeLists.txt。</p>
+
+<p>（其实可以把enet整个源码文件夹搬进来，不过我为了forwarder的东西更少些，所以只添加了enet的c文件和CMakeLists.txt）</p>
+
+<p>enet的CMakeLists.txt是作为根目录CMakeLists.txt的孩子存在的，由根目录的CMakeLists.txt来调用。</p>
+
+<p>有了这2个个CMakeLists.txt后，在根目录新建一个文件夹叫build，然后cmd进入这个目录，并执行：</p>
+
+<p>cmake ..</p>
+
+<p>就会自动在build目录生成visual studio项目，启动forwarder.sln，点生成解决方案，如果没报错，就说明构建成功了。</p>
+
+<h1>docker</h1>
+
+<p>用docker来测试forwarder在linux系统下的运行情况，非常方便。</p>
+
+<h3>1.首先windows安装docker：</h3>
+
+<p><a href="https://www.docker.com/products/overview">https://www.docker.com/products/overview</a></p>
+
+<h3>2.然后设置share目录：</h3>
+
+<p>docker安装完毕后在任务栏会有一个图标，右键然后点setting：</p>
+
+<p><img src="../images/2016.10/11.png" alt="11.png"></p>
+
+<p><img src="../images/2016.10/10.png" alt="10.png"></p>
+
+<p>注意红圈的内容，提示了我们开启share目录后，怎么在docker中用（其实就是-v指令）。</p>
+
+<h3>3.然后在cmd中执行：</h3>
+
+<p>docker run --rm -it -v D:\workplace\project\forwarder:/data ubuntu:latest</p>
+
+<p>run代表启动一个container；</p>
+
+<p>最后的参数ubuntu:latest代表使用ubuntu的最新版本镜像(image)</p>
+
+<p>其中的-rm作用是exit时会自动删除这个container；</p>
+
+<p>-it作用是设置成交互模式(interactive)；</p>
+
+<p>-v D:\workplace\project\forwarder:/data，是把windows的共享目录D:\workplace\project\forwarder 映射到container中的/data目录。</p>
+
+<p>第一次执行时，会从docker官方服务器下载ubuntu:latest镜像到本地，所以会比较慢。</p>
+
+<p>执行成功后，就进入这个临时生成的ubuntu的控制台啦！</p>
+
+<h3>4.在ubuntu中构建forward</h3>
+
+<p>第三步建立的ubuntu镜像不是持久化的，需要永久保存的镜像的话，需要自行写Dockerfile。</p>
+
+<p>在forwarder根目录下的docker目录我已经写了一个。cmd进入这个目录并执行：</p>
+
+<p>docker build -t myubuntu  .</p>
+
+<p>就开始在本地创建一个自定义的image镜像了。</p>
+
+<p>如果update太慢，可考虑更换国内的soureces，访问：<a href="http://wiki.ubuntu.org.cn/%E6%A8%A1%E6%9D%BF:16.04source">http://wiki.ubuntu.org.cn/%E6%A8%A1%E6%9D%BF:16.04source</a></p>
+
+<p>把Dockerfile中的那些sources链接的地址替换成国内的镜像站点即可，例如我替换成阿里云的镜像站点。</p>
+
+<p>镜像生成完毕后，在任意目录执行命令：</p>
+
+<p>docker run --rm -it -v D:\workplace\project\forwarder:/data myubuntu</p>
+
+<p>此时，进入的ubuntu只是一个临时的无持久化的系统，若你修改了这个系统下的东西，exit退出后再执行上面的命令进入ubuntu，是不会看到之前的修改的。</p>
+
+<p>这个特性很适合用来做开发测试，保证了测试环境不会被轻易破坏掉。</p>
+
+<h3>5.apt-get的一些技巧</h3>
+
+<p>查询一个包的版本列表：</p>
+
+<p>apt-cache policy <package name></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on October 16, 2016
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

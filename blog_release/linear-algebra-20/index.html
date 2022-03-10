@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Canvas的transform函数与2D仿射变换矩阵分解 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="最近偶然接触了一下canvas的2D仿射变换。和3D一样，canvas有scale、translate、rotate操作，本质上这3个函数也是矩阵乘法。
+
+canvas应该内置了一套矩阵运算系统，并且canvas内含有一个仿射变换矩阵（大概认为是3x3=9个浮点数变量即可，2D是3x3矩阵，3D是4x4矩阵）。每次调用scale、translate、rotate就是对这个矩阵做矩阵乘法。
+
+另外还有3个函数可以控制canvas的仿射变换：
+
+
+resetTransform 重置为单位矩阵
+transform(a,b,c,d,e,f) 以a,b,c,d,e,f构造一个仿射变换矩阵并乘到当前canvas的仿射变换矩阵
+setTransform(a,b,c,d,e,f) 重置为单位矩阵并应用transform(a,b,c,d,e,f)
+
+
+我遇到的需求是，如果canvas没有提供transform函数，怎么用scale、translate、rotate三个函数的组合，来模拟transform函数？
+" />
+    <meta property="og:description" content="最近偶然接触了一下canvas的2D仿射变换。和3D一样，canvas有scale、translate、rotate操作，本质上这3个函数也是矩阵乘法。
+
+canvas应该内置了一套矩阵运算系统，并且canvas内含有一个仿射变换矩阵（大概认为是3x3=9个浮点数变量即可，2D是3x3矩阵，3D是4x4矩阵）。每次调用scale、translate、rotate就是对这个矩阵做矩阵乘法。
+
+另外还有3个函数可以控制canvas的仿射变换：
+
+
+resetTransform 重置为单位矩阵
+transform(a,b,c,d,e,f) 以a,b,c,d,e,f构造一个仿射变换矩阵并乘到当前canvas的仿射变换矩阵
+setTransform(a,b,c,d,e,f) 重置为单位矩阵并应用transform(a,b,c,d,e,f)
+
+
+我遇到的需求是，如果canvas没有提供transform函数，怎么用scale、translate、rotate三个函数的组合，来模拟transform函数？
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="Canvas的transform函数与2D仿射变换矩阵分解" />
+    <meta property="twitter:title" content="Canvas的transform函数与2D仿射变换矩阵分解" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-20/',
+		  'title': 'Canvas的transform函数与2D仿射变换矩阵分解'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>Canvas的transform函数与2D仿射变换矩阵分解</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a>, <a href="/tag/math/" rel="tag">math</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>最近偶然接触了一下canvas的2D仿射变换。和3D一样，canvas有scale、translate、rotate操作，本质上这3个函数也是矩阵乘法。</p>
+
+<p>canvas应该内置了一套矩阵运算系统，并且canvas内含有一个仿射变换矩阵（大概认为是3x3=9个浮点数变量即可，2D是3x3矩阵，3D是4x4矩阵）。每次调用scale、translate、rotate就是对这个矩阵做矩阵乘法。</p>
+
+<p>另外还有3个函数可以控制canvas的仿射变换：</p>
+
+<ul>
+<li>resetTransform 重置为单位矩阵</li>
+<li>transform(a,b,c,d,e,f) 以a,b,c,d,e,f构造一个仿射变换矩阵并乘到当前canvas的仿射变换矩阵</li>
+<li>setTransform(a,b,c,d,e,f) 重置为单位矩阵并应用transform(a,b,c,d,e,f)</li>
+</ul>
+
+<p>我遇到的需求是，<strong>如果canvas没有提供transform函数，怎么用scale、translate、rotate三个函数的组合，来模拟transform函数？</strong></p>
+
+<!--more-->
+
+<h2>自定义的transform函数实现</h2>
+
+<p>先抛出答案：</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript">
+<span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span> <span class="o">/</span> <span class="mi">180</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">degree</span> <span class="o">=</span> <span class="mi">45</span><span class="p">;</span> <span class="c1">// 旋转度数</span>
+<span class="kd">var</span> <span class="nx">sx</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">;</span><span class="c1">// x 轴缩放倍数</span>
+<span class="kd">var</span> <span class="nx">sy</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">;</span><span class="c1">// y 轴缩放倍数</span>
+<span class="kd">var</span> <span class="nx">t</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span> <span class="o">/</span> <span class="mi">180</span><span class="p">;</span><span class="c1">// 斜切度数 </span>
+<span class="kd">var</span> <span class="nx">tx</span> <span class="o">=</span> <span class="mi">200</span><span class="p">;</span> <span class="c1">// x轴平移</span>
+<span class="kd">var</span> <span class="nx">ty</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span> <span class="c1">// y轴平移</span>
+<span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="nx">sx</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span> <span class="nx">degree</span><span class="p">),</span>
+    <span class="nx">sx</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span> <span class="nx">degree</span><span class="p">),</span>
+    <span class="nx">t</span> <span class="o">*</span> <span class="nx">sx</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span> <span class="nx">degree</span><span class="p">)</span> <span class="o">-</span> <span class="nx">sy</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span> <span class="nx">degree</span><span class="p">),</span>
+    <span class="nx">t</span> <span class="o">*</span> <span class="nx">sx</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span> <span class="nx">degree</span><span class="p">)</span> <span class="o">+</span> <span class="nx">sy</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span> <span class="nx">degree</span><span class="p">),</span>
+    <span class="nx">tx</span><span class="p">,</span>
+    <span class="nx">ty</span><span class="p">];</span>
+
+<span class="kd">var</span> <span class="nx">transform</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">,</span> <span class="nx">e</span><span class="p">,</span> <span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">angle</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">atan2</span><span class="p">(</span><span class="nx">b</span><span class="p">,</span> <span class="nx">a</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">denom</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="nx">b</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">scaleX</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span><span class="p">(</span><span class="nx">denom</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">scaleY</span> <span class="o">=</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span> <span class="nx">d</span> <span class="o">-</span> <span class="nx">c</span> <span class="o">*</span> <span class="nx">b</span><span class="p">)</span> <span class="o">/</span> <span class="nx">scaleX</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">skewX</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">atan2</span><span class="p">(</span><span class="nx">a</span> <span class="o">*</span> <span class="nx">c</span> <span class="o">+</span> <span class="nx">b</span> <span class="o">*</span> <span class="nx">d</span><span class="p">,</span> <span class="nx">denom</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">skewY</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">translateX</span> <span class="o">=</span> <span class="nx">e</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">translateY</span> <span class="o">=</span> <span class="nx">f</span><span class="p">;</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">angle</span><span class="dl">"</span><span class="p">,</span> <span class="nx">angle</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">skewX</span><span class="dl">"</span><span class="p">,</span> <span class="nx">skewX</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">scale</span><span class="dl">"</span><span class="p">,</span> <span class="nx">scaleX</span><span class="p">,</span> <span class="nx">scaleY</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">translate</span><span class="dl">"</span><span class="p">,</span> <span class="nx">translateX</span><span class="p">,</span> <span class="nx">translateY</span><span class="p">);</span>
+    <span class="cm">/*
+    Outout:
+    angle 45
+    skewX 0
+    scale 0.5 2
+    translate 200 100
+    */</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">translate</span><span class="p">(</span><span class="nx">translateX</span><span class="p">,</span> <span class="nx">translateY</span><span class="p">);</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">rotate</span><span class="p">(</span><span class="nx">angle</span><span class="p">);</span>
+    <span class="nx">ctx</span><span class="p">.</span><span class="nx">scale</span><span class="p">(</span><span class="nx">scaleX</span><span class="p">,</span> <span class="nx">scaleY</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="kd">var</span> <span class="nx">canvas</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">test2</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">ctx</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">getContext</span><span class="p">(</span><span class="dl">'</span><span class="s1">2d</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">transform</span><span class="p">(...</span><span class="nx">args</span><span class="p">);</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">fillRect</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">);</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">font</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">30px Verdana</span><span class="dl">"</span><span class="p">;</span>
+<span class="nx">ctx</span><span class="p">.</span><span class="nx">fillText</span><span class="p">(</span><span class="dl">"</span><span class="s2">Hello, World</span><span class="dl">"</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">90</span><span class="p">);</span>
+
+</code></pre></div>
+<p>上面代码大意是，用户输入任意degree，sx， sy，t，tx，ty，并计算出它们的a,b,c,d,e,f，然后调用这个自定义transform函数，就能得到和内置的transform一样的变换效果。</p>
+
+<p>下面将逐步讲解transform函数怎么得来。</p>
+
+<h2>2D仿射变换矩阵的分解</h2>
+
+<p>transform的参数a, b, c, d, e, f组成了一个3x3仿射变换矩阵A：</p>
+
+<p>\( A =  \left[ \begin{matrix} a&amp;c&amp;e\\ b&amp;d&amp;f\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \)</p>
+
+<p>设有2维向量\(\mathbf p=(x, y, 1)\)，让它左乘A，就会得到经过A变换后的向量\(\mathbf p&#39;=(x&#39;, y&#39;, 1)\)。</p>
+
+<p>\( \mathbf p =  \left[ \begin{matrix} x\\ y\\ 1\\ \end{matrix} \right]  \)</p>
+
+<p>\( \mathbf p&#39; = A\mathbf p  =  \left[ \begin{matrix} x&#39;\\ y&#39;\\ 1\\ \end{matrix} \right] =  \left[ \begin{matrix} a&amp;c&amp;e\\ b&amp;d&amp;f\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} x\\ y\\ 1\\ \end{matrix} \right] =  \left[ \begin{matrix} ax+cy+e\\ bx+dy+f\\ 1\\ \end{matrix} \right] \)</p>
+
+<p>现在问题是，怎么把A分解成T(translate)、R(rotate)、S(scale)三个矩阵。</p>
+
+<h3>提取T</h3>
+
+<p>首先先把translate矩阵提取出来：</p>
+
+<p>\( T =  \left[ \begin{matrix} 1&amp;0&amp;e\\ 0&amp;1&amp;f\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \)</p>
+
+<p>显然这是正确的，可以试一下：</p>
+
+<p>\( \mathbf p&#39; = T\mathbf p =  \left[ \begin{matrix} 1&amp;0&amp;e\\ 0&amp;1&amp;f\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} x\\ y\\ 1\\ \end{matrix} \right] =  \left[ \begin{matrix} x+e\\ y+f\\ 1\\ \end{matrix} \right] \)</p>
+
+<p>x偏移了e，y偏移了f。</p>
+
+<p>再设等式：A = TQ。Q是未知矩阵，且Q包含了scale、rotate变换。</p>
+
+<p>Q可以用参数a, b, c, d, e, f表示：</p>
+
+<p>\( Q =  \left[ \begin{matrix} a&amp;c&amp;0\\ b&amp;d&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \)</p>
+
+<p>验证下：</p>
+
+<p>\( TQ =  \left[ \begin{matrix} 1&amp;0&amp;e\\ 0&amp;1&amp;f\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} a&amp;c&amp;0\\ b&amp;d&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right] \)</p>
+
+<p>\( =  \left[ \begin{matrix} a&amp;c&amp;e\\ b&amp;d&amp;f\\ 0&amp;0&amp;1\\ \end{matrix} \right] = A \)</p>
+
+<h3>分解Q</h3>
+
+<p>设 Q = RS，S是scale，R是rotate。2D的R、S矩阵分别为：</p>
+
+<p>\( R =  \left[ \begin{matrix} cosθ&amp; -sinθ&amp; 0\\  sinθ&amp; cosθ&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]  \)</p>
+
+<p>\( S =  \left[ \begin{matrix} x&amp; 0&amp; 0\\  0&amp; y&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]  \)</p>
+
+<p>其实，Q还可能包含了shear斜切变换。一般来说斜切是比较少见到的一种变换，且canvas并没有单独的shear函数。所以本文开头的目标，自定义custom，怎么弄都不能实现shear变换（只有scale、translate、rotate可用）。</p>
+
+<p>现在要分解Q，可以把shear也一并考虑。shear矩阵形式如下；</p>
+
+<p>\( Shear =  \left[ \begin{matrix} 1&amp; s&amp; 0\\  t&amp; 1&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]  \)</p>
+
+<p>如果没有shear变换，那么s=t=0。</p>
+
+<p>同时用s和t是不对的，其中一个必需为0。下面推导的前提是s != 0，t = 0。</p>
+
+<p>综上，得到Q&#39; = Rotate * Scale * Shear</p>
+
+<p>\( Q&#39; = \left[ \begin{matrix} cosθ&amp; -sinθ&amp; 0\\  sinθ&amp; cosθ&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]  \left[ \begin{matrix} x&amp; 0&amp; 0\\  0&amp; y&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]  \left[ \begin{matrix} 1&amp; s&amp; 0\\  t&amp; 1&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]   \)</p>
+
+<p>\( =   \left[ \begin{matrix} xcosθ&amp; -ysinθ&amp; 0\\  xsinθ&amp; ycosθ&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]   \left[ \begin{matrix} 1&amp; s&amp; 0\\  t&amp; 1&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right] \)</p>
+
+<p>\( =  \left[ \begin{matrix} xcosθ - tysinθ&amp; sxcosθ - ysinθ&amp; 0\\  xsinθ + tycosθ&amp; sxsinθ + ycosθ&amp; 0\\  0&amp; 0&amp; 1\\ \end{matrix} \right]  \)</p>
+
+<p>再回顾上一小节的Q：</p>
+
+<p>\( Q =  \left[ \begin{matrix} a&amp;c&amp;0\\ b&amp;d&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \)</p>
+
+<p>对比Q和Q&#39;，可以得到方程组：</p>
+
+<ul>
+<li><p>\( a =  x cosθ - t y sinθ = x cosθ  \)</p></li>
+<li><p>\( b = x sinθ + t y cosθ = x sinθ  \)</p></li>
+<li><p>\( c = s x cosθ - y sinθ = sa - y sinθ = sa - y(b/x) \)</p></li>
+<li><p>\( d = s x sinθ + y cosθ = sb + y cosθ = sb + y(a/x) \)</p></li>
+</ul>
+
+<p>看起来有点乱，慢慢拆解下吧:</p>
+
+<p>一二等式相除解出θ：</p>
+
+<p>\( tanθ = \frac { b } { a } \)</p>
+
+<p>\( θ = atan2(b, a) \)</p>
+
+<p>一二等式分别平方后相加，解出x：</p>
+
+<p>\( a^{2} + b^{2} = x^{2} \)</p>
+
+<p>\( x = \sqrt { a^{2} + b^{2} } \)</p>
+
+<p>三四等式消去s：</p>
+
+<p>\( c = sa - y(b/x) \)</p>
+
+<p>\( s = (c + y(b/x))/a \)</p>
+
+<p>\( d = sb + y(a/x) =  b(c + y(b/x))/a + y(a/x)  \)</p>
+
+<p>对上式两边乘a：</p>
+
+<p>\( ad =  b(c + y(b/x)) + ay(a/x)  \)</p>
+
+<p>\( ad =  bc + by(b/x) + ay(a/x)  \)</p>
+
+<p>\( ad -  bc = by(b/x) + ay(a/x)  \)</p>
+
+<p>\( ad -  bc = y(b^{2}/x + a^{2}/x)  \)</p>
+
+<p>\( ad -  bc = y(a^{2} + b^{2})/ \sqrt { a^{2} + b^{2} }    \)</p>
+
+<p>\( ad -  bc = y \sqrt { a^{2} + b^{2} }    \)</p>
+
+<p>\( y = \frac { ad -  bc } {  \sqrt { a^{2} + b^{2} }  } \)</p>
+
+<p>然后可以求s了：</p>
+
+<p>\( s = (c + y(b/x))/a \)</p>
+
+<p>\( s = \frac { c } { a } + \frac { yb } { xa } \)</p>
+
+<p>y/x上面已经有了，代入：</p>
+
+<p>\( s = \frac { c } { a } + \frac { (ad -  bc)b } { (a^{2} + b^{2})a } \)</p>
+
+<p>\( s = \frac { c(a^{2} + b^{2}) + (ad -  bc)b } { (a^{2} + b^{2})a } \)</p>
+
+<p>\( s = \frac { ca^{2} + cb^{2} + adb -  cb^{2} } { (a^{2} + b^{2})a } \)</p>
+
+<p>\( s = \frac { ca^{2} + adb } { (a^{2} + b^{2})a } \)</p>
+
+<p>\( s = \frac { a(ca + bd) } { (a^{2} + b^{2})a } \)</p>
+
+<p>\( s = \frac { ca + bd } { a^{2} + b^{2} } \)</p>
+
+<p>逆向思维一下，现在已经求出未知数x,y,sx,sy,s,θ，它们都可以用a,b,c,d,e,f来表示。</p>
+
+<p>那么反过来，用户自己提供了x,y,sx,sy,s,θ，那么就可以求出a,b,c,d,e,f，从而调用这个自定义函数。</p>
+
+<p>回去上面再比对下代码和公式就清楚了。</p>
+
+<h2>总结</h2>
+
+<p>用这个自定义函数就能几乎满足需求了。只不过这个自定义函数是不能实现斜切效果的，</p>
+
+<p>对于符合标准的web js，一般是用transform函数来做斜切，TRS就分别用translate、rotate、scale函数来做。</p>
+
+<p>如果canvas再提供一个单独的skew函数就完美了。</p>
+
+<h2>参考资料</h2>
+
+<p><a href="https://stackoverflow.com/questions/5107134/find-the-rotation-and-skew-of-a-matrix-transformation/32125700#32125700">stackoverflow - Find the Rotation and Skew of a Matrix transformation
+</a></p>
+
+<p><a href="https://github.com/matthewmueller/unmatrix/blob/master/index.js">unmatrix - parse(str) </a></p>
+
+<p><a href="https://hg.mozilla.org/mozilla-central/file/7cb3e9795d04/layout/style/nsStyleAnimation.cpp">DecomposeMatrix 此代码最原始出处（有注释）</a></p>
+
+<p>《GRAPHICS GEMS II edited by JAMES ARVO》</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on February  7, 2018
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

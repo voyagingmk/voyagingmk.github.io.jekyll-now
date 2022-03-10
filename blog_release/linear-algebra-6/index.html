@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>矩阵的特征值、特征向量、特征矩阵、迹、特征值分解 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="定义
+
+设A是数域F上的n阶矩阵，如果存在数域F中的一个数\(\lambda \)与数域上F的非零向量\(\vec \alpha \)，使得：
+\[ A\vec \alpha = \lambda \vec \alpha \]
+则称\(\lambda \)为A的一个特征值(根)(eigenvalue)，称\(\vec \alpha \)为A的属于特征值\(\lambda \)的特征向量(eigenvector)。
+
+显然从上式可以看出，\( A\vec \alpha \)和\(\vec \alpha \)平行。
+
+将上式做一下变换：
+
+\[ A\vec \alpha = \lambda \vec \alpha \]
+
+\[ A\vec \alpha - \lambda \vec \alpha = \vec 0 \]
+
+\[ A\vec \alpha - \lambda E\vec \alpha = \vec 0 \]
+
+\[ (A - \lambda E)\vec \alpha = \vec 0 \]
+
+\[ (\lambda E - A)\vec \alpha = \vec 0 \]
+
+称：
+
+
+\(\lambda E - A\)为A的特征矩阵
+行列式\(f(\lambda ) = |\lambda E - A|\)为A的特征多项式
+\(|\lambda E - A| = 0\)为A的特征方程
+\((\lambda E - A)\vec x = \vec 0\)是A关于该\(\lambda \)的齐次线性方程组
+
+
+A的主对角线上元素之和称为A的迹(trace)，记为tr(A)，即
+
+\[ tr(A) = a_{11} + a_{11} + \cdots + a_{nn} \]
+
+迹和特征值有很重要的联系：
+
+\[ tr(A) = \lambda _{1} + \lambda _{2} + \cdots + \lambda _{n} \]
+
+特征值还和A的行列式有关系：
+
+\[ |A| = \lambda _{1}\lambda _{2}\cdots \lambda _{n} \]
+" />
+    <meta property="og:description" content="定义
+
+设A是数域F上的n阶矩阵，如果存在数域F中的一个数\(\lambda \)与数域上F的非零向量\(\vec \alpha \)，使得：
+\[ A\vec \alpha = \lambda \vec \alpha \]
+则称\(\lambda \)为A的一个特征值(根)(eigenvalue)，称\(\vec \alpha \)为A的属于特征值\(\lambda \)的特征向量(eigenvector)。
+
+显然从上式可以看出，\( A\vec \alpha \)和\(\vec \alpha \)平行。
+
+将上式做一下变换：
+
+\[ A\vec \alpha = \lambda \vec \alpha \]
+
+\[ A\vec \alpha - \lambda \vec \alpha = \vec 0 \]
+
+\[ A\vec \alpha - \lambda E\vec \alpha = \vec 0 \]
+
+\[ (A - \lambda E)\vec \alpha = \vec 0 \]
+
+\[ (\lambda E - A)\vec \alpha = \vec 0 \]
+
+称：
+
+
+\(\lambda E - A\)为A的特征矩阵
+行列式\(f(\lambda ) = |\lambda E - A|\)为A的特征多项式
+\(|\lambda E - A| = 0\)为A的特征方程
+\((\lambda E - A)\vec x = \vec 0\)是A关于该\(\lambda \)的齐次线性方程组
+
+
+A的主对角线上元素之和称为A的迹(trace)，记为tr(A)，即
+
+\[ tr(A) = a_{11} + a_{11} + \cdots + a_{nn} \]
+
+迹和特征值有很重要的联系：
+
+\[ tr(A) = \lambda _{1} + \lambda _{2} + \cdots + \lambda _{n} \]
+
+特征值还和A的行列式有关系：
+
+\[ |A| = \lambda _{1}\lambda _{2}\cdots \lambda _{n} \]
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="矩阵的特征值、特征向量、特征矩阵、迹、特征值分解" />
+    <meta property="twitter:title" content="矩阵的特征值、特征向量、特征矩阵、迹、特征值分解" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-6/',
+		  'title': '矩阵的特征值、特征向量、特征矩阵、迹、特征值分解'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>矩阵的特征值、特征向量、特征矩阵、迹、特征值分解</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h2>定义</h2>
+
+<p>设A是数域F上的n阶矩阵，如果存在数域F中的一个数\(\lambda \)与数域上F的非零向量\(\vec \alpha \)，使得：
+\[ A\vec \alpha = \lambda \vec \alpha \]
+则称\(\lambda \)为A的一个<strong>特征值(根)</strong>(eigenvalue)，称\(\vec \alpha \)为A的属于特征值\(\lambda \)的<strong>特征向量</strong>(eigenvector)。</p>
+
+<p>显然从上式可以看出，\( A\vec \alpha \)和\(\vec \alpha \)平行。</p>
+
+<p>将上式做一下变换：</p>
+
+<p>\[ A\vec \alpha = \lambda \vec \alpha \]</p>
+
+<p>\[ A\vec \alpha - \lambda \vec \alpha = \vec 0 \]</p>
+
+<p>\[ A\vec \alpha - \lambda E\vec \alpha = \vec 0 \]</p>
+
+<p>\[ (A - \lambda E)\vec \alpha = \vec 0 \]</p>
+
+<p>\[ (\lambda E - A)\vec \alpha = \vec 0 \]</p>
+
+<p>称：</p>
+
+<ul>
+<li><p>\(\lambda E - A\)为A的<strong>特征矩阵</strong></p></li>
+<li><p>行列式\(f(\lambda ) = |\lambda E - A|\)为A的<strong>特征多项式</strong></p></li>
+<li><p>\(|\lambda E - A| = 0\)为A的<strong>特征方程</strong></p></li>
+<li><p>\((\lambda E - A)\vec x = \vec 0\)是A关于该\(\lambda \)的<strong>齐次线性方程组</strong></p></li>
+</ul>
+
+<p>A的主对角线上元素之和称为A的<strong>迹</strong>(trace)，记为tr(A)，即</p>
+
+<p>\[ tr(A) = a_{11} + a_{11} + \cdots + a_{nn} \]</p>
+
+<p>迹和特征值有很重要的联系：</p>
+
+<p>\[ tr(A) = \lambda _{1} + \lambda _{2} + \cdots + \lambda _{n} \]</p>
+
+<p>特征值还和A的行列式有关系：</p>
+
+<p>\[ |A| = \lambda _{1}\lambda _{2}\cdots \lambda _{n} \]</p>
+
+<!--more-->
+
+<h2>A的全部特征值和特征向量的求法</h2>
+
+<ol>
+<li>计算A的特征多项式</li>
+<li>求特征方程的全部根，即矩阵A的全部特征值</li>
+<li>对于A的每一个特征值\(\lambda \)，求其相应的齐次线性方程组的一个基础解系\(\eta _{1},\eta _{2},\cdots \eta _{n-r}\)，其中\(r=r(\lambda E - A)\)，即r为矩阵A的特征矩阵的秩，A的属于该\(\lambda \)的全部特征向量为:
+\[ k_{1}\eta _{1} + k_{2}\eta _{2} + \cdots + k_{n-r}\eta _{n-r} \]
+其中\(k_{1},k_{2},\cdots ,k_{n-r}\)是数域F上的一组不全为零的任意常数。</li>
+</ol>
+
+<h2>特征值的性质</h2>
+
+<ol>
+<li>\(\lambda _{n} \)为矩阵\(A_{n} \)的特征值（n为正整数，表示维度）</li>
+<li>A可逆时，\(1/\lambda \)为\(A^{-1}\)的特征值</li>
+<li>矩阵A与其转置矩阵\(A^{T}\)有相同的特征值</li>
+<li>\(k\lambda \)是矩阵kA的特征值(k是任意常数)。</li>
+</ol>
+
+<h2>迹的性质</h2>
+
+<ol>
+<li>\( tr(A + B) = tr(A) + tr(B) \)</li>
+<li>\( tr(kA) = k\cdot tr(A) \)</li>
+<li>\( tr(A^{T}) = tr(A) \)</li>
+<li>\( tr(AB) = tr(BA) \)</li>
+<li>\( tr(ABC) = tr(BCA) = tr(CAB) \)</li>
+<li>设A、B为n阶方阵，P为n阶可逆矩阵，且\(P^{-1}AP = B \)，则有\(tr(A) = tr(B)\)</li>
+</ol>
+
+<h2>当A为投影矩阵P时</h2>
+
+<p>因为投影矩阵P可以把一个向量\(\vec b\)投影到一个空间的某一个向量，也就是\(P\vec b = \vec p\)，这个式子和\( A\vec \alpha = \lambda \vec \alpha \)有一致的地方。</p>
+
+<p>那么P的特征向量是什么呢？前面已经说到，\( A\vec \alpha \)和\( \vec \alpha \)是平行关系，那么就是说，如果\(\vec b\)在P的列空间之外，\(\vec b\)就不是P的特征向量，当\(\vec b\)在P的列空间内时，\(\vec b\)是P的特征向量。</p>
+
+<p>比如当P对应一个平面时，这个平面内的任意一个向量\(\vec x\)都是特征向量（因为\(P\vec x = \vec x\)，P作用于\( \vec x\)后还是得到\(\vec x\) )。</p>
+
+<p>又因为\(P\vec x = \vec x = 1\cdot \vec x\)，所以P的一个特征值是1。</p>
+
+<p>但是，P还有其他的特征值。当向量\(\vec x\)正交于P的列空间时，有\(P\vec x = 0 \)。所以P的另一个特征值为0。</p>
+
+<h2>当A为旋转矩阵Q时</h2>
+
+<p>从上面的等式：\( A\vec \alpha = \lambda \vec \alpha \)可以知道如果A乘以一个向量后得到的新的向量仍然和原向量平行的话，A就有特征值。那么，当A是一个旋转矩阵时（旋转矩阵可改变一个向量的方向），是否还有特征值？事实是有的，但是是复数。</p>
+
+<p>下面以二维空间下的旋转矩阵Q为例做一下验证，Q的效果是使得2维向量旋转90度：</p>
+
+<p>\[ Q =  \left[ \begin{matrix} cos(90)&amp;-sin(90)\\ sin(90)&amp;cos(90)\\ \end{matrix} \right] =  \left[ \begin{matrix} 0&amp;-1\\ 1&amp;0\\ \end{matrix} \right] \]</p>
+
+<p>\[ |Q| = 0 - (-1) = 1 = \lambda _{1}\lambda _{2} \]
+\[ tr(Q) = 0 = \lambda _{1} + \lambda _{2} \]</p>
+
+<p>显然，\( \lambda _{1}\lambda _{2}\)无实数域的解，但是有复数解i和-i。</p>
+
+<h1>A的对角化(diagonalize)</h1>
+
+<p>设n阶方阵A存在n个线性无关的特征向量\(\vec x_{i}\)，将这n个特征向量\(\vec x_{i}\)组成方阵S(也称为特征向量矩阵），则有：</p>
+
+<p>\[ AS = A \left[ \begin{matrix} \vec x_{1}&amp; \vec x_{2}&amp; \cdots &amp;\vec x_{n}\\ \end{matrix} \right] =  \left[ \begin{matrix} \lambda _{1}\vec x_{1}&amp;\lambda _{2}\vec x_{2}&amp;\cdots &amp;\lambda _{n}\vec x_{n}\\ \end{matrix} \right] \] 
+\[    =  \left[ \begin{matrix} \vec x_{1}&amp; \vec x_{2}&amp; \cdots &amp;\vec x_{n}\\ \end{matrix} \right] \left[ \begin{matrix} \lambda _{1}&amp;0&amp;\cdots &amp;0\\ 0&amp;\lambda _{2}&amp;\cdots &amp;0\\ \vdots &amp;\vdots&amp; \cdots &amp;\vdots\\ 0&amp;0&amp;\cdots &amp;\lambda _{n}\\ \end{matrix} \right] \]
+\[ = S\Lambda \]</p>
+
+<p>所以有：</p>
+
+<p>\[ A = S\Lambda S^{-1} \]</p>
+
+<p>这个式子称为A的\(S\Lambda S^{-1}\)分解，或特征分解(Eigendecomposition)，或A的对角化。</p>
+
+<p>根据这个式子可以知道：<strong>当方阵A可以被分解为某个矩阵\(S\)乘以某个对角矩阵\(\Lambda \)再乘以矩阵\(S^{-1}\)时，就是一次特征分解</strong>。</p>
+
+<p>可以对角化的前提是A有n个线性无关的特征向量。A有n个线性无关的特征向量的前提是，所有的\(\lambda \)都不重复（没有重根）。</p>
+
+<h2>当矩阵是对称方阵时</h2>
+
+<p>对称矩阵特性：</p>
+
+<p>\[ A = A^{T} \]</p>
+
+<p>代入特征值分解公式，有：</p>
+
+<p>\[S\Lambda S^{-1}  = (S\Lambda S^{-1})^{T} \]</p>
+
+<p>\[ = (S^{-1})^{T} (S\Lambda )^{T} \]</p>
+
+<p>\[  = (S^{-1})^{T}\Lambda ^{T}S^{T} \]</p>
+
+<p>\[  = (S^{-1})^{T}\Lambda S^{T} \]</p>
+
+<p>于是有：</p>
+
+<p>\[ S = (S^{-1})^{T} \]</p>
+
+<p>\[ S^{-1} =  S^{T} \]</p>
+
+<p>所以对称矩阵的特征值分解公式是：</p>
+
+<p>\[ A =  S\Lambda S^{-1} = S\Lambda S^{T} \]</p>
+
+<h1>应用</h1>
+
+<h2>矩阵的n次幂的快速解法</h2>
+
+<p>对于A的幂，有一个性质：</p>
+
+<ul>
+<li><p>如果有 \( A\vec x = \lambda \vec x \)，则有\( A^{2}\vec x = AA\vec x = \lambda A\vec x = \lambda \lambda \vec x = \lambda ^{2}\vec x\) </p></li>
+<li><p>\( A^{2} = S\Lambda S^{-1}S\Lambda S^{-1} = S\Lambda ^{2}S^{-1} \)</p></li>
+</ul>
+
+<p>这个性质说明，A的n次幂的特征值等于\(\lambda ^{n}\)，且无论n等于多少(当前n得是正整数），特征向量\vec 保持不变。</p>
+
+<h2>求逆矩阵</h2>
+
+<p>特征分解还有一个用法是，求A的逆矩阵:</p>
+
+<p>\[ A^{-1} = (S\Lambda S^{-1})^{-1} =S\Lambda ^{-1}S^{-1} \]</p>
+
+<p>\(\Lambda\)的逆矩阵是非常容易求的，因为它是一个对角矩阵，所以把对角线上的\(\lambda \)都变成\(1/\lambda \)即可。</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on September 26, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

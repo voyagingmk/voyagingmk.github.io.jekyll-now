@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>学习傅里叶变换 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="本文主要写的是公式层面的推导，关于傅里叶变换的应用，请到知乎搜索&#39;傅里叶&#39;，能找到很多不错的文章。
+
+本文主要参考了斯坦福大学Brad Osgood的公开课:
+
+http://open.163.com/special/opencourse/fouriertransforms.html
+
+youtube的比较高清:
+
+https://www.youtube.com/watch?v=gZNm7L96pfY
+" />
+    <meta property="og:description" content="本文主要写的是公式层面的推导，关于傅里叶变换的应用，请到知乎搜索&#39;傅里叶&#39;，能找到很多不错的文章。
+
+本文主要参考了斯坦福大学Brad Osgood的公开课:
+
+http://open.163.com/special/opencourse/fouriertransforms.html
+
+youtube的比较高清:
+
+https://www.youtube.com/watch?v=gZNm7L96pfY
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="学习傅里叶变换" />
+    <meta property="twitter:title" content="学习傅里叶变换" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/fourier-equation/',
+		  'title': '学习傅里叶变换'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>学习傅里叶变换</h1>
+ <h3>Tags: <a href="/tag/math/" rel="tag">math</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>本文主要写的是公式层面的推导，关于傅里叶变换的应用，请到知乎搜索&#39;傅里叶&#39;，能找到很多不错的文章。</p>
+
+<p>本文主要参考了斯坦福大学Brad Osgood的公开课:</p>
+
+<p><a href="http://open.163.com/special/opencourse/fouriertransforms.html">http://open.163.com/special/opencourse/fouriertransforms.html</a></p>
+
+<p>youtube的比较高清:</p>
+
+<p><a href="https://www.youtube.com/watch?v=gZNm7L96pfY">https://www.youtube.com/watch?v=gZNm7L96pfY</a></p>
+
+<!--more-->
+
+<h2>傅里叶级数 fourier series</h2>
+
+<h3>基础</h3>
+
+<p>翻译一下wiki的fourier series：</p>
+
+<blockquote>
+<p>在数学中，傅里叶级数是一个<strong>可以把(有波形的)函数表示成多个简单的sin函数的叠加</strong>的方法。更形式地说，傅里叶级数能够把任意周期函数(信号)分解成<strong>有限(或无限)个简单的震荡函数的叠加</strong>，这些震荡函数可以是正弦函数、余弦函数或复指数。</p>
+</blockquote>
+
+<p>傅里叶级数的公式定义（不要问为什么长这样，这只是一个定义，不是推出来的公式)：</p>
+
+<p>\[ S = \sum_{k=1}^{n}A_{k}\sin (2\pi kt+\phi _{k}) \]</p>
+
+<p>(如果不清楚什么是级数，请戳 <a href="https://en.wikipedia.org/wiki/Series_(mathematics)">https://en.wikipedia.org/wiki/Series_(mathematics)</a></p>
+
+<p>使用三角函数的一道公式:</p>
+
+<p>\[ \sin (\alpha + \beta ) = \sin \alpha \cos \beta + \cos \alpha \sin \beta \]</p>
+
+<p>代入到傅里叶级数，得：</p>
+
+<p>\[ \sin (2\pi kt + \phi _{k}) =\sin 2\pi kt \cos \phi _{k} + \cos 2\pi kt \sin \phi _{k} \]</p>
+
+<p>\[ S = \sum_{k=1}^{n}A_{k}\sin 2\pi kt \cos \phi _{k} + \sum_{k=1}^{n}A_{k}\cos 2\pi kt \sin \phi _{k} \]</p>
+
+<p>再设:</p>
+
+<p>\[ a_{k} = A_{k}\cos \phi _{k} \]</p>
+
+<p>\[ b_{k} = A_{k}\sin \phi _{k} \]</p>
+
+<p>则上面的傅里叶级数被简化成:</p>
+
+<p>\[ S = \sum_{k=1}^{n}a_{k}\sin 2\pi kt + \sum_{k=1}^{n}b_{k}\cos 2\pi kt \]
+\[  S(x) = \sum_{k=1}^{n}(a_{k}\sin 2\pi kt + b_{k}\cos 2\pi kt) \]</p>
+
+<p>这是傅里叶级数的<strong>常用形式1</strong>。</p>
+
+<p><strong>常用形式2</strong>是这样的：</p>
+
+<p>\[  S = \frac {A_{0}}{2} + \sum_{k=1}^{n}(a_{k}\sin 2\pi kt + b_{k}\cos 2\pi kt) \]</p>
+
+<p>前面多出来的那个东西，先不管它。</p>
+
+<p><strong>常用形式3</strong>，是最重要的：用复指数来表示傅里叶级数。</p>
+
+<p>推导过程，要用到<strong>欧拉公式</strong>：</p>
+
+<p>\[ e^{ix} = \cos x + i\sin x\]</p>
+
+<p>（关于欧拉公式的推导，可以看我的另一篇文章:<a href="http://www.qiujiawei.com/complex-1">复数和三角函数</a> )</p>
+
+<p>把 \( x = 2\pi kt \)代入到欧拉公式，得到:</p>
+
+<p>\[   e^{i2\pi kt} = \cos 2\pi kt + i\sin 2\pi kt\]</p>
+
+<p>再搬出另外两条欧拉公式的推论:</p>
+
+<p>\[ \cos x = \frac {e^{ix} + e^{-ix}}{2} \]</p>
+
+<p>\[ \sin x = \frac {e^{ix} - e^{-ix}}{2i} \]</p>
+
+<p>也把 \( x = 2\pi kt \)代入，得到:</p>
+
+<p>\[ \cos 2\pi kt = \frac {e^{i2\pi kt} + e^{-i2\pi kt}}{2} \]</p>
+
+<p>\[ \sin 2\pi kt = \frac {e^{i2\pi kt} - e^{-i2\pi kt}}{2i} \]</p>
+
+<p>这时候，教授突然说，傅里叶级数可以写成:</p>
+
+<p>\[ f(t) = \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} \]</p>
+
+<p>这个式子确实是常用形式3——复指数表示的傅里叶级数。
+但是，这究竟是怎么得到的呢。</p>
+
+<p>请耐心看下文。</p>
+
+<h3>复指数形式的傅里叶级数的\(c_{k}\)的性质</h3>
+
+<p>对于傅里叶级数f(t)，假设它是一个&quot;实信号(real signal)&quot;（一般来说，傅里叶变换处理的目标都是实信号)，
+那么就有等式:</p>
+
+<p>\[ f(t) = \overline {f(t)} \]</p>
+
+<p>即是说，f(t)没有虚部。而又因为：</p>
+
+<p>\[ f(t) = \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} \]</p>
+
+<p>\[ \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} = \overline {\sum_{k=-n}^{n}c_{k}e^{2\pi ikt}} = \sum_{k=-n}^{n}\overline {c_{k}}\overline {e^{2\pi ikt}} = \sum_{k=-n}^{n}\overline {c_{k}}e^{-2\pi ikt} \]</p>
+
+<p>然后，要注意一个事实是：这个级数是从-n到n的累加，根据加法交换律，这个级数也可以变成从n到-n的累加，也即:</p>
+
+<p>\[ \sum_{k=-n}^{n} = \sum_{k=n}^{-n}  \]</p>
+
+<p>于是，把傅里叶级数的k变成-k，就有:</p>
+
+<p>\[ \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} = \sum_{-k=-n}^{n}c_{-k}e^{-2\pi ikt} = \sum_{k=n}^{-n}c_{-k}e^{-2\pi ikt} = \sum_{k=-n}^{n}c_{-k}e^{-2\pi ikt} \]</p>
+
+<p>再对比上面的推导，就会发现：</p>
+
+<p>\[ c_{-k} = \overline {c_{k}} \]</p>
+
+<p>先记住这个性质，然后继续往下看。</p>
+
+<p>设有复数z，它必然会满足一个性质：</p>
+
+<p>\[ z + \overline {z} = 2Re\{ z \} \]</p>
+
+<p>Re{···}代表取出花括号的复数表达式的实部。</p>
+
+<p>对于傅里叶级数，也可以把它当成一个复数，再利用刚刚推导出来的\(c_{-k} = \overline {c_{k}} \)，就有：</p>
+
+<p>\[ c_{k}e^{2\pi ikt} + c_{-k}e^{2\pi i(-k)t} = c_{k}e^{2\pi ikt} + c_{-k}e^{-2\pi ikt}\]
+\[ = c_{k}e^{2\pi ikt} + \overline {c_{k}}e^{\overline {2\pi ikt}} \]
+\[ = c_{k}e^{2\pi ikt} + \overline {c_{k}e^{2\pi ikt}} \]
+\[ = 2Re\{ c_{k}e^{2\pi ikt} \} \]</p>
+
+<p>这个结果表明，\(c_{k}e^{2\pi ikt} + c_{-k}e^{2\pi i(-k)t} \)是一个实数。把这个结论代入到傅里叶级数，就可以得到：</p>
+
+<p>\[ f(t) = \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} \]
+\[ = \sum_{k=0}^{n}2Re\{ c_{k}e^{2\pi ikt} \} \]
+\[ = 2Re\{ \sum_{k=0}^{n}c_{k}e^{2\pi ikt} \} \]</p>
+
+<p>注意，这个式子是把0和-0都算进去的。如果不允许signed zero，就要对k=0的情况特殊处理。</p>
+
+<h3>求解\(c_{k}\)的积分形式</h3>
+
+<p>回到前面的那个傅里叶级数f(t)：</p>
+
+<p>\[ f(t) = \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} \]</p>
+
+<p>其实是这样子搞出来的：
+先假设傅里叶的<strong>常用形式2</strong>可以变换成这个等式，然后求\(c_{k}\)，求得出来的话，式子不就成立了嘛。</p>
+
+<p>为了搞定这个事情，要使用新的招数：积分。</p>
+
+<p>( 在教授的notes(<a href="https://see.stanford.edu/materials/lsoftaee261/book-fall-07.pdf">https://see.stanford.edu/materials/lsoftaee261/book-fall-07.pdf</a>]的第10-12页第1.5小节Lost at c，清楚地推导了一遍\(c_{k}\)。 )</p>
+
+<p>这里我按自己对原文的理解，翻译下。</p>
+
+<p>我们先随便取了一个k(k在-n到n之间)，然后，对上面的傅里叶级数等式两边同时乘以\( e^{-2\pi ikt } \)：</p>
+
+<p>\[ e^{-2\pi ikt }f(t) = e^{-2\pi ikt }\sum_{k=-n}^{n}c_{k}e^{2\pi ikt} \]</p>
+
+<p>把右边的式子展开，得到:</p>
+
+<p>\[ e^{-2\pi ikt }f(t) = \cdots + e^{-2\pi ikt }c_{k}e^{2\pi ikt} + \cdots \]
+\[ = \cdots + c_{k}e^{-2\pi ikt}e^{2\pi ikt } + \cdots \]
+\[ = \cdots + c_{k}e^{-2\pi ikt + 2\pi ikt } + \cdots \]
+\[ = \cdots + c_{k} + \cdots \]</p>
+
+<p>这时候，可以把\(c_{k}\)移到等式左边，左边的那个东东移到右边，就得到了一个\(c_{k}\)的表达式:</p>
+
+<p>\[ c_{k}  = e^{-2\pi ikt }f(t) - \sum_{k&#39;=-n\,k&#39;\neq k}^{n}c_{k&#39;}e^{2\pi ik&#39;t}e^{-2\pi ikt } \]
+\[ e^{-2\pi ikt }f(t) - \sum_{k&#39;=-n\,k&#39;\neq k}^{n}c_{k&#39;}e^{2\pi i(k&#39;-k)t} \]</p>
+
+<p>然后再放大招：对等式两边同时积分，范围是0到1（f(t)的t的周期为1）。</p>
+
+<p>积分的时候，会发现有这么个神奇的等式:</p>
+
+<p>\[ \int _{0}^{1}e^{2\pi i(k&#39;-k)t}dt = \left  [ \frac {2\pi i(k&#39;-k)}{1}e^{2\pi i(k&#39;-k)t}\right ]_{0}^{1} \]
+\[ = \frac {2\pi i(k&#39;-k)}{1}(e^{2\pi i(k&#39;-k)} - e^{0})\]
+\[ = \frac {2\pi i(k&#39;-k)}{1}(1-1) = 0\]</p>
+
+<p>最后那个1-1=0的前面那个1，其实用上欧拉公式就懂了，<strong>\( 2\pi i(k&#39;-k) \)</strong>，代表\(\phi =2\pi (k&#39;-k)\) ,又因为k&#39;-k必然是整数，所以\(\phi \)代表了复数平面的坐标(1,0)，所以整个式子就等于1。</p>
+
+<p>于是，积分等式就只剩下：</p>
+
+<p>\[ \int _{0}<sup>{1}c_{k}dt</sup> = \int _{0}<sup>{1}e^{-2\pi</sup> ikt }f(t)dt \]</p>
+
+<p>\[ (1-0)c_{k} = c_{k} = \int _{0}<sup>{1}e^{-2\pi</sup> ikt }f(t)dt \]</p>
+
+<p>这就是\(c_{k}\)的积分形式。</p>
+
+<p>做一个小结：</p>
+
+<p>如果对于一个已知的周期为1的周期函数f(t)，它可以写成这样的形式：</p>
+
+<p>\[ f(t) = \sum_{k=-n}^{n}c_{k}e^{2\pi ikt} \]</p>
+
+<p>那么其中的\(c_{k}\)必然满足：</p>
+
+<p>\[ c_{k} = \int _{0}<sup>{1}e^{-2\pi</sup> ikt }f(t)dt \]</p>
+
+<h3>求解\(c_{k}\)的非积分形式</h3>
+
+<p>回到傅里叶级数的常用形式2:</p>
+
+<p>\[  f(t) = \frac {A_{0}}{2} + \sum_{k=1}^{n}(a_{k}\sin 2\pi kt + b_{k}\cos 2\pi kt) \]</p>
+
+<p>代入下面这2个式子:</p>
+
+<p>\[ \cos 2\pi kt = \frac {e^{i2\pi kt} + e^{-i2\pi kt}}{2} \]</p>
+
+<p>\[ \sin 2\pi kt = \frac {e^{i2\pi kt} - e^{-i2\pi kt}}{2i} \]</p>
+
+<p>得:</p>
+
+<p>\[ f(t) = \frac {A_{0}}{2} + \sum_{k=1}^{n}(a_{k}\frac {e^{i2\pi kt} - e^{-i2\pi kt}}{2i} + b_{k}\frac {e^{i2\pi kt} + e^{-i2\pi kt}}{2}) \]
+\[  = \frac {A_{0}}{2} + \sum_{k=1}^{n}(\frac {b_{k} - ia_{k}}{2}e^{i2\pi kt} + \frac {b_{k} + ia_{k}}{2}e^{-i2\pi  kt})  \]</p>
+
+<p>设:</p>
+
+<p>\[ c_{0} = \frac {1}{2}A_{0} \]
+\[ c_{k} = \frac {1}{2}(b_{k} - ia_{k}) \]
+\[ c_{-k} = \overline {c_{k}} = \frac {1}{2}(b_{k} + ia_{k}) \]</p>
+
+<p>（注意，第三个式子是利用了前面的结论 ）</p>
+
+<p>则:</p>
+
+<p>\[ f(t) = c_{0} + \sum_{k=1}^{n}(c_{k}e^{i2\pi kt} + c_{-k}e^{-i2\pi  kt}) \]
+\[ = c_{0} + \sum_{k=1}^{n}c_{k}e^{i2\pi kt} + \sum_{k=1}^{n}c_{-k}e^{-i2\pi  kt} \]
+\[ = c_{0} + \sum_{k=1}^{n}c_{k}e^{i2\pi kt} + \sum_{k=-1}^{-n}c_{k}e^{i2\pi  kt} \]
+\[ = c_{0} +  \sum_{k=-n,k\neq 0}^{n}c_{k}e^{i2\pi kt}   \]</p>
+
+<p>和那个常用形式3非常接近了，只需要把\(c_{0}\)也合并到级数里即可。但，这需要有一个前提：\( c_{0} = \frac {1}{2}A_{0} \)和k=0时的f(t)的\( c_{0} \)相等，而这是不一定的。</p>
+
+<p>傅里叶级数是很不错的东西，但是实际应用时，要考虑很多细节，不是随便用就可以的。</p>
+
+<h3>大跃进，终极的傅里叶级数的复指数形式</h3>
+
+<p>终极的傅里叶级数的复指数形式是(fourier series exponential form  )：</p>
+
+<p>\[ f(t) = \sum_{k=-\infty }^{\infty }c_{k}e^{2\pi ikt} \]</p>
+
+<p>前面的傅里叶级数是finite的，这个是infinite的。</p>
+
+<p>其中的\(c_{k}\)有一个专门的notation：\( \hat {f}(t) \)，代入后得到：</p>
+
+<p>\[ \hat {f}(t) = \int _{ -\frac {1}{2} }^{\frac {1}{2} }f(t)e^{-2\pi ikt}dt \]</p>
+
+<p>\[ f(t) = \sum_{k=-\infty }^{\infty }\hat {f}(t)e^{2\pi ikt} \]</p>
+
+<h2>傅里叶变换 fourier transform</h2>
+
+<p>(以下内容摘选自《复变函数与积分变换(华东理工大学出版社)》，有删改)</p>
+
+<h3>傅里叶积分定理 fourier integrate</h3>
+
+<p>若函数f(t)在\(-\infty ,+\infty \)上的任一有限区间内满足Dirichlet条件，并且在\( (-\infty ,+\infty) \)上绝对可积（即积分\( \int _{-\infty }^{+\infty }|f(t)|dt\)收敛)，则有：
+\[ \frac {1}{2\pi }\int _{-\infty }^{+\infty }\left [ \int _{-\infty }^{+\infty }f(t)e^{-i\omega t}dt\right ]e^{i\omega t}d\omega =  \begin {cases} f(t), 当t为f(t)的连续点; \\  \frac {f(t+0)+f(t-0)}{2},当t为f(t)的间断点。 \end {cases} \]</p>
+
+<p>令:</p>
+
+<p>\[ F(\omega ) = \int _{-\infty }^{+\infty }f(t)e^{-i\omega t}dt \]</p>
+
+<p>则:</p>
+
+<p>\[ f(t) = \frac {1}{2\pi }\int _{-\infty }^{+\infty }F(\omega )e^{i\omega t}d\omega \]</p>
+
+<p>上两式子表明\( F(\omega ) 和 f(t) \)通过指定的积分运算可以相互表示。</p>
+
+<p>第一个式子称为f(t)的<strong>傅里叶变换</strong>，记为:</p>
+
+<p>\[ F(\omega ) = \mathcal {F}[f(t)] \]</p>
+
+<p>函数为\(F(\omega ) \)称为f(t)的<strong>像函数</strong>。</p>
+
+<p>第二个式子称为\(F(\omega ) \)的<strong>逆傅里叶变换</strong>，记为:</p>
+
+<p>\[ f(t) = \mathcal {F}^{-1}[ F(\omega ) ] \]</p>
+
+<p>函数f(t)称为为\(F(\omega ) \)的<strong>像原函数</strong>。</p>
+
+<h3>傅里叶变换的性质</h3>
+
+<h4>线性性质</h4>
+
+<p>设：</p>
+
+<ul>
+<li>\( \mathcal {F}[f_{1}(t)] = F_{1}(\omega )\)</li>
+<li>\( \mathcal {F}[f_{2}(t)] = F_{2}(\omega )\)</li>
+<li>\( \alpha \beta \)为常数</li>
+</ul>
+
+<p>则:</p>
+
+<p>\[ \mathcal {F}[\alpha f_{1}(t) + \beta f_{2}(t)] = \alpha F_{1}(\omega ) + \beta F_{2}(\omega ) \]</p>
+
+<p>\[ \mathcal {F}^{-1}[\alpha F_{1}(\omega ) + \beta F_{2}(\omega )] = \alpha f_{1}(t) + \beta f_{2}(t) \]</p>
+
+<h4>位移性质</h4>
+
+<p>设\( \mathcal {F}[f(t)] = F(\omega )\)，\( f(t) = \mathcal {F}^{-1}[ F(\omega ) ] \)，则:</p>
+
+<p>\[ \mathcal {F}[f(t\pm t_{0})] = e^{\pm i\omega t_{0}}F(\omega )\]</p>
+
+<p>\[ \mathcal {F}^{-1}[F(\omega )\mp F_{0}(\omega )] = e^{\pm i\omega _{0}t}f(t) \]</p>
+
+<p>其中\( t_{0},\omega _{0} \)为常数。</p>
+
+<h4>微分性质</h4>
+
+<p>若f(t)在\( (-\infty ,+\infty) \)内连续或只有有限个可去间断点，且：</p>
+
+<p>\[ \lim _{|t|\to +\infty }f(t) = 0 \]</p>
+
+<p>\[ \mathcal {F}[f(t)] = F(\omega )\]</p>
+
+<p>则：</p>
+
+<p>\[ \mathcal {F}[f&#39;(t)] = i\omega F(\omega )\]</p>
+
+<h4>像函数的微分性质</h4>
+
+<p>设\( \mathcal {F}[f(t)] = F(\omega )\)，则:</p>
+
+<p>\[ \frac {d}{d\omega }F(\omega ) = -i\mathcal {F}[tf(t)] \]</p>
+
+<h4>积分性质</h4>
+
+<p>设\( g(t) = \int _{-\infty }^{t}f(t)dt\)，若：</p>
+
+<p>\[ \lim _{t\to +\infty }g(t) = 0 \]</p>
+
+<p>则:</p>
+
+<p>\[ \mathcal {F}[g(t)]=\frac {1}{i\omega }\mathcal {F}[f(t)] \]</p>
+
+<h4>对称性质</h4>
+
+<p>若\( F(\omega ) = \mathcal {F}[f(t)] \)，则：</p>
+
+<p>\[ \mathcal {F}[F(t)] = 2\pi f(-\omega ) \]</p>
+
+<h4>相似性质</h4>
+
+<p>设\( F(\omega ) = \mathcal {F}[f(t)] \)，a为非零常数，则：</p>
+
+<p>\[  \mathcal {F}[f(at)] = \frac {1}{|a|}F(\frac {\omega }{a}) \]</p>
+
+<h3>离散傅里叶变换 discrete fourier transform</h3>
+
+<p>wiki:<a href="https://en.wikibooks.org/wiki/Digital_Signal_Processing/Discrete_Fourier_Transform">Digital Signal Processing/Discrete Fourier Transform</a>。</p>
+
+<p>设在时域上有离散的采样点\( f = (f[0],f[1],\cdots ,f[N-1]) \)，对f做离散傅里叶变换(DFT)，可以得到频域上的离散点\( F = (F[0],F[1],\cdots ,F[N-1]) \)，且：</p>
+
+<p>\[ F[m] =  \sum_{n=0}^{N-1}f[n]e^{-2\pi imn/N}, m = 0,1,\dots ,N-1 \]</p>
+
+<p>这个就是DFT的标准公式。</p>
+
+<p>解释一下:</p>
+
+<ul>
+<li>f(t)是原信号(时域)，\( f(n_{0}) \) 到 \( f(n_{N - 1}) \)是所谓的采样点，也就是说f(t)被离散成了这些点；</li>
+<li>F(w)是转换后的频域信号，\( F(m_{0}) \) 到 \( F(m_{N - 1} )\)是频域里均匀分布的N个点；</li>
+<li>那么上面的公式就是指，对于每个m值，都求出这n个采样点f(n)的傅里叶级数，这个级数就是F(m)</li>
+</ul>
+
+<p>要推导出这个这个公式并不容易，其中还要用到卷积的知识。</p>
+
+<p>先大概地讲一遍：</p>
+
+<p>给信号函数f(t)设定一个有限的时间范围L：\( 0\leq t\leq L \)；给f(t)的傅里叶转换F(w)设定一个有限的频率范围2B：\( 0\leq w\leq 2B \)。</p>
+
+<p>这里为什么是2B呢？这需要先认识一下<strong>采样定理</strong><a href="https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem#Introduction">Nyquist–Shannon sampling theorem</a>。</p>
+
+<p>香农指出，如果一个信号函数f(t)的频率不高于B赫兹，那么用时间间隔\( \frac {1}{2B} \)秒去采样f(t)而得到的f(t&#39;)，相当于f(t)。</p>
+
+<p>简单来说，如果要完美地采样一个函数f(t)，采样间隔必须小于或等于\( \frac {1}{2B} \)秒（大于或等于2B赫兹），B是这个f(t)的频域的最大赫兹。</p>
+
+<p>继续推导。</p>
+
+<p>既然时域的范围是L，完美的采样频率是2B，那么理论上要采样的点共有这么多个：</p>
+
+<p>\[ N = \frac {L}{1/2B} = 2BL \]</p>
+
+<p>时域的采样点横坐标列表如下：</p>
+
+<p>\[ t_{0} = 0, t_{1} = \frac {1}{2B}, t_{2} = \frac {2}{2B}, \cdots , t_{N-1} = \frac {N-1}{2B} \]</p>
+
+<p>所以，f(t)的离散版本\( f_{discrete}(t) \)就是这个采样点列表\( f(t_{0}), f(t_{1}),\cdots , f(t_{N-1}) \)。</p>
+
+<p>接下来轮到<strong>卷积</strong><a href="https://en.wikipedia.org/wiki/Convolution">Convolution</a>和<strong>狄拉克梳状函数</strong><a href="https://en.wikipedia.org/wiki/Dirac_comb">Dirac comb</a>登场。</p>
+
+<p>(关于卷积和狄拉克梳状函数，请阅读我的其他文章<a href="http://www.qiujiawei.com/convolution">理解卷积</a>，<a href="http://www.qiujiawei.com/shah-function">狄拉克梳状函数</a> )。</p>
+
+<p>继续讨论。因为上面得到的\( f_{discrete}(t) \)是不连续的，所以不能直接用傅里叶变换把它转换用到频域（标准傅里叶变换是处理连续函数的）。要把不连续信号转成连续信号，就是用卷积，即把离散信号和连续信号‘合并’。</p>
+
+<p>狄拉克梳状函数：</p>
+
+<p>\[ III_{T}(t) = \sum _{k=-\infty }^{\infty }\delta (t - kT)\]</p>
+
+<p>代入我们的离散横坐标\( (t_{0}, t_{1}, \cdots , t_{N-1} \)，则有：</p>
+
+<p>\[ III_{T=\frac {1}{2B}}(t) = \sum _{n=0 }^{N-1 }\delta (t - t_{n})\]</p>
+
+<p>定义一个\( f_{discrete}(t) \)，代表f(t)离散化后和shah函数合并:</p>
+
+<p>\[ f_{discrete}(t)  = \sum _{n=0 }^{N-1 }f(t_{n})\delta (t - t_{n}) \]</p>
+
+<p>这个式子是连续的(因为t的取值是连续的)。这个式子也叫做<strong>f(t)的采样形式</strong>(the sampled form of f(t))。它的傅里叶变换是:</p>
+
+<p>\[ \mathcal {F}[f_{discrete}(s)] =  \sum _{n=0 }^{N-1 }f(t_{n})\mathcal {F}[\delta (t - t_{n})] = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi ist_{n} } \]</p>
+
+<p>注意，这个傅里叶变换也是连续的。</p>
+
+<p>上面是时域到频域的讨论，接下来换个角度：想一下如何在频域中对连续的频域信号做采样，并转换到时域。也即<strong>离散的逆傅里叶变换</strong>。</p>
+
+<p>在频域中做采样，那么就是做离散化，<strong>频率间隔</strong>应该是多少(赫兹)？频率公式是\(f =  \frac {1}{T} \)，f的单位是赫兹，赫兹是指<strong>1秒内震动次数</strong>，震动次数要看信号的周期T。如果把t的范围L当做周期的话，1除以L就是指\( \frac {1}{L} \)赫兹，注意，<strong>这是频率的下限</strong>，频率的上限是前面已经给出的2B，而我们要做的是在频率这条横轴上做采样，即从频率=0(赫兹)开始，间隔=1/L(赫兹)，到频率=2B(赫兹)结束，对F(s)进行采样。</p>
+
+<p>总共的频域采样点有这么多个:</p>
+
+<p>\[ \frac {2B}{\frac {1}{L}} = 2BL = N \]</p>
+
+<p>对比上面的时域采样，频域采样也有同样数目的采样点**。</p>
+
+<p>频域的采样点横坐标列表如下：</p>
+
+<p>\[ s_{0} = 0, s_{1} = \frac {1}{L}, s_{2} = \frac {2}{L}, \cdots , s_{N-1} = \frac {N-1}{L} \]</p>
+
+<p>有了采样点，就可以做采样了。但是是对什么东西做采样？结果有点反直觉，我们是对刚才推导出来的\( \mathcal {F}[f_{discrete}(s)] \)做采样，而不是\( \mathcal {F}[f(s)] \)。</p>
+
+<p>设\( F(s) \mathcal {F}[f_{discrete}(s)] \)，则F(s)的离散版本是:</p>
+
+<p>\[ F(s_{0}) = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi is_{0}t_{n} }, F(s_{1}) = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi is_{1}t_{n} }, \cdots ,F(s_{N-1}) = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi is_{N-1}t_{n} } \]</p>
+
+<p>将这串东西再简化下:</p>
+
+<p>\[ F(s_{m}) = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi is_{m}t_{n} } \]</p>
+
+<p>于是我们有了一道从离散f(t)到离散F(s)的公式！</p>
+
+<p>好像和前面给出的标准形式不一样？没事，还可以再变一变。</p>
+
+<p>由:</p>
+
+<p>\[ t_{n} = \frac {n}{2B} \]
+\[ s_{m} = \frac {m}{L} \]</p>
+
+<p>有:</p>
+
+<p>\[ F(s_{m}) = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi is_{m}t_{n} } \]
+\[ = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi i\frac {m}{L}\frac {n}{2B} } \]
+\[ = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi imn/2BL } \]
+\[ = \sum _{n=0 }^{N-1 }f(t_{n})e^{-2\pi imn/N } \]</p>
+
+<h3>傅里叶变换的应用</h3>
+
+<p>(如果理解了上面的DFT，基本不需要看这一节)</p>
+
+<h4>采样和重建 Sampling and Reconstruction</h4>
+
+<p>采样和重建这两个字花了我不少功夫去理解。其实并不复杂，举一个例子吧。</p>
+
+<p>假设现在有一个你不太喜欢的信号函数f(t)，可以想象成一个充满毛刺的、扭曲的正弦波形曲线(理论上不必须是波形)。你觉得它太丑了，想给它整容，变成你喜欢的模样。那么，就可以这样子做：</p>
+
+<ul>
+<li>采样</li>
+</ul>
+
+<p>在横轴上挑选一些你觉得不错的坐标t，代入f(t)，这样就得到了一个坐标集合\( (t_{i},f(t_{i}))(i=[0,n]) \)。
+这个过程叫做采样，这些坐标对样本，对应的t坐标叫做采样点。</p>
+
+<ul>
+<li>重建</li>
+</ul>
+
+<p>经过采样后，原来的连续的f(t)变成了离散的\( f(t_{i})(i=[0,n]) \)(continuous to descrete)。对于这个\(f(t_{i})\)，我们可以根据这些坐标，重新构建一条新的曲线，也就是说，整出一条新的曲线，使得这条新曲线会通过所有的采样坐标点。这个过程叫做重建。</p>
+
+<p>重点来了:<strong>采样和重建是通过傅里叶变换完成的</strong>。这意味着什么？首先要记住，傅里叶变换，可以把时域的函数变成一个等价的频域的函数。我们还是按前面的做法，在时域上完成‘采样’工作，但是采样点要足够多，并且均匀。采样后，用傅里叶变换把\(f(t_{i})\)变成\(F(w_{i})\)，然后就可以<strong>在频域上完成真正的采样(或叫过滤)</strong>。
+在频域上采样，往往比在时域上采样要简单得多，比如说，你只对中高频信号感兴趣，那么就可以只采样那些频率高的点。对F(w_{i})采样后，得到F&#39;(w_{i})，再通过<strong>逆傅里叶变换</strong>，就可以得到一个新的f&#39;(t)。整容完毕。</p>
+
+<p>哦，还有一个细节要注意，这个采样和重建用的傅里叶变换是<strong>离散傅里叶变换</strong>。</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on October 10, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

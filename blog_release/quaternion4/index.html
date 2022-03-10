@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>再谈四元数的应用：朝向四元数、朝向四元数插值、旋转四元数？ – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="最近在做的东西涉及到四元数的知识，做的过程中发现四元数有一些很容易让人迷惑的点，现写这篇文章备忘。
+" />
+    <meta property="og:description" content="最近在做的东西涉及到四元数的知识，做的过程中发现四元数有一些很容易让人迷惑的点，现写这篇文章备忘。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="再谈四元数的应用：朝向四元数、朝向四元数插值、旋转四元数？" />
+    <meta property="twitter:title" content="再谈四元数的应用：朝向四元数、朝向四元数插值、旋转四元数？" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/quaternion4/',
+		  'title': '再谈四元数的应用：朝向四元数、朝向四元数插值、旋转四元数？'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>再谈四元数的应用：朝向四元数、朝向四元数插值、旋转四元数？</h1>
+ <h3>Tags: <a href="/tag/math/" rel="tag">math</a>, <a href="/tag/quaternion/" rel="tag">quaternion</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>最近在做的东西涉及到四元数的知识，做的过程中发现四元数有一些很容易让人迷惑的点，现写这篇文章备忘。</p>
+
+<!--more-->
+
+<h2>四元数作为对象的朝向(Orientation)以及需要做朝向之间的插值时</h2>
+
+<p>一个3D的对象一般有这些基本几何属性：</p>
+
+<ol>
+<li><p>空间位置。用一个vector3d即可表示</p></li>
+<li><p>缩放系数。同样也可以用一个vector3d表示，每个分量代表物体在每一个正交基的缩放系数</p></li>
+<li><p>朝向。</p></li>
+</ol>
+
+<p>朝向，这是个看名字很容易知道含义的属性，但是用数学语言描述的话却有很多种方式，不像&quot;位置&quot;、&quot;缩放&quot;那么容易就可以确定用一个vector3d来实现。</p>
+
+<p>基于笛卡尔3D坐标系，普遍在用的朝向表示方法有这么几种：</p>
+
+<ol>
+<li><p>欧拉角</p></li>
+<li><p><a href="http://www.qiujiawei.com/linear-algebra-14/">旋转矩阵</a></p></li>
+<li><p>四元数</p></li>
+</ol>
+
+<p>这3个随便一个都是蛮复杂的东西（不是学3D的应该都不知道这3个吧）。首先比较下3种方法的数据存储效率：</p>
+
+<ol>
+<li><p>欧拉角，需要3个分量（ 前进方向(heading)、海拔(elevation)、 倾斜(bank) 或 偏航(yaw),
+俯仰(pitch)、 翻滚（roll））。</p></li>
+<li><p>旋转矩阵。4 x 4 = 16个分量（不考虑压缩）</p></li>
+<li><p>四元数。4个分量。</p></li>
+</ol>
+
+<p>显然从数据存储上看，欧拉角最有优势，但问题是，欧拉角（or旋转矩阵）是有万向节锁问题的。实际上，只要是用三个旋转角来表示朝向的变化就会出现万向节锁问题，即使存储朝向时用了四元数。这是因为欧拉角和四元数可以等价转换，朝向变换计算时用欧拉角，只是存储的时候转换成四元数，这样四元数并没有什么卵用。</p>
+
+<p>考虑这一点，<strong>四元数直接表示朝向以及朝向之间的插值</strong>的优势就凸现出来了，比欧拉角多一个分量，但能处理好万向节锁问题。为什么会这样呢？这其中的神奇之处就在于四元数的4个分量的含义和欧拉角的三个分量的含义差别很大，我举例说明下：</p>
+
+<p>欧拉角(pitch yaw roll)  &lt;—&gt; 四元数(第一个值是虚部，后面三个是实部)</p>
+
+<p>0.0,  0.0,  0.0  &lt;—&gt; 1.000000, 0.000000, 0.000000, 0.000000</p>
+
+<p>90.0, 0.0,  0.0  &lt;—&gt; 0.707107, 0.707107, 0.000000, 0.000000</p>
+
+<p>0.0, 90.0,  0.0  &lt;—&gt; 0.707107, 0.000000, 0.707107, 0.000000</p>
+
+<p>0.0,  0.0, 90.0  &lt;—&gt; 0.707107, 0.000000, 0.000000, 0.707107</p>
+
+<p>可以看到，用四元数表示的朝向，只看数值是无法直观知道这个四元数是代表什么朝向的。所以<strong>不能以轴-旋转角度的概念去看待朝向四元数，完全不是同一回事</strong>。</p>
+
+<h3>总结一下：</h3>
+
+<p>明确你的程序里的欧拉角和四元数的对应关系后，做一个欧拉角到四元数的转换接口。初始化对象朝向时，先以欧拉角的思考角度确定欧拉角的三个值，然后用这个接口把欧拉角转成四元数，就可以用四元数来做朝向数据的存储（多消耗一个float）。</p>
+
+<p>使用四元数朝向数据时，不能转换回欧拉角来使用（如果你这样就等同于只在存储时应用四元数），而是应该继续以四元数的思考角度来做各种操作，如做朝向的插值。（<a href="http://www.qiujiawei.com/understanding-quaternions/#7">四元数SLERP</a>）。</p>
+
+<h2>四元数作为旋转变换参数时</h2>
+
+<p>这种情景下，朝向是否用四元数存储不再重要。只是在做<strong>旋转</strong>这个事情时，使用了四元数。这个四元数也被称为旋转四元数。旋转四元数的构造需要2个东西：<strong>笛卡尔坐标系下的旋转轴\( \hat { \mathbf v } \)（Vector3d）和绕着这个旋转轴的旋转角度\( \theta \)(Radian)</strong>：</p>
+
+<p>\[ q = [cos\frac {1}{2}\theta ,sin\frac {1}{2}\theta \mathbf { \hat { \mathbf v } }] \]</p>
+
+<p>构造了旋转四元数后，剩下的就是怎么使用的问题。假设现在要对一个3D坐标点\( \vec p \)做\( \mathbf q \)旋转，那么变换公式如下：</p>
+
+<p>\[ \mathbf p&#39; = \mathbf q \mathbf p \mathbf q^{-1} \]</p>
+
+<p>其中的\( \mathbf p \)四元数的虚部为0，实部为\( \vec p \)向量。</p>
+
+<p>(详细的公式细节可以查阅<a href="http://www.qiujiawei.com/understanding-quaternions">Understanding Quaternions 中文翻译《理解四元数》</a>)</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on September 20, 2017
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

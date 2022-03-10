@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Gamejam作品 《虐之太空》 技术分享 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="游戏试玩地址：http://wanga.me/45512
+
+技术架构：
+
+平台：web、mobile
+
+引擎：cocos2d
+
+语言：js
+
+使用的插件：chipmunk(物理引擎) underscore(js增强函数库）
+" />
+    <meta property="og:description" content="游戏试玩地址：http://wanga.me/45512
+
+技术架构：
+
+平台：web、mobile
+
+引擎：cocos2d
+
+语言：js
+
+使用的插件：chipmunk(物理引擎) underscore(js增强函数库）
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="Gamejam作品 《虐之太空》 技术分享" />
+    <meta property="twitter:title" content="Gamejam作品 《虐之太空》 技术分享" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/gamejam-tech/',
+		  'title': 'Gamejam作品 《虐之太空》 技术分享'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+
+<h1>Gamejam作品 《虐之太空》 技术分享</h1>
+<h3>Tags: <a href="/tag/gamejam/" rel="tag">gamejam</a></h3>
+<article class="post">
+  <div class="entry">
+    <p>游戏试玩地址：<a href="http://wanga.me/45512" title="http://wanga.me/45512">http://wanga.me/45512</a></p>
+
+<p>技术架构：</p>
+
+<p>平台：web、mobile</p>
+
+<p>引擎：cocos2d</p>
+
+<p>语言：js</p>
+
+<p>使用的插件：chipmunk(物理引擎) underscore(js增强函数库）</p>
+
+<!--more-->
+
+<p>技术实现：</p>
+
+<p>这游戏的技术难点是<strong>电网</strong>的实现。</p>
+
+<p>电网的特点：</p>
+
+<ul>
+<li>电流在电网上移动（路径固定，会循环）</li>
+<li>电流可能有多条，电流会转向，可以设置电流的长度、速度</li>
+</ul>
+
+<p>实际上这个游戏的核心创意是我提出的，提出之后，大家一起围绕这个核心玩法开了各种脑洞。可惜因时间关系，只来得及完成这个核心玩法。</p>
+
+<p>技术永远是跟着需求走的。需求确定的情况下，只要选一个成本最低、最简单的实现方案即可。若改了需求，任何程序员都不能保证既有代码实现可以完全不改动。</p>
+
+<p>对于这个电网来说，我主要处理几个难点：</p>
+
+<ul>
+<li>电流和导弹的碰撞的实现</li>
+<li>电流移动问题</li>
+<li>电流转弯问题</li>
+<li>电流动画问题</li>
+<li>电流和发电器整体移动的问题</li>
+</ul>
+
+<p>第一个问题是用物理引擎chipmunk解决的，为什么不是box2d？因为我在公司刚好也在做一款物理类游戏，而chipmunk是能跨android和ios的引擎（box2d暂时不支持ios）。But，引入chipmunk后，又引发新的问题，下面会说到。</p>
+
+<p>第二和第三个问题，电流移动和转弯，都是用cocos的action功能实现的，移动是cc.moveTo，转弯是cc.callFunc（在回调函数里即时计算旋转角），那么一个电流sprite就是不断执行move-&gt;rotate-&gt;move-&gt;rotate即可。</p>
+
+<p>但电流转弯又引发新的问题，因为电流是一个绑定了chipmunk&#39;s body的PhysicSprite，body是一个狭长的长方形，转弯的时候会出现这样子的bug：</p>
+
+<p><img src="../images/2015.7/11.png" alt="11.png">
+<img src="../images/2015.7/12.png" alt="12.png">
+<img src="../images/2015.7/13.png" alt="13.png">
+<img src="../images/2015.7/14.png" alt="14.png"></p>
+
+<p>即电流的body会超出路径限定的范围。于是我做了一个细分的操作，把一条电流切成N截，每一截都是一个PhsicalSprite，那么只要让他们在路径上移动时有前后顺序，就会变成：</p>
+
+<p><img src="../images/2015.7/15.png" alt="15.png"></p>
+
+<p>这里有个实现技巧：要生成N个速度为v的小电流，且他们的总长度为s，可以做一个createCurrent()函数，然后用某种延时机制，在0、 1/N *(s/v)、2/N *(s/v)、···、N/N *(s/v)时刻，各执行一次createCurrent函数，每次执行函数都会在路径起点生成一截小电流。执行N次后，就得到了一条会拐弯的大电流。</p>
+
+<p>第四个问题，电流动画，因为没做过类似的需求，在处理这个问题时总感觉不对，最后出来的效果也不太好。我的做法是，让每截小电流都播放同一个cc.animation帧动画。最后发现效果不是很理想，因为每截小电流太小了，导致动画的细节少了很多。但勉强可以作为demo演示用。</p>
+
+<p>第五个问题，电流和发电器整体移动的问题。按照chipmunk的物理规则，一个PhysicSprite的移动应该是被动的，cp.body移动从而导致PhysicSprite移动。但我是用cc.moveTo来移动的，也就是反过来实现了。不过这个细节也没什么影响。对于这第五个问题，一开始想到的方案是，通过改变所有电流Sprite的父节点的位置，从而整体移动整个电网。</p>
+
+<p>但实际上会出bug：电网是整体偏移了，但是Sprite的body没有偏移，这是因为chipmunk的实现和cocos的node树的实现是完全分开的。所以就还要让body也跟着偏移。</p>
+
+<p>最后我的实现方法是：如果电网会移动，那么久解除PhysicSprite和body的连接，从而可以分别操作sprite和body的位置而又不会互相影响，这样只要2边的位置能对上，就OK了。具体实现这里不提。</p>
+
+<p>其他问题：</p>
+
+<ul>
+<li>电流角度的计算</li>
+<li>关卡配表问题</li>
+</ul>
+
+  </div>
+  <div class="entry">
+  (未经授权禁止转载)
+  </div>
+  <div class="date">
+    Written on July 15, 2015
+  </div>
+  <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+  <img src="../images/dashang1.jpeg" />
+  <img src="../images/dashang2.jpeg" />
+    
+    
+  
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

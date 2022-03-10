@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>《Effective Modern C++》读书笔记 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="Note：为避免各种侵权问题，本文并没有复制原书任意文字(代码除外，作者已经声明代码可以被使用)。需要原书完整中文翻译的读者请等待官方译本的发布。
+" />
+    <meta property="og:description" content="Note：为避免各种侵权问题，本文并没有复制原书任意文字(代码除外，作者已经声明代码可以被使用)。需要原书完整中文翻译的读者请等待官方译本的发布。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="《Effective Modern C++》读书笔记" />
+    <meta property="twitter:title" content="《Effective Modern C++》读书笔记" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/cpp-6/',
+		  'title': '《Effective Modern C++》读书笔记'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>《Effective Modern C++》读书笔记</h1>
+ <h3>Tags: <a href="/tag/c%2B%2B/" rel="tag">c++</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>Note：为避免各种侵权问题，本文并没有复制原书任意文字(代码除外，作者已经声明代码可以被使用)。需要原书完整中文翻译的读者请等待官方译本的发布。</p>
+
+<!--more-->
+
+<h1>正文</h1>
+
+<p>为了让本文更加清晰，依然还是用<strong>条款</strong>的形式来介绍知识点。(但不能保证我写的<strong>条款</strong>就是原书的条款)</p>
+
+<h2>条款7：考虑用新的变量初始化语法{}代替旧的()吧</h2>
+
+<h3>优点：</h3>
+
+<ul>
+<li>用{}来初始化变量，可以避免程序员不期望的隐式类型转换(更具体地说应该是narrowing conversions，收缩转换)；</li>
+<li>用{}替代()，可以避免A a()被编译器解析(parsed)成函数声明的问题；</li>
+</ul>
+
+<h3>缺点：</h3>
+
+<ul>
+<li>和auto结合得不友好，auto遇到{}，auto推导成了std::initializer_list，这不是所期望的；</li>
+<li>当类的多个构造函数里，有一个是用std::initializer_list时，要注意其他构造函数不能用{}语法；</li>
+<li>当类有类型转换函数时，第二个缺点会变得更严重：复制构造函数可能不会被调用；</li>
+<li>当存在std::initializer_list构造函数时，即使构造代码不正确，编译器也不会转而使用其他构造函数来构造(即使其他构造函数更加match)，而是报错。(一种例外情况是当{...}里的元素不能被转换成std::initializer_list的T时，编译器才会转而使用其他构造函数)；</li>
+</ul>
+
+<h3>编写类构造函数的最佳实践</h3>
+
+<p>当你要给自定义的类加上std::initializer_list构造函数时，要细心考虑这个类被使用时，用{}和()是否一致，是否会有反直觉的结果。也就是说，为了避免上面所说的缺点，为了不坑自己或你的代码的用户，你需要在编写一个class时保持警惕。如无必要，应尽可能不添加td::initializer_list构造函数。</p>
+
+<h3>c++11创造了2个阵营</h3>
+
+<p>用()构造亦或用{}构造对象。只使用()的话，是传统派；只使用{}的话，是革新派。革新派追求{}的那2个优点，对{}的缺点保持乐观面对的态度；传统派更重视避免std::initializer_list构造函数带来的问题。选择哪一个阵营，看自己喜好了。</p>
+
+<h3>对于库的编写者，并不是立场的问题</h3>
+
+<p>编写template function，可能会需要构造局部变量，当局部变量的类型未知时，怎么知道要用{}还是()？万一T是一个革新派写的class，而你又用了{}来构造对象，那么你的template function的执行情况，可能和T的构造函数重载情况大有关系。也即是说，你的template function是不稳定的。究竟在template function里用{}还是()，是一个复杂的问题。</p>
+
+<h2>条款8：不用考虑了，就用nullptr代替0和NULL</h2>
+
+<p>nullptr的好处在哪，请阅读书中的例子。这个条款十分简单：不要再用0和NULL来表示空指针，而是用c++11的nullptr，只有好处，没有坏处。</p>
+
+<h2>条款9：用using代替typedef</h2>
+
+<p>同条款8，大部分情况下都可以用using代替typedef。</p>
+
+<h2>条款10：具有作用域的enum</h2>
+
+<p>写法如下:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">enum</span> <span class="k">class</span> <span class="nc">Color</span> <span class="p">{</span> <span class="n">black</span><span class="p">,</span> <span class="n">white</span><span class="p">,</span> <span class="n">red</span> <span class="p">};</span> <span class="c1">// black, white, red</span>
+<span class="c1">// are scoped to Color</span>
+<span class="k">auto</span> <span class="n">white</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span> <span class="c1">// fine, no othe</span>
+<span class="n">Color</span> <span class="n">c</span> <span class="o">=</span> <span class="n">white</span><span class="p">;</span> <span class="c1">// error! no enumerator named</span>
+<span class="c1">// "white" is in this scope</span>
+<span class="n">Color</span> <span class="n">c</span> <span class="o">=</span> <span class="n">Color</span><span class="o">::</span><span class="n">white</span><span class="p">;</span> <span class="c1">// fine</span>
+<span class="k">auto</span> <span class="n">c</span> <span class="o">=</span> <span class="n">Color</span><span class="o">::</span><span class="n">white</span><span class="p">;</span> <span class="c1">// also fine (and in accord</span>
+<span class="c1">// with Item 5's advice)</span>
+
+</code></pre></div>
+<p>我觉得主要好处是避免名空间污染。</p>
+
+<p>c++11还允许给enum指定underlying type：</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">enum</span> <span class="k">class</span> <span class="nc">Status</span><span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint32_t</span><span class="p">;</span> <span class="c1">// underlying type for</span>
+<span class="c1">// Status is std::uint32_t</span>
+<span class="c1">// (from &lt;cstdint&gt;)</span>
+
+</code></pre></div>
+<p>意思是，Status的每一个元素都是std::uint32_t类型。缺省类型是int。</p>
+
+<p>还有就是，c++11 enum支持前置声明(类似class的前置声明)。</p>
+
+<h2>条款11：新功能：在成员函数声明后面加 = delete</h2>
+
+<p>这样子写:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">A</span><span class="p">(</span><span class="k">const</span> <span class="n">A</span><span class="o">&amp;</span> <span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+    <span class="n">A</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">A</span><span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>想比c++98的做法(把函数声明为private，并不定义实现)：</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">A</span><span class="p">(</span><span class="k">const</span> <span class="n">A</span><span class="o">&amp;</span> <span class="p">);</span>
+    <span class="n">A</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">A</span><span class="o">&amp;</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>用 = delete会更好，因为被声明 = delete的函数，编译器保证什么代码都不能调用它们(会编译报错)，如果是c++98，有可能是链接时才报错。</p>
+
+<p>注意到 = delete声明的函数，是public的，其实是为了让报错内容更准确。想一下，如果 = delete的函数是private，然后这个函数被外部调用，编译器可能只是给出&quot;不能调用private函数&quot;的错误信息。这可能会误导调用者。</p>
+
+<p>= delete的另一个特性是，它并不是只能用在类成员函数，而是任意函数。看这段代码:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+
+<span class="kt">bool</span> <span class="nf">isLucky</span><span class="p">(</span><span class="kt">int</span> <span class="n">number</span><span class="p">);</span> <span class="c1">// original function</span>
+<span class="kt">bool</span> <span class="n">isLucky</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span> <span class="c1">// reject chars</span>
+<span class="kt">bool</span> <span class="n">isLucky</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span> <span class="c1">// reject bools</span>
+<span class="kt">bool</span> <span class="n">isLucky</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span> <span class="c1">// reject doubles and floats</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">isLucky</span><span class="p">(</span><span class="sc">'a'</span><span class="p">))</span> <span class="err">…</span> <span class="c1">// error! call to deleted function</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">isLucky</span><span class="p">(</span><span class="nb">true</span><span class="p">))</span> <span class="err">…</span> <span class="c1">// error!</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">isLucky</span><span class="p">(</span><span class="mf">3.5</span><span class="n">f</span><span class="p">))</span> <span class="err">…</span> <span class="c1">// error!</span>
+
+</code></pre></div>
+<p>把后3个函数重载给delete掉，保证了那3种调用方式不能被编译！也就是说，=delete可以用来阻止隐式转换陷阱。</p>
+
+<p>用= delete还有一个高端的好处：在class内部的函数模板，它的访问类型只能是public、protected、private其中一种，不能又有public又有private的实例化，所以c++98的&quot;delete&quot;方案对函数模板没辙。还好，C++11解决了这个问题，用= delete即可：</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="kt">void</span> <span class="n">foo</span><span class="p">(</span><span class="n">T</span><span class="o">*</span> <span class="n">ptr</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="p">};</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="n">A</span><span class="o">::</span><span class="n">foo</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span> <span class="c1">// still public, but deleted</span>
+
+</code></pre></div>
+<p>再引用下作者的一段话:</p>
+
+<blockquote>
+<p>the C++98 approach is not as good as the real thing. It doesn’t work outside classes, it doesn’t always work inside classes, and when it does work, it may not work until link-time. So stick to deleted functions.</p>
+</blockquote>
+
+<h3>条款12-1：新功能：引用限定符 reference qualifiers</h3>
+
+<p>这样子玩:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="nl">public:</span>
+<span class="err">…</span>
+<span class="kt">void</span> <span class="n">doWork</span><span class="p">()</span> <span class="o">&amp;</span><span class="p">;</span> <span class="c1">// this version of doWork applies</span>
+<span class="c1">// only when *this is an lvalue</span>
+<span class="kt">void</span> <span class="n">doWork</span><span class="p">()</span> <span class="o">&amp;&amp;</span><span class="p">;</span> <span class="c1">// this version of doWork applies</span>
+<span class="p">};</span> <span class="c1">// only when *this is an rvalue</span>
+<span class="err">…</span>
+<span class="n">A</span> <span class="nf">makeA</span><span class="p">();</span> <span class="c1">// factory function (returns rvalue)</span>
+<span class="n">A</span> <span class="n">w</span><span class="p">;</span> <span class="c1">// normal object (an lvalue)</span>
+<span class="err">…</span>
+<span class="n">w</span><span class="p">.</span><span class="n">doWork</span><span class="p">();</span> <span class="c1">// calls A::doWork for lvalues</span>
+<span class="c1">// (i.e., A::doWork &amp;)</span>
+<span class="n">makeA</span><span class="p">().</span><span class="n">doWork</span><span class="p">();</span> <span class="c1">// calls A::doWork for rvalues</span>
+<span class="c1">// (i.e., A::doWork &amp;&amp;)</span>
+
+</code></pre></div>
+<h3>条款12-2：新功能：覆盖限定符 override qualifiers</h3>
+
+<p>这个限定符是用来防止程序员粗心写错重载的。</p>
+
+<p>错误例子:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">class</span> <span class="nc">Base</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf1</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf2</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">);</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf3</span><span class="p">()</span> <span class="o">&amp;</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">mf4</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Derived</span><span class="o">:</span> <span class="k">public</span> <span class="n">Base</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf1</span><span class="p">();</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf2</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">x</span><span class="p">);</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf3</span><span class="p">()</span> <span class="o">&amp;&amp;</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">mf4</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="p">};</span>
+
+</code></pre></div>
+<p>Derived的前3个函数一点没有覆盖掉基类的实现。因为派生类函数和基类对应的函数，函数签名不完全一样。</p>
+
+<p>c++11给出了优雅的解决办法：</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="k">class</span> <span class="nc">Derived</span><span class="o">:</span> <span class="k">public</span> <span class="n">Base</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf1</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf2</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf3</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="k">override</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">mf4</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>Derived的mf1、mf2、mf3这3个覆盖函数无法编译通过，因为编译器在Base中找不到对应的函数。</p>
+
+<h3>条款13: 尽可能使用const_iterators</h3>
+
+<p>c++11/c++14可以这么写:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">values</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="c1">// it是const_iterators</span>
+<span class="n">std</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">values</span><span class="p">.</span><span class="n">cbegin</span><span class="p">(),</span><span class="n">values</span><span class="p">.</span><span class="n">cend</span><span class="p">(),</span> <span class="mi">1983</span><span class="p">);</span>
+<span class="n">values</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="mi">1998</span><span class="p">);</span>
+
+</code></pre></div>
+<p>注意，cbegin和cend是成员函数。在c++11中，有非成员函数的begin和end，但没有非成员函数的cbegin和cend(c++14才有)。</p>
+
+<p>所以要写泛型函数时，c++14这么写:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">C</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">V</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="n">findAndInsert</span><span class="p">(</span><span class="n">C</span><span class="o">&amp;</span> <span class="n">container</span><span class="p">,</span> <span class="k">const</span> <span class="n">V</span><span class="o">&amp;</span> <span class="n">targetVal</span><span class="p">,</span> <span class="k">const</span> <span class="n">V</span><span class="o">&amp;</span> <span class="n">insertVal</span><span class="p">)</span>
+    <span class="k">using</span> <span class="n">std</span><span class="o">::</span><span class="n">cbegin</span><span class="p">;</span>
+    <span class="k">using</span> <span class="n">std</span><span class="o">::</span><span class="n">cend</span><span class="p">;</span>
+    <span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">cbegin</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">cend</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">targetVal</span><span class="p">);</span>
+    <span class="n">container</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">insertVal</span><span class="p">);</span>
+<span class="err">}</span>
+
+</code></pre></div>
+<p>c++11则不能，但可以先定义2个函数，使得可以和c++14保持一致:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">C</span><span class="p">&gt;</span>
+<span class="k">auto</span> <span class="nf">cbegin</span><span class="p">(</span><span class="k">const</span> <span class="n">C</span><span class="o">&amp;</span> <span class="n">container</span><span class="p">)</span><span class="o">-&gt;</span><span class="k">decltype</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">))</span>
+<span class="p">{</span>
+<span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">C</span><span class="p">&gt;</span>
+<span class="k">auto</span> <span class="nf">cend</span><span class="p">(</span><span class="k">const</span> <span class="n">C</span><span class="o">&amp;</span> <span class="n">container</span><span class="p">)</span><span class="o">-&gt;</span><span class="k">decltype</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">))</span>
+<span class="p">{</span>
+<span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">container</span><span class="p">);</span>
+<span class="p">}</span>
+
+</code></pre></div>
+<h3>条款14: 如果函数保证不会抛出异常，请给它加上 noexcept声明</h3>
+
+<p>(这个标题怎么有点像《三体》里的安全声明:如果你的文明确定没有攻击性，请给你的星球加个光速黑洞=。=)</p>
+
+<p>在c++98中，允许声明一个函数会抛出什么样的异常，客户端可以根据异常声明去安排自己的代码。然并卵，因为这产生了耦合性：如果一个函数的异常声明被改动了，客户端代码也得跟着改了。所以最终大家都不用这个特性。</p>
+
+<p>在modern c++中，把这个东西废掉了，并加入noexcept关键字。从而只需要声明一个函数<strong>是否抛出异常</strong>即可。</p>
+
+<p>noexcept的威力在于，它告诉编译器的优化器可以多大程度地优化函数代码生成。当noexcept被声明时，运行时栈不需要保存一个可解状态(可解状态是指，这函数里的局部变量可以按照构造顺序的反序去析构)。即干掉这个函数的不必要信息，让它更轻量。</p>
+
+<p>noexcept在标准库里部有很重要的应用，具体请阅读原书。</p>
+
+<p>noexcept还是支持表达式计算的。可以这样子玩:</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">N</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">swap</span><span class="p">(</span><span class="n">T</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">)[</span><span class="n">N</span><span class="p">],</span> <span class="n">T</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">)[</span><span class="n">N</span><span class="p">])</span> <span class="k">noexcept</span><span class="p">(</span><span class="k">noexcept</span><span class="p">(</span><span class="n">swap</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">b</span><span class="p">)));</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T1</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T2</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">pair</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="n">swap</span><span class="p">(</span><span class="n">pair</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">(</span><span class="k">noexcept</span><span class="p">(</span><span class="n">swap</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">first</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+                                  <span class="k">noexcept</span><span class="p">(</span><span class="n">swap</span><span class="p">(</span><span class="n">second</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">second</span><span class="p">)));</span>
+<span class="p">};</span>
+
+</code></pre></div>
+<p>解释下第二个swap：一个pair对象和另一个pair对象进行swap，当前仅当swap(first, p.first)和swap(second, p.second)都是noexcept时，pair::swap才是noexcept。</p>
+
+<p>虽然noexcept很强大，但是乱用是不好的。譬如如果你声明一个函数是noexcept，但有一天你反悔了，你可能想去掉noexcept声明，但这对客户端代码的影响不小，或者你不管noexcept声明了，硬是在函数里抛出异常！Oh，那当这个异常抛出来的时候，程序就强制终止了。</p>
+
+<p>解决上述问题的唯一办法就是<strong>谨慎</strong>，只对关键的、底层的、频繁调用的函数考虑加上noexcept声明。一来，函数是底层函数，函数内部很可能没有调用其他函数，或者调用的函数也都是noexcept的，于是这个函数可以妥妥地加上noexcept。</p>
+
+<p>在modern c++中，用户定义的析构函数亦或是编译器生成的析构函数，都隐式声明了noexcept。</p>
+
+<h3>条款15: 尽可能地使用constexpr</h3>
+
+<ul>
+<li>所有的constexpr对象都是常量，但不是所有的const对象都是constexpr。如果确定需要一个编译时期的常量，那么得用constexpr。</li>
+<li>当你着手的代码需要用到编译时期常量时，可以使用constexpr函数，如果你给constexpr函数传递一些编译时期可知的参数(这些参数来源于上下文)，那么这个constexpr函数<strong>很可能</strong>会在编译时期被执行。然而，如果其中一个参数是编译时期不可知的，这个函数<strong>肯定</strong>不会在编译时期就执行。这个自动处理是自动的、隐式的，也就是说不要求程序员写2个函数，一个runtime用，一个compiling用。</li>
+<li>从第二点可以反推，如果一个函数不是constexpr，那么即使你传递给它的参数都是编译时期已知的，这个函数也不一定就会在编译时期执行。</li>
+</ul>
+
+<p>具体怎么玩？看下面的代码：</p>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">
+<span class="k">constexpr</span> <span class="kt">int</span> <span class="nf">times</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="k">noexcept</span> <span class="c1">// C++11</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">b</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">times</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span>
+<span class="err">}</span>
+
+<span class="k">constexpr</span> <span class="kt">int</span> <span class="n">times</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="k">noexcept</span> <span class="c1">// C++14</span>
+<span class="p">{</span>
+    <span class="k">auto</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> 
+        <span class="n">result</span> <span class="o">+=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">constexpr</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">;</span>
+    <span class="k">constexpr</span> <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">times</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">result</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div>
+<p>c++11的递归版本很容易爆栈，而c++14对constexpr做了改进，允许写成迭代的形式。</p>
+
+<p>注释掉c++11的版本，然后试试c++14的版本吧，执行指令：</p>
+
+<p><strong>time gcc test.cpp -o test.out -std=gnu++14 -lstdc++</strong></p>
+
+<p>指令执行耗时：</p>
+
+<p>real    0m1.190s</p>
+
+<p>user    0m1.108s</p>
+
+<p>sys     0m0.052s</p>
+
+<p>哇，用了1秒多，这1秒多花在哪了呢？其实就是gcc编译器在编译时期就把constexpr int result = times(a, b);计算了。（然而有些诡异的是，times仅仅循环100W，就花了一秒。）</p>
+
+<p>不过这也值得高兴了，这个特性可以让程序性能有了进一步提高，譬如可以把复杂的静态class常量变成constexpr，使得在编译器就把变量生成了，而不是等到运行期(即使你说运行期只创建一次)。</p>
+
+<p>总的来说就是，constexpr使得本来在运行期执行的工作，可以提前到编译期，只要你加上constexpr声明即可。</p>
+
+<h3>条款16: 关于编译器自动生成的成员函数</h3>
+
+<p>移动构造函数(move constructor)和移动赋值操作符(move assignment operator)，是modern c++新补充的generated member function。</p>
+
+<p>对于这2个函数的任意一个，当前仅当满足下面的条件时，编译器才会自动生成它们：</p>
+
+<ul>
+<li>有地方需要用到它</li>
+<li>用户没有自定义复制操作函数(copy operations)，即复制构造函数(copy constructor)和赋值操作符(copy assignment operator)</li>
+<li>用户没有自定义移动操作函数(move operations)</li>
+<li>用户没有自定义析构函数</li>
+</ul>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on November  8, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

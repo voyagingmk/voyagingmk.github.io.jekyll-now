@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>渲染器开发笔记2-延迟渲染下的天空盒 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="渲染器开发笔记2-延迟渲染下的天空盒" />
+    <meta property="twitter:title" content="渲染器开发笔记2-延迟渲染下的天空盒" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/renderer-progress-2/',
+		  'title': '渲染器开发笔记2-延迟渲染下的天空盒'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+
+<h1>渲染器开发笔记2-延迟渲染下的天空盒</h1>
+<h3>Tags: <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+  <div class="entry">
+    <!--more-->
+
+<p>defer和forward框架下实现天空盒渲染，区别并不是很大，这里备忘下流程：</p>
+
+<h2>Deferred rendering:</h2>
+
+<ol>
+<li><p>geometry pass（计算GBuffer）</p></li>
+<li><p>Deferred lighting pass（根据GBuffer计算光照）</p></li>
+<li><p>把GBuffer的深度信息复制到main framebuffer</p></li>
+<li><p>渲染天空盒</p></li>
+</ol>
+
+<h2>Forward rendering:</h2>
+
+<ol>
+<li><p>正常渲染场景（一遍vs + fs？）</p></li>
+<li><p>渲染天空盒</p></li>
+</ol>
+
+<h2>对比</h2>
+
+<p>可以看到，天空盒都是放在最后一步渲染的。这是因为天空盒体积巨大，如果放在第一步就渲染就可能会有多余的fs着色是白做的，具体地说就是和视角有关，如果摄像机朝天，那么天空盒提前算也没关系，最终还是看得到这些像素，但如果视角朝地面，可能所有天空盒的像素都被深度剔除了，那就不好了。</p>
+
+<h2>天空盒的实现要点</h2>
+
+<h3>view矩阵问题</h3>
+
+<p>首先天空盒的渲染需要用到Proj和View矩阵，但需要做一点trick：天空盒不需要translate变换（摄像机不能&quot;靠近&quot;天空盒），需要把view矩阵的translate信息剔除掉。学到的一个很聪明的做法是：mat4(mat3(view))，即剔除view矩阵的前三行前三列信息（translate信息在最后一列），然后再恢复成mat4。</p>
+
+<h3>天空盒的深度值问题</h3>
+
+<p>天空盒必须渲染后到最深的位置，所以天空盒的每一个fragment的depth必须为1.0。怎么保证呢？做法就是在vertex shader里加一行这样的代码：</p>
+<div class="highlight"><pre><code class="language-" data-lang="">gl_Position = pos.xyww;
+</code></pre></div>
+<p>因为OpenGL有一个perspective divide的过程，会在vs着色完成时，对gl_Position除以gl_Position的z值，所以x、y、w、w会变成x/w、y/w、1.0, 1.0，z值就固定1.0了。</p>
+
+<h3>glDepthFunc问题</h3>
+
+<p>glDepthFunc的默认值为GL_LESS，渲染天空盒时需要临时改为GL_LEQUAL，因为对于屏幕上空白的地方（没有任何fragment画上去），depth buffer的深度值为1.0，如果是GL_LESS，那么天空盒的深度值即使是1.0也会过不了depth test。所以要加上EQUAL。</p>
+
+  </div>
+  <div class="entry">
+  (未经授权禁止转载)
+  </div>
+  <div class="date">
+    Written on September 21, 2017
+  </div>
+  <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+  <img src="../images/dashang1.jpeg" />
+  <img src="../images/dashang2.jpeg" />
+    
+    
+  
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

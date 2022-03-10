@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>select和epoll多路复用用法总结 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="select和epoll多路复用用法总结" />
+    <meta property="twitter:title" content="select和epoll多路复用用法总结" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/multiplexing/',
+		  'title': 'select和epoll多路复用用法总结'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+
+<h1>select和epoll多路复用用法总结</h1>
+<h3>Tags: <a href="/tag/c%2B%2B/" rel="tag">c++</a></h3>
+<article class="post">
+  <div class="entry">
+    <!--more-->
+
+<h2>select</h2>
+
+<p>资料：<a href="https://notes.shichao.io/unp/ch6/#select-function">https://notes.shichao.io/unp/ch6/#select-function</a></p>
+
+<ul>
+<li>struct fd_set，fd的集合</li>
+<li>FD_ZERO(fd_set *)， 清零一个fd_set，传fd_set的地址</li>
+<li>FD_SET(int fd, fdset *)，把fd添加到这个fd_set</li>
+<li>FD_CLR(int fd, fdset *)，把fd移出这个fd_set</li>
+<li>int FD_ISSET(int fd, fd_set *fdset); 查询fd是否在这个fd_set</li>
+</ul>
+
+<p>核心函数：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/*
+返回值：
+&lt;0：出错
+0：select超时返回了，没有读、写事件
+&gt;0：有事件发生的fd数量
+
+maxfdp：是最大的fd再加1！
+
+readfds、writefds、errorfds是值-结果参数，调用的时候作为值语义参数，函数返回的时候作为结果，所以没有const修饰
+readfds：   要监听读事件的fd集合   /    有读事件的fd集合
+writefds：  要监听写事件的fd集合   /    有写事件的fd集合
+errorfds：  错误事件，一般传null即可
+*/</span>
+<span class="kt">int</span> <span class="nf">select</span><span class="p">(</span><span class="kt">int</span> <span class="n">maxfdp</span><span class="p">,</span> <span class="n">fd_set</span> <span class="o">*</span><span class="n">readfds</span><span class="p">,</span> <span class="n">fd_set</span> <span class="o">*</span><span class="n">writefds</span><span class="p">,</span> <span class="n">fd_set</span> <span class="o">*</span><span class="n">errorfds</span><span class="p">,</span> <span class="k">struct</span> <span class="n">timeval</span> <span class="o">*</span><span class="n">timeout</span><span class="p">);</span>
+</code></pre></div>
+<p>用法要点：</p>
+
+<ol>
+<li>按读、写声明2个fd_set：rfds、wfds</li>
+<li>需要再声明2个读、写fd_set，用于存放第一步的fd_set的拷贝，用于select：_rfds、_wfds</li>
+<li>用FD_SET和FD_CLR控制要监听哪个fd的读、写事件</li>
+<li>调用select前，要先复制一份fd_set，用memcpy即可</li>
+<li>调用select：retval = select(eventLoop-&gt;getMaxFd() + 1, &amp;_rfds, &amp;_wfds, NULL, tvp);</li>
+<li>如果retval&gt;0，就遍历所有fd（[0, maxfd]），用FD_ISSET(fd, _rfds)，判断这个fd是否可读，写事件同理</li>
+<li>到此就完成一次循环，做完其他逻辑后，回到第4步</li>
+</ol>
+
+<p>总结：</p>
+
+<p>select是基于位掩码的设计，所以fd_set有固定长度。长度由FD_SETSIZE确定，FD_SETSIZE可以用户自己定。默认只有1024。</p>
+
+<h2>epoll</h2>
+
+<h3>创建epfd</h3>
+
+<p>epoll_create1(0)，创建一个epfd，epoll所有接口都会用到它，它也是个文件描述符，持有资源</p>
+
+<h3>添加监听事件</h3>
+
+<p>需要区分是首次添加还是修改操作（用户自己要做记录），op = EPOLL_CTL_ADD或者EPOLL_CTL_MOD。</p>
+
+<p>然后创建一个epoll_event ee，如果需要监听读事件就执行ee.events |= EPOLLIN，写事件就 ee.events |= EPOLLOUT；然后要登记目标fd到ee里，ee.data.fd = fd。</p>
+
+<p>ee准备好后，就可以调用epoll_ctl(epfd, op, fd, &amp;ee)。</p>
+
+<p>epoll_ctl返回值：0是成功；-1失败，errno记录错误类型。</p>
+
+<h3>删除监听事件</h3>
+
+<p>和添加监听事件类似，也是构造ee，也要设置ee.data.fd，最终调用epoll_ctl。</p>
+
+<p>op的就有点不一样，如果已经没有任何要监听的事件了，那么op是EPOLL_CTL_DEL；如果至少有监听某种事件，那么用EPOLL_CTL_MOD。</p>
+
+<p>需要注意的是，即使是删除监听事件，epoll_ctl一个参数都不能少。</p>
+
+<h3>轮询</h3>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">epoll_wait</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span> <span class="o">*</span><span class="n">events</span><span class="p">,</span>
+               <span class="kt">int</span> <span class="n">maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">timeout</span><span class="p">);</span>
+</code></pre></div>
+<p>timeout：-1，永久阻塞；0，立即返回，不阻塞； &gt;0，阻塞多少毫秒后返回
+events和maxevents：就是指定一块数组用来存epoll_wait的返回结果，maxevents就是这个数组的长度。</p>
+
+<p>如果返回值（numevents）大于0，那么就可以遍历events，遍历上限为numevents，逐个epoll_event访问它的events变量，看含有什么事件。也就是说，epoll_wait只返回了有事件的fd集合，比select要高效。</p>
+
+<h3>底层特点</h3>
+
+<p>epfd被创建时，会相应地创建一个eventpoll结构体：</p>
+<div class="highlight"><pre><code class="language-" data-lang="">struct eventpoll {  
+    /*红黑树的根节点，这颗树中存储着所有添加到epoll中的需要监控的事件*/  
+    struct rb_root  rbr;  
+    /*双链表中则存放着将要通过epoll_wait返回给用户的满足条件的事件*/  
+    struct list_head rdlist;    
+};  
+</code></pre></div>
+<p>eventpoll可理解为存了2个数据结构的头部指针，一个指向一个红黑树的根，一个指向双向链表的头。</p>
+
+<p>只要某个fd的某个事件被监听中，就会存在和这个fd关联的一个epitem:</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">epitem</span><span class="p">{</span>  
+    <span class="k">struct</span> <span class="n">rb_node</span>  <span class="n">rbn</span><span class="p">;</span><span class="c1">//红黑树节点  </span>
+    <span class="k">struct</span> <span class="n">list_head</span>    <span class="n">rdllink</span><span class="p">;</span><span class="c1">//双向链表节点  </span>
+    <span class="k">struct</span> <span class="n">epoll_filefd</span>  <span class="n">ffd</span><span class="p">;</span>  <span class="c1">//事件句柄信息  </span>
+    <span class="k">struct</span> <span class="n">eventpoll</span> <span class="o">*</span><span class="n">ep</span><span class="p">;</span>    <span class="c1">//指向其所属的eventpoll对象  </span>
+    <span class="k">struct</span> <span class="n">epoll_event</span> <span class="n">event</span><span class="p">;</span> <span class="c1">//期待发生的事件类型  </span>
+<span class="p">}</span>  
+</code></pre></div>
+<p>红黑树中的每个节点都等同于某个epitem的rbn对象指针；双向链表的每个节点都等同于某个epitem的rdllink指针。</p>
+
+<p>所以epitem应该是一个内存连接的数组，而红黑树和双向链表用指针的方式和这个数组产生联系。</p>
+
+<p>为什么高效：</p>
+
+<ol>
+<li>当监听的事件发生时，会回调ep_poll_callback，把事件信息添加到双向链表rdlist</li>
+<li>当调用epoll_wait检查是否有事件发生时，只需检查eventpoll的rdlist链表中是否有epitem元素即可。</li>
+</ol>
+
+<p>1、2点已经凸显了epoll_wait的高效，这是一种基于驱动回调的技术，epoll_wait的成本只是获取这个rdlist而已。</p>
+
+<p>另外，为了保证不会重复添加同个fd的epitem，只能遍历内核的epitem数组，但这是个O(n)的操作，所以就需要红黑树，可以快速找出某个fd是否已被监听，并且也用于快速找到epitem从而修改fd的监听事件。这可是log(n)的复杂度，性能大大提高。</p>
+
+<h3>总结：</h3>
+
+<p>epoll是在内核维护复杂数据结构的设计，用户态的接口就相对复杂一些，但可控制性高一点；另外利用了回调技术，就不需要主动去查询每个fd是否有事件，效率自然就高了。</p>
+
+  </div>
+  <div class="entry">
+  (未经授权禁止转载)
+  </div>
+  <div class="date">
+    Written on June 12, 2018
+  </div>
+  <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+  <img src="../images/dashang1.jpeg" />
+  <img src="../images/dashang2.jpeg" />
+    
+    
+  
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

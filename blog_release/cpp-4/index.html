@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>关于c++11的一些特性(2) 完美转发 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="本文测试环境: 
+
+系统：Linux ubuntu 4.2.0-16-generic #19-Ubuntu SMP x86_64 GNU/Linux
+
+gcc版本: gcc version 5.2.1 20151010 (Ubuntu 5.2.1-22ubuntu2)
+" />
+    <meta property="og:description" content="本文测试环境: 
+
+系统：Linux ubuntu 4.2.0-16-generic #19-Ubuntu SMP x86_64 GNU/Linux
+
+gcc版本: gcc version 5.2.1 20151010 (Ubuntu 5.2.1-22ubuntu2)
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="关于c++11的一些特性(2) 完美转发" />
+    <meta property="twitter:title" content="关于c++11的一些特性(2) 完美转发" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/cpp-4/',
+		  'title': '关于c++11的一些特性(2) 完美转发'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>关于c++11的一些特性(2) 完美转发</h1>
+ <h3>Tags: <a href="/tag/c%2B%2B/" rel="tag">c++</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>本文测试环境: </p>
+
+<p>系统：Linux ubuntu 4.2.0-16-generic #19-Ubuntu SMP x86_64 GNU/Linux</p>
+
+<p>gcc版本: gcc version 5.2.1 20151010 (Ubuntu 5.2.1-22ubuntu2)</p>
+
+<!--more-->
+
+<h1>神奇的emplace_back函数</h1>
+
+<p>使用std::vector时，要么存储的是指针类型，要么是值类型。指针类型是指，我把一个对象放在别的地方，比如说堆内存，然后把这个对象的内存地址放在vector里；值类型是值，我不把对象放别的地方了，而是直接放到vector自己的内存空间里。</p>
+
+<p>对于值类型的情况，要考虑一个问题：往vector插入对象，这个操作可能开销会很大。</p>
+
+<p>比如看下面这段测试代码:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+</pre></td><td class="code"><pre><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;vector&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+
+<span class="k">class</span> <span class="nc">Item</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="kt">char</span> <span class="n">name</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">val</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="o">~</span><span class="n">Item</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[dtor called] (%c, %i)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">Item</span><span class="p">()</span> <span class="o">:</span><span class="n">name</span><span class="p">(</span><span class="sc">'_'</span><span class="p">),</span> <span class="n">val</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[default ctor called] </span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">Item</span><span class="p">(</span><span class="kt">char</span> <span class="n">n</span><span class="p">,</span> <span class="kt">int</span> <span class="n">v</span><span class="p">)</span> <span class="o">:</span><span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">val</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[ctor called] (%c, %i)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">Item</span><span class="p">(</span><span class="n">Item</span><span class="o">&amp;&amp;</span> <span class="n">a</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"[move ctor called] (%c, %i)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">a</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="n">a</span><span class="p">.</span><span class="n">val</span><span class="p">);</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">name</span><span class="p">;</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">val</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">v1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">v1</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="sc">'a'</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"-----------------------</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">v2</span><span class="p">;</span>
+    <span class="n">v2</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">v2</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="sc">'b'</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"-----------------------</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">v3</span><span class="p">;</span>
+    <span class="n">v3</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span> <span class="sc">'c'</span><span class="p">,</span> <span class="mi">3</span> <span class="p">});</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"-----------------------</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>编译:</p>
+
+<p>gcc test.cpp -o test.out -std=gnu++11 -lstdc++</p>
+
+<p>运行结果：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre></td><td class="code"><pre><span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">move</span> <span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">move</span> <span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">move</span> <span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="o">-----------------------</span>
+<span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="o">-----------------------</span>
+<span class="p">[</span><span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="p">[</span><span class="n">move</span> <span class="n">ctor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="o">-----------------------</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">dtor</span> <span class="n">called</span><span class="p">]</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>观察发现：</p>
+
+<ul>
+<li>第一段测试，有多余的函数调用：move构造函数以及析构函数</li>
+<li>第二段测试，没有多余的调用</li>
+<li>第三段测试，有多余的函数调用：move构造函数以及析构函数</li>
+</ul>
+
+<p>所以第二种写法是性能最好的。能够直接在vector的内存空间中构造对象。其他写法都会生成临时对象。</p>
+
+<p>然而实际编程中，并不是总能这样子写，因为reverse的参数该填多少，需要细心考虑；如果vector存的是基类指针类型，那么上面任意一种写法差别都不大(最多拷贝一个指针地址而已)。</p>
+
+<p>这些问题另当别论，现在回到本文主题上。</p>
+
+<p>这个例子中的：v2.emplace_back(&#39;b&#39;, i)，其实就是用<strong>完美转发</strong>实现的。</p>
+
+<h1>Imperfect forwarding</h1>
+
+<p>理解完美转发之前，先搞懂什么是不完美转发。下面会用一些测试代码来分析一下。</p>
+
+<p>前置说明:</p>
+
+<p>func是随便写的一个普通函数；wrapper是对func的一层封装；测试过程是控制变量法，针对特定的wrapper函数写法，不断修改func的参数的类型以及wrapper的调用方式，测试程序是否可以编译并且wrapper函数是否能够正确完成作为一个“封装函数”的基本要求。</p>
+
+<h3>第1组测试：func参数为 const int p</h3>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">number99</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">99</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="c1">//used for switching the two test cases below</span>
+<span class="cp">#define TEST_FUNC
+</span>
+<span class="cp">#if defined(TEST_FUNC)
+</span>
+<span class="kt">void</span> <span class="nf">test_func</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// ok</span>
+<span class="p">}</span>
+
+<span class="cp">#else
+</span>
+<span class="kt">void</span> <span class="nf">test_wrapper</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+<span class="p">}</span>
+
+<span class="cp">#endif</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>第1组测试，wrapper函数就和func表现得不一致了。</p>
+
+<h3>第2组测试：func参数为 int p</h3>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">number99</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">99</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="c1">//used for switching the two test cases below</span>
+<span class="cp">#define TEST_FUNC
+</span>
+<span class="cp">#if defined(TEST_FUNC)
+</span>
+<span class="kt">void</span> <span class="nf">test_func</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// ok</span>
+<span class="p">}</span>
+
+<span class="cp">#else
+</span>
+<span class="kt">void</span> <span class="nf">test_wrapper</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+<span class="p">}</span>
+
+<span class="cp">#endif</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>结果和第1组一样。</p>
+
+<h3>第3组测试：func参数为 int&amp; p</h3>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">number99</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">99</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="cp">#define TEST_FUNC
+</span>
+<span class="cp">#if defined(TEST_FUNC)
+</span>
+<span class="kt">void</span> <span class="nf">test_func</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// error: binding ‘const int’ to reference of type ‘int&amp;’ discards qualifiers</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// error: binding ‘const int’ to reference of type ‘int&amp;’ discards qualifiers</span>
+    <span class="n">func</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+<span class="p">}</span>
+
+<span class="cp">#else
+</span>
+<span class="kt">void</span> <span class="nf">test_wrapper</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// error: binding ‘const int’ to reference of type ‘int&amp;’ discards qualifiers</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// error: binding ‘const int’ to reference of type ‘int&amp;’ discards qualifiers</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+<span class="p">}</span>
+
+<span class="cp">#endif</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>这个情况，其实编译结果还是不一致的。若想知道具体细节请自己编译一遍。</p>
+
+<h3>第4组测试：func参数为 const int&amp; p</h3>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">number99</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">99</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="c1">//used for switching the two test cases below</span>
+<span class="cp">#define TEST_FUNC
+</span>
+<span class="cp">#if defined(TEST_FUNC)
+</span>
+<span class="kt">void</span> <span class="nf">test_func</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// ok</span>
+<span class="p">}</span>
+
+<span class="cp">#else
+</span>
+<span class="kt">void</span> <span class="nf">test_wrapper</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+<span class="p">}</span>
+
+<span class="cp">#endif</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>结果和第1、2组一样。</p>
+
+<h3>小结</h3>
+
+<p>测试先到这里。由测试结果可以知道，这个wrapper是失败的(第1、2、4组测试，连最基本的编译结果都不一样)。</p>
+
+<p>在c++11之前，对上面的不一致问题，是用非常暴力的方式的解决的，方式就是重载出N个wrapper的函数。</p>
+
+<p>比如，把上面的第1组测试的代码改成：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">number99</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">99</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="cm">/*--- a override of wrapper ---*/</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+
+<span class="c1">//used for switching the two test cases below</span>
+<span class="cp">#define TEST_FUNC
+</span>
+<span class="cp">#if defined(TEST_FUNC)
+</span>
+<span class="kt">void</span> <span class="nf">test_func</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// ok</span>
+<span class="p">}</span>
+
+<span class="cp">#else
+</span>
+<span class="kt">void</span> <span class="nf">test_wrapper</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// ok</span>
+<span class="p">}</span>
+
+<span class="cp">#endif</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>增加了这段代码:
+<code>cpp
+template &lt;typename T&gt;
+void wrapper(const T&amp; p) { func(p); }
+</code>
+test_wrapper就编译通过了。(只需要注意编译结果的一致性，暂且忽略运行结果的一致性)</p>
+
+<p>由此可以思考一下：如果func有N个参数，每个参数都要写const和非const两个版本，那么总共要写的wrapper函数就有2的n次方个！多么可怕。</p>
+
+<h1>reference deduction (collapsing)</h1>
+
+<p>引用推导(或引用折叠)规则，是c++11开始才有的一个说法，具体是怎么回事呢？请看下面的代码：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="kt">int</span><span class="o">&amp;</span>  <span class="n">lref</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="kt">int</span><span class="o">&amp;&amp;</span> <span class="n">rref</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+<span class="n">lref</span><span class="o">&amp;</span>  <span class="n">r1</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span> <span class="c1">// type of r1 is int&amp;</span>
+<span class="n">lref</span><span class="o">&amp;&amp;</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span> <span class="c1">// type of r2 is int&amp;</span>
+<span class="n">rref</span><span class="o">&amp;</span>  <span class="n">r3</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span> <span class="c1">// type of r3 is int&amp;</span>
+<span class="n">rref</span><span class="o">&amp;&amp;</span> <span class="n">r4</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// type of r4 is int&amp;&amp;</span>
+
+</code></pre></div>
+<p>(摘自<a href="http://en.cppreference.com/w/cpp/language/reference">http://en.cppreference.com/w/cpp/language/reference</a> )</p>
+
+<p>我用visual studio 2015跑了下这段代码：</p>
+
+<p><img src="../images/2015.11/1.png" alt="1.png"></p>
+
+<p>看来是没错的。</p>
+
+<p>总结了下这套推导规则：</p>
+
+<ul>
+<li>A&amp; &amp; -&gt; A&amp;</li>
+<li>A&amp; &amp;&amp; -&gt; A&amp;</li>
+<li>A&amp;&amp; &amp; -&gt; A&amp;</li>
+<li>A&amp;&amp; &amp;&amp; -&gt; A&amp;&amp;</li>
+</ul>
+
+<p>(记忆方法：只要有&amp;，结果肯定是&amp;)</p>
+
+<p>C++中，有一对重要的兄弟：lvalue(左值)、rvalue(右值)。如何区分？简单来说就是，具名的是左值，不具名的是右值。</p>
+
+<p>要注意一个事情：上面的4个变量r1、r2、r3、r4都是左值。即使r4的类型是<strong>右值引用</strong>，但因为r4是具名的，所以r4是左值。</p>
+
+<h1>Perfect forwarding</h1>
+
+<p>什么是完美转发？说白了就是要把上面那个不完美的wrapper，改造成完美的wrapper。</p>
+
+<p>而且，改造过程只能在c++11以上版本才能实现。幸运的是，实现方式并不复杂，如下：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="code"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> 
+    <span class="n">func</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+ <span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>再做这个新wrapperd的测试前，先把一些相关的函数介绍一遍。</p>
+
+<h2>remove_reference</h2>
+
+<p>vs2015给出的remove_reference实现是:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="code"><pre><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">_Ty</span><span class="p">&gt;</span>
+    <span class="k">struct</span> <span class="nc">remove_reference</span>
+    <span class="p">{</span>    <span class="c1">// remove reference</span>
+    <span class="k">typedef</span> <span class="n">_Ty</span> <span class="n">type</span><span class="p">;</span>
+    <span class="p">};</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">_Ty</span><span class="p">&gt;</span>
+    <span class="k">struct</span> <span class="nc">remove_reference</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&amp;&gt;</span>
+    <span class="p">{</span>    <span class="c1">// remove reference</span>
+    <span class="k">typedef</span> <span class="n">_Ty</span> <span class="n">type</span><span class="p">;</span>
+    <span class="p">};</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">_Ty</span><span class="p">&gt;</span>
+    <span class="k">struct</span> <span class="nc">remove_reference</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&amp;&amp;&gt;</span>
+    <span class="p">{</span>    <span class="c1">// remove rvalue reference</span>
+    <span class="k">typedef</span> <span class="n">_Ty</span> <span class="n">type</span><span class="p">;</span>
+    <span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>这个东西，其实一目了然了，用3个重载保证remove_reference&lt;类型&gt;::type肯定没有&amp;符号。后面的2个重载是必须的，当只定义了不带&amp;符号的remove_reference时，remove_reference会没有效果。</p>
+
+<p>其中比较诡异的是，后面的2个同名是不能单独存在的(会编译报错)，必须先定义不带&amp;符号的remove_reference，才能定义带&amp;符号的remove_reference。(可以自己编译试试)</p>
+
+<p>remove_reference在std::forward里会被使用。</p>
+
+<h2>forward函数</h2>
+
+<p>wrapper用到的std::forward，vs2015给出的实现是:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="code"><pre>    <span class="c1">// TEMPLATE FUNCTION forward</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">_Ty</span><span class="p">&gt;</span> <span class="kr">inline</span>
+    <span class="n">_CONST_FUN</span> <span class="n">_Ty</span><span class="o">&amp;&amp;</span> <span class="n">forward</span><span class="p">(</span>
+        <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">_Arg</span><span class="p">)</span> <span class="n">_NOEXCEPT</span>
+    <span class="p">{</span>    <span class="c1">// forward an lvalue as either an lvalue or an rvalue</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">_Arg</span><span class="p">));</span>
+    <span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">_Ty</span><span class="p">&gt;</span> <span class="kr">inline</span>
+    <span class="n">_CONST_FUN</span> <span class="n">_Ty</span><span class="o">&amp;&amp;</span> <span class="n">forward</span><span class="p">(</span>
+        <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">_Arg</span><span class="p">)</span> <span class="n">_NOEXCEPT</span>
+    <span class="p">{</span>    <span class="c1">// forward an rvalue as an rvalue</span>
+    <span class="k">static_assert</span><span class="p">(</span><span class="o">!</span><span class="n">is_lvalue_reference</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span> <span class="s">"bad forward call"</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">_Ty</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">_Arg</span><span class="p">));</span>
+    <span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>看着有点复杂，改造下(只保留关键代码)：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="code"><pre><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span> 
+<span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span>
+    <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>    
+    <span class="c1">// 把一个左值转发成左值或右值</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span> 
+<span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span>
+    <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>    
+    <span class="c1">// 把一个右值转发成右值</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>测试一下这个函数的运行情况：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+</pre></td><td class="code"><pre><span class="c1">//姑且称这个Forward为左值Forward</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span>
+    <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// 把一个左值转发成左值或右值</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="c1">//右值Forward</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span>
+    <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// 把一个右值转发成右值</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+    <span class="n">Forward</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>断点调试发现：</p>
+
+<ul>
+<li>以左值(a、b、c具名，所以是左值)作为参数去调用三个实例化模板函数，进入的都是左值Forward</li>
+<li>以右值(10不具名，所以是右值)作为参数去调用三个实例化模板函数，进入的都是右值Forward</li>
+<li>在左值Forward函数体内，p的类型是int&amp;</li>
+<li>在右值Forward函数体内，p的类型是int&amp;&amp;</li>
+</ul>
+
+<h3>左值Forward的推导过程</h3>
+
+<h4>Forward<int>(a)，T是int，所以：</h4>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>最终变成：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4>Forward<int&>(a)，T是int&amp;，所以：</h4>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;::</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>根据上文说的引用推导规则，这个函数会变成：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4>Forward<int&&>(a)，T是int&amp;&amp;，所以：</h4>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;::</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>根据上文说的引用推导规则，这个函数会变成：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>小结：</p>
+
+<ul>
+<li>当Forward的参数是左值时，调用的是左值Forward版本</li>
+<li>当Forward的‘模板类型’是int或int&amp;时，Forward实例化成：</li>
+</ul>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>当Forward的‘模板类型’是int&amp;&amp;时，Forward实例化成：</li>
+</ul>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>也就是说，</p>
+
+<ul>
+<li>当参数是左值时，它必然是以int&amp;(即左值引用)的形式进入到Forward;</li>
+<li>当Forward模板类型是int或int&amp;时，返回值类型必然是int&amp;；</li>
+<li>当Forward模板类型是int&amp;&amp;时，返回值类型必然是int&amp;&amp;。</li>
+</ul>
+
+<h3>右值Forward的推导过程</h3>
+
+<h4>Forward<int>(10)，T是int，所以：</h4>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>最终变成：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4>Forward<int&>(10)，T是int&amp;，所以：</h4>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>根据上文说的引用推导规则，这个函数会变成：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4>Forward<int&&>(10)，T是int&amp;&amp;，所以：</h4>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kr">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>根据上文说的引用推导规则，这个函数会变成：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>小结：</p>
+
+<ul>
+<li>当Forward的参数是右值时，调用的是右值Forward版本</li>
+<li>当Forward的‘模板类型’是int或int&amp;&amp;时，Forward实例化成：</li>
+</ul>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>当Forward的‘模板类型’是int&amp;时，Forward实例化成：</li>
+</ul>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="o">&amp;</span> <span class="n">Forward</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">int</span> <span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>也就是说，当参数是右值时，它必然是以int&amp;&amp;(即右值引用)的形式进入到Forward;</li>
+<li>当Forward模板类型是int或int&amp;&amp;时，返回值类型必然是int&amp;&amp;；</li>
+<li>当Forward模板类型是int&amp;时，返回值类型必然是int&amp;。</li>
+</ul>
+
+<h3>universal references</h3>
+
+<p>对完美wrapper的另一个部分做分析：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="code"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> 
+ <span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>这个wrapper有什么效果？测试下:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="code"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>用vs2015断点进入wrapper函数，发现：</p>
+
+<ul>
+<li>wrapper(a)，p的类型是int&amp;</li>
+<li>wrapper(b)，p的类型是int&amp;</li>
+<li>wrapper(c)，p的类型是int&amp;</li>
+<li>wrapper(10)，p的类型是int&amp;&amp;</li>
+</ul>
+
+<p>这个规则有点不直观。wrapper的模板类型是T，参数是T&amp;&amp;，为什么传一个左值int a进去，不是得到int &amp;&amp; p，而是int &amp; p？</p>
+
+<p>这是因为，在这个wrapper中，T&amp;&amp; p并不是单纯的右值引用，而是叫universal references。(泛引用?)</p>
+
+<p>在Scott Meyers的这篇文章<a href="https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers">Universal References in C++11—Scott Meyers</a>中，Scott Meyers做了如下定义：</p>
+
+<blockquote>
+<p>If a variable or parameter is declared to have type T&amp;&amp; for some deduced type T, that variable or parameter is a universal reference.</p>
+</blockquote>
+
+<p>翻译一下: </p>
+
+<blockquote>
+<p>如果一个变量或参数被声明为推导类型T对应的T&amp;&amp;类型，那么这个变量或参数是一个universal reference。</p>
+</blockquote>
+
+<h3>回到wrapper函数</h3>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="code"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> 
+    <span class="n">func</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+ <span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>根据之前的测试，可以知道：</p>
+
+<p>(为了解释方便，以int来说明)</p>
+
+<ol>
+<li>当传递给wrapper的实参是左值时，T&amp;&amp; p变成 int&amp; p</li>
+<li>当传递给wrapper的实参是右值时，T&amp;&amp; p变成 int&amp;&amp; p</li>
+<li>wrapper的forward是左值forward (因p具名，p是左值)</li>
+<li>p是以int&amp;的形式进入到forward (p是左值)</li>
+<li>当forward模板类型是int或int&amp;时，forward返回值类型必然是int&amp;</li>
+<li>当forward模板类型是int&amp;&amp;时，forward返回值类型必然是int&amp;&amp;</li>
+<li>根据1、2、5、6可以得出8、9</li>
+<li>当传递给wrapper的实参是左值时，T&amp;&amp; p变成 int&amp; p，forward返回值类型必然是int&amp;</li>
+<li>当传递给wrapper的实参是右值时，T&amp;&amp; p变成 int&amp;&amp; p，forward返回值类型必然是int&amp;&amp;</li>
+</ol>
+
+<p>所谓的<strong>完美转发</strong>，指的就是第8、9这两个性质。</p>
+
+<p>调用层给wrapper任意类型(int a、int&amp; a、int&amp;&amp; a)的左值，wrapper都以int&amp;转发给func；
+调用层给wrapper任意右值(不具名常量、函数返回值等），wrapper都以int&amp;&amp;转发给func。</p>
+
+<p>最后，再来看下一开始的不完美wrapper的问题:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">func</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">number99</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">99</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="n">func</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="p">}</span>
+
+<span class="c1">//used for switching the two test cases below</span>
+<span class="cp">#define TEST_FUNC
+</span>
+<span class="cp">#if defined(TEST_FUNC)
+</span>
+<span class="kt">void</span> <span class="nf">test_func</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// ok</span>
+<span class="p">}</span>
+
+<span class="cp">#else
+</span>
+<span class="kt">void</span> <span class="nf">test_wrapper</span><span class="p">(){</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kt">int</span><span class="o">&amp;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">d</span><span class="p">);</span> <span class="c1">// ok</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+    <span class="n">wrapper</span><span class="p">(</span><span class="n">number99</span><span class="p">());</span> <span class="c1">// error: invalid initialization of non-const reference of type ‘int&amp;’ from an rvalue of type ‘int’</span>
+<span class="p">}</span>
+
+<span class="cp">#endif</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>wrapper(1) 和 wrapper(number99()) 这2个为何报错，读者现在应该明白了。</p>
+
+<p>好吧我还是把话说完吧：</p>
+
+<p>wrapper的T&amp; p遇到任何引用类型的T，都只会变成int&amp; p。因为引用折叠规则(见上文)就是这样子规定。而又因为1和number99()返回值，都是右值，那么传递进wrapper时，就是int&amp; p = 1, int&amp; p = number99()，显然这会编译错误。</p>
+
+<p>本文结束。</p>
+
+<h1>参考资料</h1>
+
+<p><a href="http://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c/">http://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c/</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on November  2, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

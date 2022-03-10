@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>线性代数之矩阵与行列式(1) – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="矩阵的基本性质
+
+我对矩阵的定义：一个含有x个元素的数组(x&gt;=1)，以n个数为一段，将把这个数组按顺序分成m段，并按顺序排成m行，就构成了一个矩阵。数组和分段是构成一个矩阵的充分必要条件。
+
+这个定义是从程序实现角度考虑的。一个矩阵可以用二维数组Array[m][n]来存放，也可以用一维数组Array[m*n]来存放，在不考虑实现语言之前，我更倾向于使用一维数组。
+
+矩阵的定义虽然不复杂，但是聪明的数学家对矩阵进行了各种研究，导致产生了非常多的概念、术语、定理、推论：
+" />
+    <meta property="og:description" content="矩阵的基本性质
+
+我对矩阵的定义：一个含有x个元素的数组(x&gt;=1)，以n个数为一段，将把这个数组按顺序分成m段，并按顺序排成m行，就构成了一个矩阵。数组和分段是构成一个矩阵的充分必要条件。
+
+这个定义是从程序实现角度考虑的。一个矩阵可以用二维数组Array[m][n]来存放，也可以用一维数组Array[m*n]来存放，在不考虑实现语言之前，我更倾向于使用一维数组。
+
+矩阵的定义虽然不复杂，但是聪明的数学家对矩阵进行了各种研究，导致产生了非常多的概念、术语、定理、推论：
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="线性代数之矩阵与行列式(1)" />
+    <meta property="twitter:title" content="线性代数之矩阵与行列式(1)" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra/',
+		  'title': '线性代数之矩阵与行列式(1)'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>线性代数之矩阵与行列式(1)</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h2>矩阵的基本性质</h2>
+
+<p>我对矩阵的定义：一个含有x个元素的数组(x&gt;=1)，以n个数为一段，将把这个数组按顺序分成m段，并按顺序排成m行，就构成了一个矩阵。<strong>数组</strong>和<strong>分段</strong>是构成一个矩阵的充分必要条件。</p>
+
+<p>这个定义是从程序实现角度考虑的。一个矩阵可以用二维数组Array[m][n]来存放，也可以用一维数组Array[m*n]来存放，在不考虑实现语言之前，我更倾向于使用一维数组。</p>
+
+<p>矩阵的定义虽然不复杂，但是聪明的数学家对矩阵进行了各种研究，导致产生了非常多的概念、术语、定理、推论：</p>
+
+<!--more-->
+
+<ol>
+<li>当m == n时，矩阵可以被称为<strong>n阶矩阵</strong>，或<strong>n阶方阵</strong></li>
+<li>矩阵A的m、n和矩阵B的m、n相等时，称A和B为<strong>同阶矩阵</strong>或<strong>同型矩阵</strong></li>
+<li>大写字母<strong>O</strong>代表元素全为0的矩阵</li>
+<li>矩阵的加法运算满足以下运算律:
+
+<ol>
+<li>交换律 <strong>A + B = B + A</strong></li>
+<li>结合律 <strong>( A + B ) + C = A + ( B + C )</strong></li>
+<li><strong>A + O = O + A</strong></li>
+<li><strong>A + (-A) = (-A) + A = O</strong></li>
+</ol></li>
+<li><p>矩阵的数乘运算满足以下运算律:</p>
+
+<ol>
+<li><strong>k ( A + B ) = kA + kB</strong></li>
+<li><strong>( k + t ) A = kA + tA</strong></li>
+<li><strong>k ( tA ) = ( kt ) A</strong></li>
+<li><strong>1 * A = A</strong></li>
+</ol></li>
+<li><p>矩阵的加法和数乘运算统称为矩阵的<strong>线性运算</strong></p></li>
+<li><p>矩阵之间允许乘法运算：C = AB。但有一个前提：
+左矩阵A的列数必须等于右矩阵B的行数</p></li>
+<li><p>做矩阵相乘运算要注意的一些特性：</p>
+
+<ol>
+<li>AB 有意义时， BA 不一定有意义</li>
+<li>AB 和 BA 都有意义时，并不意味着 AB = BA（不满足交换律），但存在使得此等式成立的2个矩阵</li>
+<li>不满足消除率。两个非零矩阵的乘积可能是零矩阵，即 AB = O 成立时，并不能推出 A = O 或 B = O</li>
+<li>满足结合律：
+
+<ol>
+<li><strong>( AB ) C = A ( BC )</strong></li>
+<li><strong>k ( AB ) = ( kA ) B = A ( kB )</strong></li>
+<li><strong>A ( B + C ) = AB + AC</strong></li>
+<li><strong>( B + C ) A = BA + CA</strong></li>
+</ol></li>
+</ol></li>
+<li><p>矩阵可以做幂运算：</p>
+
+<ol>
+<li>\( \mathbf { A^{k}A^{t} = A^{k+t} } \)</li>
+<li>\( \mathbf { (A^{k})^{t} = A^{kt} } \)</li>
+<li>若 AB = BA，则 \( \mathbf { (AB)^{k} = A^{k}B^{k} } \)</li>
+<li>注意，即使 \( \mathbf { A^{k} = O } \)，也并不意味着\( \mathbf {  A = O } \)</li>
+</ol></li>
+</ol>
+
+<h2>矩阵的转置</h2>
+
+<p>将\( m\times n \)矩阵 A = \( a_{ij} \)的行和列互换，得到的\( n\times m \)矩阵，称为矩阵A的转置矩阵，简称A的转置，记为\( A^{T} \)。</p>
+
+<p>矩阵的转置有以下性质：</p>
+
+<ol>
+<li>\( \mathbf { (A^{T})^{T} = A }  \)</li>
+<li>\( \mathbf { (A+B)^{T}=A^{T}+B^{T} } \)</li>
+<li>\( \mathbf { (kA)^{T}=kA^{T} } \)</li>
+<li>\( \mathbf { (AB)^{T}=B^{T}A^{T} } \)</li>
+</ol>
+
+<h2>方阵的行列式</h2>
+
+<p>定义行列式之前，先定义2个概念：排列和逆序数</p>
+
+<h3>排列</h3>
+
+<p>由n个不同的数\(1,2,\cdots,n\)组成的一个有序数组\( i_{1}i_{2}\cdots i_{n} \)称为一个n级排列,简称为排列</p>
+
+<p>由数\(1,2,\cdots,n\)构成的不同的n级排列共有\( n! \)个。</p>
+
+<p>例:</p>
+
+<ul>
+<li>1234、3421是4级排列</li>
+<li>25314是5级排列</li>
+</ul>
+
+<h3>逆序数</h3>
+
+<p>在一个n级排列\( i_{1}i_{2}\cdots i_{n} \)中，若数\( i_{t}&gt;i_{s} \)，则称数\( i_{t} \) 与 \( i_{s} \)构成一个逆序，一个n级排序中逆数的总数称为该排列的逆序数，记为
+\( \gamma (i_{1}i_{2}\cdots i_{n}) \)</p>
+
+<p>例:</p>
+
+<p>5级排列25314的逆序数:</p>
+
+<p>\( \gamma (25314) \) = 0 + 0 + 1 + 3 + 1 = 5</p>
+
+<p>逆序数为奇数的排列称为<strong>奇排列</strong>，逆序数为偶数的排列称为<strong>偶排列</strong>。</p>
+
+<p>相关定理：</p>
+
+<ul>
+<li>n个不同的数\(1,2,\cdots,n\)的n！个n级排列中，奇偶排列各占一半</li>
+</ul>
+
+<p>交换一个排列中某2个不同的元素，称为一次<strong>对换</strong>。</p>
+
+<p>例：</p>
+
+<p>\( 31542\overset{(5,2)}{\longrightarrow}31245 \)</p>
+
+<p>相关定理：</p>
+
+<ul>
+<li>任意一个排列经过一次对换后，奇偶性改变</li>
+</ul>
+
+<h3>行列式</h3>
+
+<p>定义：由 \( n^{2} \)个元素\( a_{ij} \) 排成n行n列组成的式子：</p>
+
+<p>\( \left| \begin{matrix} a_{11}\ a_{12}\ \ldots\ a_{1n}\\ a_{21}\ a_{22}\ \ldots\ a_{2n}\\ \vdots\ \ \ \ \ \vdots\ \ \ \ \ \vdots\ \ \ \ \ \vdots\ \ \ \ \\ a_{n1}\ a_{n2}\ \ldots\ a_{nn}\\ \end{matrix} \right| \) \( = \sum _{ j_{1}j_{2}\ldots j_{n} }(-1)^{\gamma (j_{1}j_{2}\ldots j_{n} ) }a_{1 j_{1}}a_{2 j_{2} }\ldots a_{n j_{n} } \)</p>
+
+<p>它的计算结果被称为行列式(Determinant)。</p>
+
+<p>注意，行列式是一个数，而不是一个矩阵。
+这个式子也被称为行列式的展开式。</p>
+
+<p>行列式的性质：</p>
+
+<ol>
+<li>\( D^{T} = D \)</li>
+<li>交换行列式的两行(列)，行列式变号</li>
+<li>用数k乘行列式的某一行(列)，等于用数k乘此行列式</li>
+<li>若行列式有一行(列)的元素全为零，则行列式等于零</li>
+<li>若行列式有两行(列)的对应元素成比例，则行列式等于零</li>
+<li>若行列式的某一行(列)各元素都是两数之和，即 \( a_{ij} = b_{ij} + c_{ij} \)，则 \( D_{a} = D_{b} + D_{c} \)</li>
+<li>将行列式某一行(列)所有元素都乘以数k后加到另一行(列)对应位置的元素上，行列式的值不变</li>
+</ol>
+
+<p>行列式按某一行(列)展开:</p>
+
+<p>代数余子式的定义:</p>
+
+<p>在n阶行列式 D = det( \( a_{ij} \) )中，划去元素\( a_{ij} \)所在的第i行和第j列后，余下的元素按原来的相对位置构成的n-1阶行列式，称为D中元素\( a_{ij} \)的余子式，记为\( M_{ij} \)。</p>
+
+<p>再记\( A_{ij} =(-1)^{i+j}M_{ij} \)，称\( A_{ij} \)为元素\( a_{ij} \)的代数余子式。</p>
+
+<p>引理:</p>
+
+<p>若n阶行列式 D = det( \( a_{ij} \) )中，第i行除\( a_{ij} \)外的其他元素都为零，则该行列式等于\( a_{ij} \)与它的代数余子式的乘积，即：</p>
+
+<p>\[ D = det( a_{ij} ) = a_{ij}A_{ij} \] </p>
+
+<p>行列式的展开:</p>
+
+<p>n阶行列式 D = det( \( a_{ij} \) )等于它的任意一行(列)的各元素与其对应的代数余子式乘积之和，即</p>
+
+<p>\[ D = a_{i1}A_{i1} + a_{i2}A_{i2} + \cdots + a_{in}A_{in} \] </p>
+
+<p>\[ D = a_{1j}A_{1j} + a_{2j}A_{2j} + \cdots + a_{nj}A_{nj} \]</p>
+
+<h2>行列式与转置矩阵之间的一些公式：</h2>
+
+<ol>
+<li>\( \mathbf { |A^{T}| = |A| } \)</li>
+<li>\( \mathbf { |kA| = k^{n}|A| } \)</li>
+<li>\( \mathbf { |AB| = |A||B| } \)</li>
+<li>\( \mathbf { |AB| = |BA| } \)</li>
+<li>\( \mathbf { |A^{n}| = |A|^{n} } \)</li>
+</ol>
+
+<h2>线性方程组与行列式</h2>
+
+<p>含有n个未知量、n个方程的线性方程组</p>
+
+<p>\[ a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = b_{1} \]
+\[ a_{21}x_{1} + a_{22}x_{2} + \cdots + a_{2n}x_{n} = b_{2} \]
+\[ \cdots\cdots \]
+\[ a_{n1}x_{1} + a_{n2}x_{2} + \cdots + a_{nn}x_{n} = b_{n} \]</p>
+
+<p>系数\( a_{ij} \)构成的行列式称为该方程组的系数行列式D</p>
+
+<p>克拉默(Cramer)法则：若系数行列式 \( D\neq 0 \)，则方程组有唯一解，其解为：
+\[ x_{i} = \dfrac {D_{j}} {D} \]</p>
+
+<p>\( D_{j} \)是将系数行列式D中第j列的元素\( a_{1j},a_{2j},\cdots a_{nj} \)对应地换成方程组右端的常数项\( b_{1j},b_{2j},\cdots b_{nj} \)，而其余各列保持不变得到的行列式。</p>
+
+<p>当\( b_{i} \)=0时，上面的线性方程组为：</p>
+
+<p>\[ a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = 0 \]
+\[ a_{21}x_{1} + a_{22}x_{2} + \cdots + a_{2n}x_{n} = 0 \]
+\[ \cdots\cdots \]
+\[ a_{n1}x_{1} + a_{n2}x_{2} + \cdots + a_{nn}x_{n} = 0 \]</p>
+
+<p>称为<strong>齐次线性方程组</strong>。齐次线性方程组必然有零解( \( x_{i} = 0 \) ）。</p>
+
+<p>定理：若齐次线性方程组的系数行列式 \( D\neq 0 \)，则只有零解； 若有非零解，则\( D = 0 \)。</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on August 25, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

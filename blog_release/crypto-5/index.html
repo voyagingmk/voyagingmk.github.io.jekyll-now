@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>漫谈网络通讯加密（5）AES – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="漫谈网络通讯加密（5）AES" />
+    <meta property="twitter:title" content="漫谈网络通讯加密（5）AES" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/crypto-5/',
+		  'title': '漫谈网络通讯加密（5）AES'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>漫谈网络通讯加密（5）AES</h1>
+ <h3>Tags: <a href="/tag/crypto/" rel="tag">crypto</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<p>本文主要目的是剖析AES(Rijndael)算法的来龙去脉，包括源码实现。</p>
+
+<h1><a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a></h1>
+
+<p>Note:本来打算剖析openSSL里的AES，结果发现代码是高度优化的，很难阅读理解。索性找了个更适合剖析的实现: <a href="https://github.com/kokke/tiny-AES-c">tiny-AES-c</a>。1000多stars，想必也很靠谱了。</p>
+
+<h2>流程</h2>
+
+<h3>tiny-AES-C总览</h3>
+
+<p>以最简单的加密模式ECB为例，ECB的加密解密接口如下：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">AES_ECB_encrypt</span><span class="p">(</span><span class="k">struct</span> <span class="n">AES_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">buf</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="c1">// The next function call encrypts the PlainText with the Key using AES algorithm.</span>
+  <span class="n">Cipher</span><span class="p">((</span><span class="n">state_t</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">,</span> <span class="n">ctx</span><span class="o">-&gt;</span><span class="n">RoundKey</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">AES_ECB_decrypt</span><span class="p">(</span><span class="k">struct</span> <span class="n">AES_ctx</span><span class="o">*</span> <span class="n">ctx</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">buf</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="c1">// The next function call decrypts the PlainText with the Key using AES algorithm.</span>
+  <span class="n">InvCipher</span><span class="p">((</span><span class="n">state_t</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">,</span> <span class="n">ctx</span><span class="o">-&gt;</span><span class="n">RoundKey</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>可见Cipher和InvCipher才是关键，本文主要剖析Cipher：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">Cipher</span><span class="p">(</span><span class="n">state_t</span><span class="o">*</span> <span class="n">state</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">RoundKey</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">round</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="c1">// 第0轮，只做AddRoundKey</span>
+  <span class="n">AddRoundKey</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">RoundKey</span><span class="p">);</span> 
+
+  <span class="c1">// 传说中的“轮函数”，循环9轮</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">round</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">round</span> <span class="o">&lt;</span> <span class="n">Nr</span><span class="p">;</span> <span class="o">++</span><span class="n">round</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="c1">// 四大步骤</span>
+    <span class="n">SubBytes</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+    <span class="n">ShiftRows</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+    <span class="n">MixColumns</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+    <span class="n">AddRoundKey</span><span class="p">(</span><span class="n">round</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">RoundKey</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// 末尾第10轮要特殊处理：去掉了MixColumns(state)</span>
+  <span class="n">SubBytes</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+  <span class="n">ShiftRows</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+  <span class="n">AddRoundKey</span><span class="p">(</span><span class="n">Nr</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">RoundKey</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>其中的Nr是常数，AES用到的常数如下：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="c1">// The number of columns comprising a state in AES. This is a constant in AES. Value=4</span>
+<span class="cp">#define Nb 4
+</span>
+<span class="cp">#if defined(AES256) &amp;&amp; (AES256 == 1)
+</span>    <span class="cp">#define Nk 8
+</span>    <span class="cp">#define Nr 14
+#elif defined(AES192) &amp;&amp; (AES192 == 1)
+</span>    <span class="cp">#define Nk 6
+</span>    <span class="cp">#define Nr 12
+#else
+</span>    <span class="cp">#define Nk 4        // The number of 32 bit words in a key.
+</span>    <span class="cp">#define Nr 10       // The number of rounds in AES Cipher.
+#endif
+</span></code></pre></div>
+<p>可见，AES128的Nk为4，Nr为10。</p>
+
+<p>state_t其实就是原文(plaintext)：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="kt">uint8_t</span> <span class="n">state_t</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="mi">4</span><span class="p">];</span>
+</code></pre></div>
+<p>state_t是定长16字节，所以Cipher是用来加密定长块的，更长的原文就需要分块加密。</p>
+
+<p>state_t是二维数组，有列主导还是行主导的问题，state_t是列主导的，即state[column][row]。</p>
+
+<p>下面就按被调用的顺序，逐个击破：AddRoundKey、SubBytes、ShiftRows、MixColumns。</p>
+
+<h3>AddRoundKey</h3>
+
+<p>其实就是state和roundkey做xor并覆盖state：</p>
+
+<p><img src="../images/2018.8/AddRoundKey.png" alt="subbytes.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">wiki</a>)</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">AddRoundKey</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">round</span><span class="p">,</span><span class="n">state_t</span><span class="o">*</span> <span class="n">state</span><span class="p">,</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">RoundKey</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">^=</span> <span class="n">RoundKey</span><span class="p">[(</span><span class="n">round</span> <span class="o">*</span> <span class="n">Nb</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">Nb</span><span class="p">)</span> <span class="o">+</span> <span class="n">j</span><span class="p">];</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3>SubBytes</h3>
+
+<p>SubBytes就是对state每一个字节(8bits，0到255），查表sbox（有256个元素，256到256的映射），原地转换：</p>
+
+<p><img src="../images/2018.8/subbytes.png" alt="subbytes.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">wiki</a>)</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">SubBytes</span><span class="p">(</span><span class="n">state_t</span><span class="o">*</span> <span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">getSBoxValue</span><span class="p">((</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]);</span>
+      <span class="c1">// (*state)[i][j] = getSBoxValue((*state)[i][j]); 或者这样写，毕竟是方阵</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">sbox</span><span class="p">[</span><span class="mi">256</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1">//0     1    2      3     4    5     6     7      8    9     A      B    C     D     E     F</span>
+  <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x7c</span><span class="p">,</span> <span class="mh">0x77</span><span class="p">,</span> <span class="mh">0x7b</span><span class="p">,</span> <span class="mh">0xf2</span><span class="p">,</span> <span class="mh">0x6b</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0xc5</span><span class="p">,</span> <span class="mh">0x30</span><span class="p">,</span> <span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x67</span><span class="p">,</span> <span class="mh">0x2b</span><span class="p">,</span> <span class="mh">0xfe</span><span class="p">,</span> <span class="mh">0xd7</span><span class="p">,</span> <span class="mh">0xab</span><span class="p">,</span> <span class="mh">0x76</span><span class="p">,</span>
+  <span class="mh">0xca</span><span class="p">,</span> <span class="mh">0x82</span><span class="p">,</span> <span class="mh">0xc9</span><span class="p">,</span> <span class="mh">0x7d</span><span class="p">,</span> <span class="mh">0xfa</span><span class="p">,</span> <span class="mh">0x59</span><span class="p">,</span> <span class="mh">0x47</span><span class="p">,</span> <span class="mh">0xf0</span><span class="p">,</span> <span class="mh">0xad</span><span class="p">,</span> <span class="mh">0xd4</span><span class="p">,</span> <span class="mh">0xa2</span><span class="p">,</span> <span class="mh">0xaf</span><span class="p">,</span> <span class="mh">0x9c</span><span class="p">,</span> <span class="mh">0xa4</span><span class="p">,</span> <span class="mh">0x72</span><span class="p">,</span> <span class="mh">0xc0</span><span class="p">,</span>
+  <span class="mh">0xb7</span><span class="p">,</span> <span class="mh">0xfd</span><span class="p">,</span> <span class="mh">0x93</span><span class="p">,</span> <span class="mh">0x26</span><span class="p">,</span> <span class="mh">0x36</span><span class="p">,</span> <span class="mh">0x3f</span><span class="p">,</span> <span class="mh">0xf7</span><span class="p">,</span> <span class="mh">0xcc</span><span class="p">,</span> <span class="mh">0x34</span><span class="p">,</span> <span class="mh">0xa5</span><span class="p">,</span> <span class="mh">0xe5</span><span class="p">,</span> <span class="mh">0xf1</span><span class="p">,</span> <span class="mh">0x71</span><span class="p">,</span> <span class="mh">0xd8</span><span class="p">,</span> <span class="mh">0x31</span><span class="p">,</span> <span class="mh">0x15</span><span class="p">,</span>
+  <span class="mh">0x04</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span> <span class="mh">0x23</span><span class="p">,</span> <span class="mh">0xc3</span><span class="p">,</span> <span class="mh">0x18</span><span class="p">,</span> <span class="mh">0x96</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x9a</span><span class="p">,</span> <span class="mh">0x07</span><span class="p">,</span> <span class="mh">0x12</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0xe2</span><span class="p">,</span> <span class="mh">0xeb</span><span class="p">,</span> <span class="mh">0x27</span><span class="p">,</span> <span class="mh">0xb2</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span>
+  <span class="mh">0x09</span><span class="p">,</span> <span class="mh">0x83</span><span class="p">,</span> <span class="mh">0x2c</span><span class="p">,</span> <span class="mh">0x1a</span><span class="p">,</span> <span class="mh">0x1b</span><span class="p">,</span> <span class="mh">0x6e</span><span class="p">,</span> <span class="mh">0x5a</span><span class="p">,</span> <span class="mh">0xa0</span><span class="p">,</span> <span class="mh">0x52</span><span class="p">,</span> <span class="mh">0x3b</span><span class="p">,</span> <span class="mh">0xd6</span><span class="p">,</span> <span class="mh">0xb3</span><span class="p">,</span> <span class="mh">0x29</span><span class="p">,</span> <span class="mh">0xe3</span><span class="p">,</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x84</span><span class="p">,</span>
+  <span class="mh">0x53</span><span class="p">,</span> <span class="mh">0xd1</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xed</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0xfc</span><span class="p">,</span> <span class="mh">0xb1</span><span class="p">,</span> <span class="mh">0x5b</span><span class="p">,</span> <span class="mh">0x6a</span><span class="p">,</span> <span class="mh">0xcb</span><span class="p">,</span> <span class="mh">0xbe</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x4a</span><span class="p">,</span> <span class="mh">0x4c</span><span class="p">,</span> <span class="mh">0x58</span><span class="p">,</span> <span class="mh">0xcf</span><span class="p">,</span>
+  <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0xef</span><span class="p">,</span> <span class="mh">0xaa</span><span class="p">,</span> <span class="mh">0xfb</span><span class="p">,</span> <span class="mh">0x43</span><span class="p">,</span> <span class="mh">0x4d</span><span class="p">,</span> <span class="mh">0x33</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x45</span><span class="p">,</span> <span class="mh">0xf9</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x7f</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mh">0x3c</span><span class="p">,</span> <span class="mh">0x9f</span><span class="p">,</span> <span class="mh">0xa8</span><span class="p">,</span>
+  <span class="mh">0x51</span><span class="p">,</span> <span class="mh">0xa3</span><span class="p">,</span> <span class="mh">0x40</span><span class="p">,</span> <span class="mh">0x8f</span><span class="p">,</span> <span class="mh">0x92</span><span class="p">,</span> <span class="mh">0x9d</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0xf5</span><span class="p">,</span> <span class="mh">0xbc</span><span class="p">,</span> <span class="mh">0xb6</span><span class="p">,</span> <span class="mh">0xda</span><span class="p">,</span> <span class="mh">0x21</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xf3</span><span class="p">,</span> <span class="mh">0xd2</span><span class="p">,</span>
+  <span class="mh">0xcd</span><span class="p">,</span> <span class="mh">0x0c</span><span class="p">,</span> <span class="mh">0x13</span><span class="p">,</span> <span class="mh">0xec</span><span class="p">,</span> <span class="mh">0x5f</span><span class="p">,</span> <span class="mh">0x97</span><span class="p">,</span> <span class="mh">0x44</span><span class="p">,</span> <span class="mh">0x17</span><span class="p">,</span> <span class="mh">0xc4</span><span class="p">,</span> <span class="mh">0xa7</span><span class="p">,</span> <span class="mh">0x7e</span><span class="p">,</span> <span class="mh">0x3d</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x5d</span><span class="p">,</span> <span class="mh">0x19</span><span class="p">,</span> <span class="mh">0x73</span><span class="p">,</span>
+  <span class="mh">0x60</span><span class="p">,</span> <span class="mh">0x81</span><span class="p">,</span> <span class="mh">0x4f</span><span class="p">,</span> <span class="mh">0xdc</span><span class="p">,</span> <span class="mh">0x22</span><span class="p">,</span> <span class="mh">0x2a</span><span class="p">,</span> <span class="mh">0x90</span><span class="p">,</span> <span class="mh">0x88</span><span class="p">,</span> <span class="mh">0x46</span><span class="p">,</span> <span class="mh">0xee</span><span class="p">,</span> <span class="mh">0xb8</span><span class="p">,</span> <span class="mh">0x14</span><span class="p">,</span> <span class="mh">0xde</span><span class="p">,</span> <span class="mh">0x5e</span><span class="p">,</span> <span class="mh">0x0b</span><span class="p">,</span> <span class="mh">0xdb</span><span class="p">,</span>
+  <span class="mh">0xe0</span><span class="p">,</span> <span class="mh">0x32</span><span class="p">,</span> <span class="mh">0x3a</span><span class="p">,</span> <span class="mh">0x0a</span><span class="p">,</span> <span class="mh">0x49</span><span class="p">,</span> <span class="mh">0x06</span><span class="p">,</span> <span class="mh">0x24</span><span class="p">,</span> <span class="mh">0x5c</span><span class="p">,</span> <span class="mh">0xc2</span><span class="p">,</span> <span class="mh">0xd3</span><span class="p">,</span> <span class="mh">0xac</span><span class="p">,</span> <span class="mh">0x62</span><span class="p">,</span> <span class="mh">0x91</span><span class="p">,</span> <span class="mh">0x95</span><span class="p">,</span> <span class="mh">0xe4</span><span class="p">,</span> <span class="mh">0x79</span><span class="p">,</span>
+  <span class="mh">0xe7</span><span class="p">,</span> <span class="mh">0xc8</span><span class="p">,</span> <span class="mh">0x37</span><span class="p">,</span> <span class="mh">0x6d</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span> <span class="mh">0xd5</span><span class="p">,</span> <span class="mh">0x4e</span><span class="p">,</span> <span class="mh">0xa9</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x56</span><span class="p">,</span> <span class="mh">0xf4</span><span class="p">,</span> <span class="mh">0xea</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x7a</span><span class="p">,</span> <span class="mh">0xae</span><span class="p">,</span> <span class="mh">0x08</span><span class="p">,</span>
+  <span class="mh">0xba</span><span class="p">,</span> <span class="mh">0x78</span><span class="p">,</span> <span class="mh">0x25</span><span class="p">,</span> <span class="mh">0x2e</span><span class="p">,</span> <span class="mh">0x1c</span><span class="p">,</span> <span class="mh">0xa6</span><span class="p">,</span> <span class="mh">0xb4</span><span class="p">,</span> <span class="mh">0xc6</span><span class="p">,</span> <span class="mh">0xe8</span><span class="p">,</span> <span class="mh">0xdd</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x1f</span><span class="p">,</span> <span class="mh">0x4b</span><span class="p">,</span> <span class="mh">0xbd</span><span class="p">,</span> <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x8a</span><span class="p">,</span>
+  <span class="mh">0x70</span><span class="p">,</span> <span class="mh">0x3e</span><span class="p">,</span> <span class="mh">0xb5</span><span class="p">,</span> <span class="mh">0x66</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x03</span><span class="p">,</span> <span class="mh">0xf6</span><span class="p">,</span> <span class="mh">0x0e</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x35</span><span class="p">,</span> <span class="mh">0x57</span><span class="p">,</span> <span class="mh">0xb9</span><span class="p">,</span> <span class="mh">0x86</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span> <span class="mh">0x1d</span><span class="p">,</span> <span class="mh">0x9e</span><span class="p">,</span>
+  <span class="mh">0xe1</span><span class="p">,</span> <span class="mh">0xf8</span><span class="p">,</span> <span class="mh">0x98</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span> <span class="mh">0x69</span><span class="p">,</span> <span class="mh">0xd9</span><span class="p">,</span> <span class="mh">0x8e</span><span class="p">,</span> <span class="mh">0x94</span><span class="p">,</span> <span class="mh">0x9b</span><span class="p">,</span> <span class="mh">0x1e</span><span class="p">,</span> <span class="mh">0x87</span><span class="p">,</span> <span class="mh">0xe9</span><span class="p">,</span> <span class="mh">0xce</span><span class="p">,</span> <span class="mh">0x55</span><span class="p">,</span> <span class="mh">0x28</span><span class="p">,</span> <span class="mh">0xdf</span><span class="p">,</span>
+  <span class="mh">0x8c</span><span class="p">,</span> <span class="mh">0xa1</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x0d</span><span class="p">,</span> <span class="mh">0xbf</span><span class="p">,</span> <span class="mh">0xe6</span><span class="p">,</span> <span class="mh">0x42</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">,</span> <span class="mh">0x99</span><span class="p">,</span> <span class="mh">0x2d</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">,</span> <span class="mh">0xb0</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0xbb</span><span class="p">,</span> <span class="mh">0x16</span> <span class="p">};</span>
+
+
+<span class="cp">#define getSBoxValue(num) (sbox[(num)])
+</span>
+</code></pre></div>
+<p>要注意，sbox是AES的常量，不可随便修改。</p>
+
+<h3>ShiftRows</h3>
+
+<p>所谓shiftRows，就是第i行的左数i个元素，按序左出右进，因为state是4x4矩阵，所以：</p>
+
+<ul>
+<li>第0行，不需要shift</li>
+<li>第1行，左数1个元素，按序左出右进，变成\( a_{1,1}\ a_{1,2}\ a_{1,3}\ a_{1,0}\  \)</li>
+<li>第2行，左数2个元素，按序左出右进，变成\( a_{2,2}\ a_{2,3}\ a_{2,0}\ a_{2,1}\  \)</li>
+<li>第3行，左数3个元素，按序左出右进，变成\( a_{3,3}\ a_{3,0}\ a_{3,1}\ a_{3,2}\  \)</li>
+</ul>
+
+<p><img src="../images/2018.8/shiftrows.png" alt="shiftrows.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">wiki</a>)</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">ShiftRows</span><span class="p">(</span><span class="n">state_t</span><span class="o">*</span> <span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">temp</span><span class="p">;</span>
+
+  <span class="c1">// 记住，state是state[column][row]</span>
+  <span class="c1">// shift第1行 </span>
+  <span class="n">temp</span>           <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+
+  <span class="c1">// shift第2行，即0列和2列换、1列和3列换</span>
+  <span class="n">temp</span>           <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+
+  <span class="n">temp</span>           <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+
+  <span class="c1">// shift第3行 </span>
+  <span class="n">temp</span>           <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">3</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">3</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3>MixColumns</h3>
+
+<p><a href="https://en.wikipedia.org/wiki/Rijndael_MixColumns">MixColumns</a>是最复杂的一步，连代码都很难看懂在干嘛。必须先补相关数学知识才行。</p>
+
+<p><img src="../images/2018.8/mixcolumns.png" alt="mixcolumns.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">wiki</a>)</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">uint8_t</span> <span class="nf">xtime</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">x</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="o">&lt;&lt;</span><span class="mi">1</span><span class="p">)</span> <span class="o">^</span> <span class="p">(((</span><span class="n">x</span><span class="o">&gt;&gt;</span><span class="mi">7</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mh">0x1b</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="c1">// MixColumns function mixes the columns of the state matrix</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">MixColumns</span><span class="p">(</span><span class="n">state_t</span><span class="o">*</span> <span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">i</span><span class="p">;</span>
+  <span class="kt">uint8_t</span> <span class="n">Tmp</span><span class="p">,</span> <span class="n">Tm</span><span class="p">,</span> <span class="n">t</span><span class="p">;</span>
+  <span class="c1">// 从第0列遍历到第3列</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+  <span class="p">{</span>  
+    <span class="n">t</span>   <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">Tmp</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">t</span> <span class="p">;</span>              <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="p">(</span><span class="o">*</span><span class="n">state</span><span class="p">)[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>什么是mixColumns</h2>
+
+<p>首先要讲2个概念：<a href="https://en.wikipedia.org/wiki/Confusion_and_diffusion">Confusion</a>(混淆)和<a href="https://en.wikipedia.org/wiki/Confusion_and_diffusion">Diffusion</a>(扩散)。</p>
+
+<ul>
+<li><p>Confusion：密文的每一bit应该和秘钥的多个部分相关，使得密文和密钥的联系变得含糊。</p></li>
+<li><p>Diffusion：即如果我们改变<strong>原文</strong>的单个bit，会导致<strong>密文</strong>里一半(平均统计值）的bits发生改变；类似的，如果改变<strong>密文</strong>的单个bit，会导致<strong>原文</strong>一半的bits发生改变。又因为一个bit只有2个状态，如果随机地改变某个bit的位置，也会导致密文(或原文)一半的bits发生改变。</p></li>
+</ul>
+
+<p>这2个概念搞懂后，开始看mixColumns。（mixColumns其实有专门的<a href="https://en.wikipedia.org/wiki/Rijndael_MixColumns">wiki</a>介绍。）</p>
+
+<p>mixColumns其实就是AES算法里最主要的产生Diffusion效果的步骤。</p>
+
+<p>state的每一列被当成四项多项式的4个系数（4个bytes)：</p>
+
+<p>\[ a(x) = a_{3}x^{3} + a_{2}x^{2} + a_{1}x + a_{0} \]</p>
+
+<p>用图表示：</p>
+
+<p><img src="../images/2018.8/mixcolumn.svg" alt="mixcolumn.svg"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">wiki</a>)</p>
+
+<p>中间这个奇怪的4x4矩阵叫MDS矩阵，mixColumns的<a href="https://en.wikipedia.org/wiki/Rijndael_MixColumns">wiki</a>有推导过程，另外我还找到一份可能更好理解的<a href="https://crypto.stackexchange.com/questions/51447/aes-mix-column-transformation">推导过程</a>。</p>
+
+<p>综合这2份资料，下面解释下推导过程。</p>
+
+<p>首先，mixColumns有2个“常数”性质的多项式：</p>
+
+<ul>
+<li>固定多项式：\( 3x^{3} + x^{2} + x + 2 \)</li>
+<li>多项式乘法模：\( x^{4} + 1 \)</li>
+</ul>
+
+<p>让上面的列系数多项式和固定多项式相乘并展开结果：</p>
+
+<p>\( (a_{3}x^{3} + a_{2}x^{2} + a_{1}x + a_{0})\cdot (3x^{3} + x^{2} + x + 2) \)</p>
+
+<p>\( = 3a_{3}x^{6} + 1a_{3}x^{5}  + 1a_{3}x^{4} + 2a_{3}x^{3} + \)</p>
+
+<p>\(  3a_{2}x^{5} + 1a_{2}x^{4}  + 1a_{2}x^{3} + 2a_{2}x^{2} + \)</p>
+
+<p>\(  3a_{1}x^{4} + 1a_{1}x^{3}  + 1a_{1}x^{2} + 2a_{1}x^{1} + \)</p>
+
+<p>\(  3a_{0}x^{3} + 1a_{0}x^{2}  + 1a_{0}x^{1} + 2a_{0}x^{0} \)</p>
+
+<p>共有16项（MDS4x4矩阵的由来），但其中有的项的x的次数已经大于等于4，而我们需要的是x小于等于3次的多项式。怎么办呢？这时候就要拿出上面的模数\( x^{4} + 1 \)。</p>
+
+<p>多项式怎么做模运算？先回顾简单代数的模运算：</p>
+
+<p>当2个整数a、b的差等于k个整数n的积时（k可以是任意整数）有:\( a - b = kn \)，可以写成：\(a \equiv b (mod \ n) \)。</p>
+
+<p>于是多项式的模运算定义如下：</p>
+
+<p>\[ a(x) \equiv b(x) (mod \ P(x)) \]</p>
+
+<p>也即是说，可以用下面的公式求解多项式a(x)关于P(x)的模b(x)：</p>
+
+<p>\[ a(x) = x^{k} P(x) + b(x) \]</p>
+
+<p>那么令\( P(x) = x^{4} + 1 \)，\( a(x) = x^{6} \)，有：</p>
+
+<p>\[ x^{6} = x^{2}(x^{4} + 1) - x^{2} \]</p>
+
+<p>可知\(b(x) = - x^{2} \)，因为在AES里不存在负数的系数（系数是无符号单字节），所以“暴力地”写成\( x^{6} \equiv x^{2} (mod \ (x^{4} + 1)) \)，</p>
+
+<p>同理可得：</p>
+
+<p>\( x^{5} \equiv x^{1} (mod \ (x^{4} + 1)) \)</p>
+
+<p>\( x^{4} \equiv x^{0} (mod \ (x^{4} + 1)) \)</p>
+
+<p>于是可以列出通用公式：</p>
+
+<p>\( x^{i} \equiv x^{i \ mod \ 4} (mod \ (x^{4} + 1)) \)</p>
+
+<p>有了这个公式当武器后，前面的16项多项式就可以继续化简了，对等式两边同时取模\( x^{4} + 1 \)：</p>
+
+<p>\( = (3a_{3}x^{6} + 1a_{3}x^{5}  + 1a_{3}x^{4} + 2a_{3}x^{3} + \)</p>
+
+<p>\(  3a_{2}x^{5} + 1a_{2}x^{4}  + 1a_{2}x^{3} + 2a_{2}x^{2} + \)</p>
+
+<p>\(  3a_{1}x^{4} + 1a_{1}x^{3}  + 1a_{1}x^{2} + 2a_{1}x^{1} + \)</p>
+
+<p>\(  3a_{0}x^{3} + 1a_{0}x^{2}  + 1a_{0}x^{1} + 2a_{0}x^{0} ) \ mod \ (x^{4} + 1) \)</p>
+
+<p>\( \equiv 3a_{3}x^{2} + 1a_{3}x^{1}  + 1a_{3}x^{0} + 2a_{3}x^{3} + \)</p>
+
+<p>\(  3a_{2}x^{1} + 1a_{2}x^{0}  + 1a_{2}x^{3} + 2a_{2}x^{2} + \)</p>
+
+<p>\(  3a_{1}x^{0} + 1a_{1}x^{3}  + 1a_{1}x^{2} + 2a_{1}x^{1} + \)</p>
+
+<p>\(  3a_{0}x^{3} + 1a_{0}x^{2}  + 1a_{0}x^{1} + 2a_{0}x^{0} \)</p>
+
+<p>按次数大小整理下顺序：</p>
+
+<p>\( \equiv 2a_{3}x^{3} + 3a_{3}x^{2} + 1a_{3}x^{1}  + 1a_{3}x^{0} + \)</p>
+
+<p>\(   1a_{2}x^{3} + 2a_{2}x^{2} + 3a_{2}x^{1} + 1a_{2}x^{0}  + \)</p>
+
+<p>\(  1a_{1}x^{3}  + 1a_{1}x^{2} + 2a_{1}x^{1} + 3a_{1}x^{0} + \)</p>
+
+<p>\(  3a_{0}x^{3} + 1a_{0}x^{2}  + 1a_{0}x^{1} + 2a_{0}x^{0} \)</p>
+
+<p>再合并成4个等式:</p>
+
+<p>\( b_{0}x^{0} = (1a_{3} + 1a_{2} + 3a_{1} + 2a_{0})x^{0} = (2a_{0} + 3a_{1} + 1a_{2} + 1a_{3})x^{0}  \)</p>
+
+<p>\( b_{1}x^{1} = (1a_{3} + 3a_{2} + 2a_{1} + 1a_{0})x^{1} = (1a_{0} + 2a_{1} + 3a_{2} + 1a_{3})x^{1}  \)</p>
+
+<p>\( b_{2}x^{2} = (3a_{3} + 2a_{2} + 1a_{1} + 1a_{0})x^{2} = (1a_{0} + 1a_{1} + 2a_{2} + 3a_{3})x^{2}  \)</p>
+
+<p>\( b_{3}x^{3} = (2a_{3} + 1a_{2} + 1a_{1} + 3a_{0})x^{3} = (3a_{0} + 1a_{1} + 1a_{2} + 2a_{3})x^{3}  \)</p>
+
+<p>把x去掉并整理成矩阵相乘的形式：</p>
+
+<p>\[  \left[ \begin{matrix} b_{0}\\ b_{1}\\ b_{2}\\ b_{3}\\ \end{matrix} \right] =  \left[ \begin{matrix} 2&amp;3&amp;1&amp;1\\ 1&amp;2&amp;3&amp;1\\ 1&amp;1&amp;2&amp;3\\ 3&amp;1&amp;1&amp;2\\ \end{matrix} \right]  \left[ \begin{matrix} a_{0}\\ a_{1}\\ a_{2}\\ a_{3}\\ \end{matrix} \right] \]</p>
+
+<p>现在分析对比下源码里的xtime函数和<a href="https://en.wikipedia.org/wiki/Rijndael_MixColumns">wiki</a>给出的等价代码:</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">uint8_t</span> <span class="nf">xtime</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">x</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="o">&lt;&lt;</span><span class="mi">1</span><span class="p">)</span> <span class="o">^</span> <span class="p">(((</span><span class="n">x</span><span class="o">&gt;&gt;</span><span class="mi">7</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mh">0x1b</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="c1">// 整理过的：</span>
+<span class="k">static</span> <span class="kt">uint8_t</span> <span class="nf">xtime2</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">x</span><span class="p">)</span> 
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="o">&lt;&lt;</span><span class="mi">1</span><span class="p">)</span> <span class="o">^</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="p">)((</span><span class="kt">signed</span> <span class="kt">char</span><span class="p">)</span><span class="n">x</span> <span class="o">&gt;&gt;</span> <span class="mi">7</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x1b</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="cm">/*
+    原始代码段：
+    h = (unsigned char)((signed char)r[c] &gt;&gt; 7); // arithmetic right shift, thus shifting in either zeros or ones 
+    b[c] = r[c] &lt;&lt; 1; // implicitly removes high bit because b[c] is an 8-bit char, so we xor by 0x1b and not 0x11b in the next line 
+    b[c] ^= 0x1B &amp; h; // Rijndael's Galois field 
+*/</span>
+
+<span class="c1">// 测试通过：</span>
+<span class="k">for</span><span class="p">(</span><span class="kt">uint8_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="kt">uint8_t</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">assert</span><span class="p">(</span><span class="n">xtime</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="n">xtime2</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>经过以上测试，发现只是写法不同，那么xtime是什么意思呢？逐步分析下：</p>
+
+<ul>
+<li>第一种：((x&lt;<1) ^ (((x>&gt;7) &amp; 1) * 0x1b));</li>
+<li>第二种：((x&lt;<1) ^ ((unsigned char)((signed char)x >&gt; 7) &amp; 0x1b));</li>
+</ul>
+
+<p>观察发现是后半段有差异，后半段的差异在于有无显式类型转化、有无&amp;1，*0x1b还是&amp;0x1b。根据x最高位是否为1，可分2种情况：</p>
+
+<p>第一种：</p>
+
+<ul>
+<li>x最高位为1：((x&gt;&gt;7) &amp; 1)等于1，(((x&gt;&gt;7) &amp; 1) * 0x1b))等于0x1b</li>
+<li>x最高位为0：((x&gt;&gt;7) &amp; 1)等于0，(((x&gt;&gt;7) &amp; 1) * 0x1b))等于0x00</li>
+</ul>
+
+<p>第二种：</p>
+
+<ul>
+<li>x最高位为1：(unsigned char)((signed char)x &gt;&gt; 7)等于0xff，&amp;0x1b后等于0x1b</li>
+<li>x最高位为0：(unsigned char)((signed char)x &gt;&gt; 7)等于0x00，&amp;0x1b后等于0x00</li>
+</ul>
+
+<p>经过枚举后，就知道了xtime其实可以化简成：</p>
+
+<ul>
+<li>x最高位为1：(x&lt;&lt;1) ^ 0x1b（式1）</li>
+<li>x最高位为0：(x&lt;&lt;1) ^ 0x00（式2）</li>
+</ul>
+
+<p>(x&lt;&lt;1)又是什么含义呢？x左移1位，即x乘以2。这可以有2种思路来理解：</p>
+
+<ul>
+<li>x用二进制表示，每一bit就是最高次为7的多项式的系数(这个系数要么0要么1)，x乘以2，系数都左移1位，即多项式乘以x；那么如果最高位为1，就会导致\(x^{7} \)变成\(x^{8} \)，超出了多项式的范围</li>
+<li>x不用想成多项式，仅需要变成二进制，那么显然8bits的二进制左移1位，就有最高位溢出的可能</li>
+</ul>
+
+<p>所以，xtime是在算一个项的系数的2倍，而后面的<sup>0x1b操作，是用来处理溢出问题的。</sup></p>
+
+<p>为什么<sup>0x1b能使得2x不超出GF(256)呢，这又是用到了GF(256)的乘约运算。0x1b是一个<a href="https://en.wikipedia.org/wiki/Irreducible_polynomial">不可约多项式</a>的系数，写成二进制就是0b00011011，写成多项式就是：</sup></p>
+
+<p>\[ x^{4} + x^{3} + x + 1 \]</p>
+
+<p>（注意这个多项式和前面的\( P(x) = x^{4} + 1 \) 是不一样的。这个多项式的各个系数取值是0或1；而P(x)的系数取值范围是GF(256)。）</p>
+
+<p>在GF里，异或操作就意味着多项式加法，所以上面的式1和式2其实就是GF下的多项式加法。设xtime(x)的参数x为F(x)：</p>
+
+<ul>
+<li>F(x)最高位为1：\( (2F(x)表示的多项式去掉溢出项) + (x^{4} + x^{3} + x + 1) \)（式1）</li>
+<li>F(x)最高位为0：\( (2F(x)表示的多项式) \)（式2）</li>
+</ul>
+
+<p>这就是xtime的逻辑了。xtime搞懂后，就可以看MixColumn了，也就是前面贴的MDS矩阵相乘运算。</p>
+
+<p>前面给出的MixColumns函数很复杂，用伪代码简化下：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+  <span class="p">{</span>  
+    <span class="n">t</span>   <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">Tmp</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+    <span class="n">Tm</span>  <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">t</span> <span class="p">;</span> <span class="n">Tm</span> <span class="o">=</span> <span class="n">xtime</span><span class="p">(</span><span class="n">Tm</span><span class="p">);</span>  <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">^=</span> <span class="n">Tm</span> <span class="o">^</span> <span class="n">Tmp</span> <span class="p">;</span>
+  <span class="p">}</span>
+</code></pre></div>
+<p>接下来推导这些代码，证明它就是上面的矩阵相乘运算。</p>
+
+<p>这6行代码可以改写成5行公式：</p>
+
+<ul>
+<li>\( Tmp = a_{0} \oplus a_{1} \oplus a_{2} \oplus a_{3} \)</li>
+<li>\( a_{0} = a_{0} \oplus ((a_{0} \oplus a_{1})2) \oplus Tmp \)</li>
+<li>\( a_{1} = a_{1} \oplus ((a_{1} \oplus a_{2})2) \oplus Tmp \)</li>
+<li>\( a_{2} = a_{2} \oplus ((a_{2} \oplus a_{3})2) \oplus Tmp \)</li>
+<li>\( a_{3} = a_{3} \oplus ((a_{3} \oplus a_{0})2) \oplus Tmp \)</li>
+</ul>
+
+<p>去掉Tmp：</p>
+
+<ul>
+<li>\( a_{0} = a_{0} \oplus (2a_{0} \oplus 2a_{1}) \oplus a_{0} \oplus a_{1} \oplus a_{2} \oplus a_{3} \)</li>
+<li>\( a_{1} = a_{1} \oplus (2a_{1} \oplus 2a_{2}) \oplus a_{0} \oplus a_{1} \oplus a_{2} \oplus a_{3} \)</li>
+<li>\( a_{2} = a_{2} \oplus (2a_{2} \oplus 2a_{3}) \oplus a_{0} \oplus a_{1} \oplus a_{2} \oplus a_{3} \)</li>
+<li>\( a_{3} = a_{3} \oplus (2a_{3} \oplus 2a_{0}) \oplus a_{0} \oplus a_{1} \oplus a_{2} \oplus a_{3} \)</li>
+</ul>
+
+<p>因为一个数异或自己等于0，所以有：</p>
+
+<ul>
+<li>\( a_{0} = (2a_{0} \oplus 2a_{1}) \oplus a_{1} \oplus a_{2} \oplus a_{3} \)</li>
+<li>\( a_{1} = (2a_{1} \oplus 2a_{2}) \oplus a_{0} \oplus a_{2} \oplus a_{3} \)</li>
+<li>\( a_{2} = (2a_{2} \oplus 2a_{3}) \oplus a_{0} \oplus a_{1} \oplus a_{3} \)</li>
+<li>\( a_{3} = (2a_{3} \oplus 2a_{0}) \oplus a_{0} \oplus a_{1} \oplus a_{2} \)</li>
+</ul>
+
+<p>这时，需要把异或换成用GF多项式加法表示：</p>
+
+<ul>
+<li>\( a_{0} = (2a_{0} + 2a_{1}) + a_{1} + a_{2} + a_{3} \)</li>
+<li>\( a_{1} = (2a_{1} + 2a_{2}) + a_{0} + a_{2} + a_{3} \)</li>
+<li>\( a_{2} = (2a_{2} + 2a_{3}) + a_{0} + a_{1} + a_{3} \)</li>
+<li>\( a_{3} = (2a_{3} + 2a_{0}) + a_{0} + a_{1} + a_{2} \)</li>
+</ul>
+
+<p>然后就能合并同类项了：</p>
+
+<ul>
+<li>\( a_{0} = 2a_{0} + 3a_{1} + a_{2} + a_{3} \)</li>
+<li>\( a_{1} = 2a_{1} + 3a_{2} + a_{0} + a_{3} \)</li>
+<li>\( a_{2} = 2a_{2} + 3a_{3} + a_{0} + a_{1} \)</li>
+<li>\( a_{3} = 2a_{3} + 3a_{0} + a_{1} + a_{2} \)</li>
+</ul>
+
+<p>整理顺序：</p>
+
+<ul>
+<li>\( a_{0} = 2a_{0} + 3a_{1} +\ a_{2} +\ a_{3} \)</li>
+<li>\( a_{1} =\ a_{0} + 2a_{1} + 3a_{2} +\ a_{3} \)</li>
+<li>\( a_{2} =\ a_{0} +\ a_{1} + 2a_{2} + 3a_{3} \)</li>
+<li>\( a_{3} = 3a_{0} +\ a_{1} +\ a_{2} + 2a_{3} \)</li>
+</ul>
+
+<p>各行的系数：</p>
+
+<ul>
+<li>2 3 1 1</li>
+<li>1 2 3 1</li>
+<li>1 1 2 3</li>
+<li>3 1 1 2</li>
+</ul>
+
+<p>所以这份代码和MDS矩阵相乘公式一致。</p>
+
+<p>再补充下：wiki里的mixColumns实现其实更容易理解：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span> <span class="cm">/* 2 * a0 + a3 + a2 + 3 * a1 */</span>
+<span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span> <span class="cm">/* 2 * a1 + a0 + a3 + 3 * a2 */</span>
+<span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span> <span class="cm">/* 2 * a2 + a1 + a0 + 3 * a3 */</span>
+<span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="cm">/* 2 * a3 + a2 + a1 + 3 * a0 */</span>
+</code></pre></div>
+<p>b[i]相当于2a[i]（xtime函数），所以上面4行代码相当于：</p>
+
+<ul>
+<li>\( 2 a_{0}  + a_{3}  + a_{2}  + 3  a_{1} \)</li>
+<li>\( 2 a_{1}  + a_{0}  + a_{3}  + 3  a_{2} \) </li>
+<li>\( 2 a_{2}  + a_{1}  + a_{0}  + 3  a_{3} \) </li>
+<li>\( 2 a_{3}  + a_{2}  + a_{1}  + 3  a_{0} \) </li>
+</ul>
+
+<p>排序：</p>
+
+<ul>
+<li>\( 2 a_{0}  + 3 a_{1} +   a_{2} +   a_{3} \)</li>
+<li>\(   a_{0}  + 2 a_{1} + 3 a_{2} +   a_{3} \) </li>
+<li>\(   a_{0}  +   a_{1} + 2 a_{2} + 3 a_{3} \) </li>
+<li>\( 3 a_{0}  +   a_{1}  +  a_{2} + 2 a_{3} \) </li>
+</ul>
+
+<p>各行的系数：</p>
+
+<ul>
+<li>2 3 1 1</li>
+<li>1 2 3 1</li>
+<li>1 1 2 3</li>
+<li>3 1 1 2</li>
+</ul>
+
+<p>也符合MDS矩阵乘法公式。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Rijndael_key_schedule">KeyExpansion 密钥扩展</a></h2>
+
+<p>KeyExpansion也叫Rijndael key schedule，就是把用户给出的16字节的密钥扩展到16*11=176字节。</p>
+
+<p>可以把用户密钥Key理解为伪随机数生成器的种子，RoundKey就是随机出来的176字节的随机值。</p>
+
+<p>wiki给出的流程图：</p>
+
+<p><img src="../images/2018.8/Key_Schedule.png" alt="Key_Schedule.png"></p>
+
+<p>蓝色的4小块，其实就是一个4字节的字word：</p>
+
+<p><img src="../images/2018.8/word.png" alt="word.png"></p>
+
+<p>其中的这段特殊的操作，被称为g函数：</p>
+
+<p><img src="../images/2018.8/g.png" alt="g.png"></p>
+
+<p>更具体的g函数处理过程：</p>
+
+<p><img src="../images/2018.8/g_detail.png" alt="g_detail.png"></p>
+
+<p>(from <a href="http://spi.unob.cz/papers/2017/2017-05.pdf">here</a>)</p>
+
+<p>如果去掉g函数，其实这个图表达的是这么一条公式：</p>
+
+<p>\[ w_{i} = w_{i - 4} \oplus w_{i-1}， 4 \le i \le 43 \]</p>
+
+<p>下面看tiny-AES-c源码剖析：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#define AES_BLOCKLEN 16 //Block length in bytes AES is 128b block only
+</span>
+<span class="cp">#if defined(AES256) &amp;&amp; (AES256 == 1)
+</span>    <span class="cp">#define AES_KEYLEN 32
+</span>    <span class="cp">#define AES_keyExpSize 240
+#elif defined(AES192) &amp;&amp; (AES192 == 1)
+</span>    <span class="cp">#define AES_KEYLEN 24
+</span>    <span class="cp">#define AES_keyExpSize 208
+#else
+</span>    <span class="cp">#define AES_KEYLEN 16   // Key length in bytes
+</span>    <span class="cp">#define AES_keyExpSize 176
+#endif
+</span>
+<span class="k">struct</span> <span class="n">AES_ctx</span>
+<span class="p">{</span>
+  <span class="kt">uint8_t</span> <span class="n">RoundKey</span><span class="p">[</span><span class="n">AES_keyExpSize</span><span class="p">];</span>
+<span class="cp">#if (defined(CBC) &amp;&amp; (CBC == 1)) || (defined(CTR) &amp;&amp; (CTR == 1))
+</span>  <span class="kt">uint8_t</span> <span class="n">Iv</span><span class="p">[</span><span class="n">AES_BLOCKLEN</span><span class="p">];</span>
+<span class="cp">#endif
+</span><span class="p">};</span>
+
+<span class="c1">// The round constant word array, Rcon[i], contains the values given by </span>
+<span class="c1">// x to the power (i-1) being powers of x (x is denoted as {02}) in the field GF(2^8)</span>
+<span class="k">static</span> <span class="k">const</span> <span class="kt">uint8_t</span> <span class="n">Rcon</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="mh">0x8d</span><span class="p">,</span> <span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x04</span><span class="p">,</span> <span class="mh">0x08</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x40</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x1b</span><span class="p">,</span> <span class="mh">0x36</span> <span class="p">};</span>
+
+<span class="c1">// This function produces Nb(Nr+1) round keys. The round keys are used in each round to decrypt the states. </span>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">KeyExpansion</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">RoundKey</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">Key</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">unsigned</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">;</span>
+  <span class="kt">uint8_t</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span> <span class="c1">// Used for the column/row operations</span>
+
+  <span class="c1">// AES_keyExpSize = 176 = 16 * 11，所以总共要做11轮</span>
+  <span class="c1">// 第0轮，直接复制到RoundKey</span>
+  <span class="c1">// AES-128的Nk为4，这里复制了16个字节，即把整个Key都复制进RoundKey了</span>
+  <span class="c1">// RoundKey[0] ... RoundKey[15] 即头4个字w0、w1、w2、w3（words）</span>
+  <span class="c1">// RoundKey总共有 176/4 = 44个words（w0到w43）</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">Nk</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">RoundKey</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">0</span><span class="p">];</span>
+    <span class="n">RoundKey</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+    <span class="n">RoundKey</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">];</span>
+    <span class="n">RoundKey</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">Key</span><span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span><span class="p">];</span>
+  <span class="p">}</span>
+
+  <span class="c1">// All other round keys are found from the previous round keys.</span>
+  <span class="c1">// for( i = 4; i &lt; 4 * (10 + 1); ++i)</span>
+  <span class="c1">// 从w4遍历到w43，i就是word的下标</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="n">Nk</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">Nb</span> <span class="o">*</span> <span class="p">(</span><span class="n">Nr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="p">{</span>
+      <span class="c1">// 这段代码是把上一个word（i-1) 写进tempa</span>
+      <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">;</span>
+      <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">0</span><span class="p">];</span>
+      <span class="n">tempa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+      <span class="n">tempa</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">2</span><span class="p">];</span>
+      <span class="n">tempa</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">3</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 这个if代码段就是g函数</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="n">Nk</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="c1">// 每4个字的第一个：w4、w8、w12···</span>
+    <span class="p">{</span>
+      <span class="c1">// Function RotWord()</span>
+      <span class="p">{</span>
+        <span class="c1">// 也可以叫shift操作</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="c1">// Function SubWord()</span>
+      <span class="p">{</span>
+        <span class="c1">// sbox变换</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">getSBoxValue</span><span class="p">(</span><span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">getSBoxValue</span><span class="p">(</span><span class="n">tempa</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">getSBoxValue</span><span class="p">(</span><span class="n">tempa</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+        <span class="n">tempa</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">getSBoxValue</span><span class="p">(</span><span class="n">tempa</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+      <span class="p">}</span>
+      <span class="c1">// Function Rcon()</span>
+      <span class="c1">// 这个word的第一个字节，做RC异或变换</span>
+      <span class="c1">// Rcon[i/Nk]相当于Rcon[轮编号]，Rcon有11个值</span>
+      <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">Rcon</span><span class="p">[</span><span class="n">i</span><span class="o">/</span><span class="n">Nk</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">4</span><span class="p">;</span> <span class="n">k</span><span class="o">=</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">Nk</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">;</span>
+    <span class="c1">// 例如如果i=4，那么tempa是w3，i-Nk是w0</span>
+    <span class="c1">// 下面四行就是w4 = w0^w3</span>
+    <span class="n">RoundKey</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">^</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">RoundKey</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">^</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">RoundKey</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">^</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+    <span class="n">RoundKey</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoundKey</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">^</span> <span class="n">tempa</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>其中新出现的Rcon全称叫Round constant，其实是GF(256)下的多项式系数\( 2^{i - 1}\)模了\( x^{4} + x^{3} + x + 1 \)，其中i是轮数，范围[1,10]:</p>
+
+<p><img src="../images/2018.8/rcon.svg" alt="rcon.svg"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Rijndael_key_schedule#Common_operations">wiki</a>)</p>
+
+<p>模数的存在使得rcon的值不超过一个字节的范围。而i范围是[1,10]，所以有2个rcon会被模约: rcon[9]和rcon[10]。</p>
+
+<p>rcon[0]到rcon[10]：0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36</p>
+
+<p>其中，rcon[8]是0x80（128），rcon[9]是0x1b（27），rcon[10]是0x36（54），显然后2个被模约了。</p>
+
+<p>其中还要注意，rcon[0]是忽略的，i取值也不会有0。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Rijndael_S-box">S-Box和Inv-S-Box</a></h2>
+
+<p>先搞懂S-Box的构造。S-Box其实是一个lookup函数，输入一个字节a，输出一个字节b。a到b的映射过程就是查一张预计算的sbox表：</p>
+
+<p><img src="../images/2018.8/sbox.png" alt="sbox.png"></p>
+
+<p>在c/c++中，sbox会实现为一个长度256的uint8_t数组，查表的过程非常简单，就是一次下标索引：b = sbox[a]。毕竟a的取值是[0,255]，没毛病。上面的sbox二维图和sbox一维数组，也是一样的。举2个例子：</p>
+
+<ul>
+<li>a=0x0f时，sbox[0x0f]，就是找sbox数组的第0x0f=15个元素，即图中的第一行的最后一个元素0x76，坐标(0，f）</li>
+<li>a=0x53时，sbox[0x53]，找第0x53个元素，纵坐标0x53/16 = 5，横坐标0x53%16 = 3，第5行第3个元素0xed，坐标（5，3）</li>
+</ul>
+
+<p>从中可见，a的低4bits代表横坐标（第几列），高4bits代表纵坐标（第几行）；在代码里甚至不需要知道坐标，直接把a当下标去索引sbox数组即可，很方便。</p>
+
+<p>剩下的问题就是，S-Box是怎么构造出来的？为什么sbox[0x0f]就得等于0x76？</p>
+
+<p>先给出构造算法：</p>
+
+<ol>
+<li>求a的GF乘法逆元：a = gmul_inverse(a)</li>
+<li>r = a</li>
+<li>a = rot(a); r<sup>=</sup> a </li>
+<li>a = rot(a); r<sup>=</sup> a </li>
+<li>a = rot(a); r<sup>=</sup> a </li>
+<li>a = rot(a); r<sup>=</sup> a </li>
+<li>r <sup>=</sup> 0x63;</li>
+<li>r就是sbox[a]了</li>
+</ol>
+
+<h2>资料：</h2>
+
+<p><a href="https://github.com/kokke/tiny-AES-c">https://github.com/kokke/tiny-AES-c</a></p>
+
+<p><a href="https://github.com/matt-wu/AES">https://github.com/matt-wu/AES</a></p>
+
+<p><a href="https://zhuanlan.zhihu.com/p/41648498">AES对称密码算法介绍(0)——数学知识简介</a></p>
+
+<p><a href="https://zhuanlan.zhihu.com/p/41716899">AES对称密码算法介绍(1)——AES的内部结构</a></p>
+
+<p><a href="https://www.cnblogs.com/luop/p/4334160.html">https://www.cnblogs.com/luop/p/4334160.html</a></p>
+
+<p><a href="https://csrc.nist.gov/csrc/media/projects/cryptographic-standards-and-guidelines/documents/aes-development/rijndael-ammended.pdf#page=3">https://csrc.nist.gov/csrc/media/projects/cryptographic-standards-and-guidelines/documents/aes-development/rijndael-ammended.pdf#page=3</a></p>
+
+<p><a href="http://www.mesacc.edu/%7Escotz47781/mat120/notes/divide_poly/long_division/long_division.html">http://www.mesacc.edu/~scotz47781/mat120/notes/divide_poly/long_division/long_division.html</a></p>
+
+<h1>各种加密模式</h1>
+
+<p>openSSL实现了多种模式的AES，代码结构很清晰，不同模式有不同的代码文件。</p>
+
+<p>AES的目录：/crypto/aes/，各种模式的目录：/crypto/modes/</p>
+
+<h2>ECB</h2>
+
+<h3>ECB加密流程图</h3>
+
+<p><img src="../images/2018.8/ecb.png" alt="ecb.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">wiki</a>)</p>
+
+<p>这个做法超简单，也意味着很不安全，尤其是原文会重复的情况。</p>
+
+<p>用一张图解释为什么ECB不安全：</p>
+
+<p><img src="../images/2018.8/ecb_problem.jpg" alt="ecb_problem.jpg"></p>
+
+<p>(from <a href="https://students.cs.byu.edu/%7Ecs465ta/homework/ECBReview.html">here</a>)</p>
+
+<h2>CBC</h2>
+
+<h3>CBC加密流程图</h3>
+
+<p><img src="../images/2018.8/cbc-0.png" alt="cbc.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">wiki</a>)</p>
+
+<p>\[ C_{i} = E_{K}(C_{i - 1}\oplus P_{i})  \]</p>
+
+<p>\[ C_{0} = IV  \]</p>
+
+<p>其实就是三个步骤的无限循环</p>
+
+<ol>
+<li>块原文和iv异或</li>
+<li>块原文加密，输出块密文</li>
+<li>把iv设为块密文</li>
+</ol>
+
+<p>优点：</p>
+
+<ol>
+<li>安全性优于ECB</li>
+</ol>
+
+<p>缺点：</p>
+
+<ol>
+<li>多了一个初始化向量IV的问题</li>
+<li>因为块与块之间耦合，误差会传递</li>
+<li>不能并行计算、随机读取</li>
+</ol>
+
+<h3>CBC加密代码</h3>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">CRYPTO_cbc128_encrypt</span><span class="p">(</span><span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">in</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">out</span><span class="p">,</span>
+                           <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">key</span><span class="p">,</span>
+                           <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ivec</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="n">block128_f</span> <span class="n">block</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="err">···</span>
+    <span class="c1">// 抽象出来就是这么一段代码</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;=</span> <span class="mi">16</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 第一步</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="o">++</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">in</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">^</span> <span class="n">iv</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+        <span class="c1">// 第二步</span>
+        <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+        <span class="c1">// 第三步</span>
+        <span class="n">iv</span> <span class="o">=</span> <span class="n">out</span><span class="p">;</span>
+        <span class="n">len</span> <span class="o">-=</span> <span class="mi">16</span><span class="p">;</span>
+        <span class="n">in</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="err">···</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>CFB</h2>
+
+<h3>CFB加密流程图</h3>
+
+<p><img src="../images/2018.8/cfb.png" alt="cfb.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">wiki</a>)</p>
+
+<p>\[ C_{i} = E_{K}(C_{i - 1})\oplus P_{i}  \]</p>
+
+<p>\[ C_{0} = IV  \]</p>
+
+<p>看公式可以发现和CBC很像。</p>
+
+<h3>CFB加密代码</h3>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">CRYPTO_cfb128_encrypt</span><span class="p">(</span><span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">in</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">out</span><span class="p">,</span>
+                           <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">key</span><span class="p">,</span>
+                           <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ivec</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="kt">int</span> <span class="o">*</span><span class="n">num</span><span class="p">,</span>
+                           <span class="kt">int</span> <span class="n">enc</span><span class="p">,</span> <span class="n">block128_f</span> <span class="n">block</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
+    <span class="kt">size_t</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="o">*</span><span class="n">num</span><span class="p">;</span>
+<span class="err">···</span>
+    <span class="k">if</span> <span class="p">(</span><span class="mi">16</span> <span class="o">%</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* always true actually */</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="o">*</span><span class="p">(</span><span class="n">out</span><span class="o">++</span><span class="p">)</span> <span class="o">=</span> <span class="n">ivec</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">^=</span> <span class="o">*</span><span class="p">(</span><span class="n">in</span><span class="o">++</span><span class="p">);</span>
+                <span class="o">--</span><span class="n">len</span><span class="p">;</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">16</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;=</span> <span class="mi">16</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// 第一步 加密IV</span>
+                <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">ivec</span><span class="p">,</span> <span class="n">ivec</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="c1">// 第二步 和块原文异或输出块密文，同时IV变为块密文</span>
+                <span class="k">for</span> <span class="p">(;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="n">n</span> <span class="o">+=</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">out</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="o">=</span>
+                        <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">ivec</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="o">^=</span> <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">in</span> <span class="o">+</span> <span class="n">n</span><span class="p">);</span>
+                <span class="p">}</span>
+                <span class="n">len</span> <span class="o">-=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">in</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">ivec</span><span class="p">,</span> <span class="n">ivec</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="k">while</span> <span class="p">(</span><span class="n">len</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">ivec</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">^=</span> <span class="n">in</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+                    <span class="o">++</span><span class="n">n</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="o">*</span><span class="n">num</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="err">···</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>CFB的加解密几乎一致，有微小区别，于是就用了enc变量来判断是加密还是解密，从而用一个函数搞定CFB。</p>
+
+<h2>OFB</h2>
+
+<h3>OFB加密流程图</h3>
+
+<p><img src="../images/2018.8/ofb.png" alt="ofb.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">wiki</a>)</p>
+
+<h3>OFB加密代码</h3>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">CRYPTO_ofb128_encrypt</span><span class="p">(</span><span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">in</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">out</span><span class="p">,</span>
+                           <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">key</span><span class="p">,</span>
+                           <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ivec</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="kt">int</span> <span class="o">*</span><span class="n">num</span><span class="p">,</span> <span class="n">block128_f</span> <span class="n">block</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
+    <span class="kt">size_t</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="o">*</span><span class="n">num</span><span class="p">;</span>
+<span class="err">···</span>
+    <span class="k">if</span> <span class="p">(</span><span class="mi">16</span> <span class="o">%</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* always true actually */</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="o">*</span><span class="p">(</span><span class="n">out</span><span class="o">++</span><span class="p">)</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">in</span><span class="o">++</span><span class="p">)</span> <span class="o">^</span> <span class="n">ivec</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+                <span class="o">--</span><span class="n">len</span><span class="p">;</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">16</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;=</span> <span class="mi">16</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// 循环加密IV</span>
+                <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">ivec</span><span class="p">,</span> <span class="n">ivec</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="c1">// 加密后的IV和块原文异或，输出块密文</span>
+                <span class="k">for</span> <span class="p">(;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="n">n</span> <span class="o">+=</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">))</span>
+                    <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">out</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="o">=</span>
+                        <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">in</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="o">^</span> <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">ivec</span> <span class="o">+</span> <span class="n">n</span><span class="p">);</span>
+                <span class="n">len</span> <span class="o">-=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">in</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">ivec</span><span class="p">,</span> <span class="n">ivec</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="k">while</span> <span class="p">(</span><span class="n">len</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">in</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">^</span> <span class="n">ivec</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+                    <span class="o">++</span><span class="n">n</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="o">*</span><span class="n">num</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="o">*</span><span class="n">num</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+<span class="err">···</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>OFB只需要一个CRYPTO_ofb128_encrypt，解密也是用这个函数，加解密的流程是完全对称的。</p>
+
+<h2>CTR</h2>
+
+<h3>CTR加密流程图</h3>
+
+<p><img src="../images/2018.8/ctr.png" alt="ctr.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation">wiki</a>)</p>
+
+<p>从图中就可以看出，CTR模式每个块之间的加密是解耦的，于是就有了并行计算的可能性。</p>
+
+<h3>CTR加密代码</h3>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">CRYPTO_ctr128_encrypt</span><span class="p">(</span><span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">in</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">out</span><span class="p">,</span>
+                           <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">key</span><span class="p">,</span>
+                           <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ivec</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span>
+                           <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ecount_buf</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="o">*</span><span class="n">num</span><span class="p">,</span>
+                           <span class="n">block128_f</span> <span class="n">block</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
+    <span class="kt">size_t</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="o">*</span><span class="n">num</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="mi">16</span> <span class="o">%</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* always true actually */</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="o">*</span><span class="p">(</span><span class="n">out</span><span class="o">++</span><span class="p">)</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">in</span><span class="o">++</span><span class="p">)</span> <span class="o">^</span> <span class="n">ecount_buf</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+                <span class="o">--</span><span class="n">len</span><span class="p">;</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">16</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;=</span> <span class="mi">16</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// 先加密IV，输出到ecount_buf</span>
+                <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">ivec</span><span class="p">,</span> <span class="n">ecount_buf</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="c1">// IV加1</span>
+                <span class="n">ctr128_inc_aligned</span><span class="p">(</span><span class="n">ivec</span><span class="p">);</span>
+                <span class="c1">// 用ecount_buf去和块原文异或，输出块密文</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="n">n</span> <span class="o">+=</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">))</span>
+                    <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">out</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="o">=</span>
+                        <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">in</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span> <span class="o">^</span> <span class="o">*</span><span class="p">(</span><span class="kt">size_t</span> <span class="o">*</span><span class="p">)(</span><span class="n">ecount_buf</span> <span class="o">+</span> <span class="n">n</span><span class="p">);</span>
+                <span class="n">len</span> <span class="o">-=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">in</span> <span class="o">+=</span> <span class="mi">16</span><span class="p">;</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="p">(</span><span class="o">*</span><span class="n">block</span><span class="p">)</span> <span class="p">(</span><span class="n">ivec</span><span class="p">,</span> <span class="n">ecount_buf</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="n">ctr128_inc_aligned</span><span class="p">(</span><span class="n">ivec</span><span class="p">);</span>
+                <span class="k">while</span> <span class="p">(</span><span class="n">len</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">in</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">^</span> <span class="n">ecount_buf</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+                    <span class="o">++</span><span class="n">n</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="o">*</span><span class="n">num</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="o">*</span><span class="n">num</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>XEX和XTS</h2>
+
+<p>XEX = Xor–encrypt–xor</p>
+
+<p>XTS = XEX-based tweaked-codebook mode with ciphertext stealing</p>
+
+<p>XEX：</p>
+
+<p><img src="../images/2018.8/xex.png" alt="xts.png"></p>
+
+<p>(from <a href="https://en.wikipedia.org/wiki/Disk_encryption_theory#XTS">wiki</a>)</p>
+
+<p><img src="../images/2018.8/xex_formula.svg" alt="xts.png"></p>
+
+<p>可以看到，用来加密原文的X，和三个参数有关：I(IV)、α、j，其中j相当于数组下标，另外2个是常量。因此这个算法是支持随机解密的，只需要知道块的编号j。适合做硬盘数据加密。</p>
+
+<p>XTS：</p>
+
+<p><img src="../images/2018.8/xts.png" alt="xts.png"></p>
+
+<p>XEX或XTS的特点还有双key双加密算法，下面是openSSL关于XTS的代码：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">xts128_context</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">key1</span><span class="p">,</span> <span class="o">*</span><span class="n">key2</span><span class="p">;</span>
+    <span class="n">block128_f</span> <span class="n">block1</span><span class="p">,</span> <span class="n">block2</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<h2><a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">GCM</a></h2>
+
+<p><img src="../images/2018.8/gcm.png" alt="xts.png"></p>
+
+<p>GCM有多牛，牛到有人专门录教学来介绍GCM：</p>
+
+<p><a href="https://www.cryptologie.net/article/277/what-is-gcm-galois-counter-mode/">https://www.cryptologie.net/article/277/what-is-gcm-galois-counter-mode/</a></p>
+
+<p>根据wiki介绍，GCM实质是在CTR模式基础上增加一个Galois Mode，这个mode就是做认证用的（密文完整性）。</p>
+
+<p>看上图也可以发现，前三行和前文的CTR流程图是一样的。</p>
+
+<p>参考资料：</p>
+
+<p><a href="https://blog.csdn.net/mrpre/article/details/79324505">https://blog.csdn.net/mrpre/article/details/79324505</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on August 14, 2018
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

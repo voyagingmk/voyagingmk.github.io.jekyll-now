@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Filament中的exposure和lighting – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="Filament中的exposure和lighting" />
+    <meta property="twitter:title" content="Filament中的exposure和lighting" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/pbr-lighting/',
+		  'title': 'Filament中的exposure和lighting'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>Filament中的exposure和lighting</h1>
+ <h3>Tags: <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<h1>exposure</h1>
+
+<p>Filament里面的exposure大有学问。先要掌握一大堆概念。</p>
+
+<h2>Radiant flux 辐射通量</h2>
+
+<p>在我之前的一篇文章有介绍：<a href="https://www.qiujiawei.com/rendering-equation/#%E8%BE%90%E5%B0%84%E9%80%9A%E9%87%8F(Flux)">辐射通量</a>。</p>
+
+<p>辐射通量可以客观衡量光源（如电灯泡）的功率。因为它描述了<strong>所有波段的电磁波</strong>。</p>
+
+<h2>Luminance 亮度</h2>
+
+<p>单位是 \( cd / m^2\)，也被叫做nit，亮度是表面看起来有多亮的指标。因为用了<a href="https://en.wikipedia.org/wiki/Candela">candela</a>单位（下一小节介绍），所以亮度也是一个光度学的符号定义。</p>
+
+<p>不严谨地说，在渲染中Luminance对应了radiance，也就是pbr着色算出来的rgb值。</p>
+
+<p>一般用大写L表示Luminance。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Luminous_flux">Luminous flux</a> 光通量</h2>
+
+<p>在光度学中，光通量和辐射通量描述的东西有点近似但又各不一样，它只关注<strong>人眼可见波段</strong>的光强，它对各个可见波段做了加权并累加, 加权的介绍见: <a href="https://en.wikipedia.org/wiki/Luminous_efficiency_function">Luminous efficiency function</a> 。</p>
+
+<p>它的单位是<a href="https://en.wikipedia.org/wiki/Lumen_(unit)">Lumen</a> (流明)，1流明等于1 <a href="https://en.wikipedia.org/wiki/Candela">candela</a> 乘以单位立体角：</p>
+
+<p>\[ 1 lm = 1 cd ⋅ sr \]</p>
+
+<p>那么1 cd究竟是多亮呢？wiki给出了解释：一根普通的蜡烛（candle！)会发出大约 1 cd 强度的光。</p>
+
+<p>因为一个完整sphere的立体角大小为4π，所以如果一个光源均匀沿着球面上所有方向发出一根普通的蜡烛的光，这个光源的光通量是4π sr * 1 cd ，约等于12.57 lm。</p>
+
+<p>当这个球面有一半被遮挡时（例如把光源放在墙边），立体角变成2π，此时这个光源的光通量Luminous flux是2π流明，<strong>但光强仍然是1 cd</strong>。</p>
+
+<p>把流明单位\(1 lm = 1 cd ⋅ sr \)代入到Luminance的单位\( cd / m^2\)里，Luminance的单位也就可以用流明表示，为 \( lm/(sr⋅m^2) \)</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Lux">Lux</a> 勒克斯单位</h2>
+
+<p>理解了Luminous flux后，Lux就好理解了，它是一个计量单位：</p>
+
+<p>\[ 1 lx = 1 lm/m^2 = 1 cd·sr/m^2 \]</p>
+
+<p>这个咋一看有点怪，立体角除以面积。这里需要认识到，立体角的大小和对应的面积大小毫无关系，就比如说2D下一个90度的θ角，它对应的斜边的长度是多长，是不知道的。</p>
+
+<p>在光度测量中，Lux一般被用来度量光照射到物体表面时，人眼所感知到的光强度 <strong>light intensity</strong>，记住light intensity这个词，在代码会经常看到。</p>
+
+<h2>Illuminance 照度</h2>
+
+<p>一般Illuminance符号记为E，E的单位就是Lux。此时需要对比下Luminance的单位，进行对比理解：</p>
+
+<ul>
+<li>E 的单位是\( lm/m^2\)</li>
+<li>L 的单位是\( lm/(sr⋅m^2) \)</li>
+</ul>
+
+<p>可见，L要比E多除一个sr即单位立体角，也就是说，当对整个立体角范围的L做积分后，就等于E了。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Exposure_(photography)">exposure</a> 曝光</h2>
+
+<p>曝光不是个动词，它是个名词，应该叫曝光量比较恰当。它指的是<strong>一段时间内，到达单位面积的总光通量</strong>。光通量已经是描述单位面积的了，所以exposure的单位是\( lx \cdot s\) ，符号表示如下：</p>
+
+<p>\[ H = E t \]</p>
+
+<p>E就是光通量，t是指时间。注意这里不限制t是单位时间，t可以是任意长度，毕竟exposure描述的是<strong>一段时间</strong>。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Shutter_speed">Shutter speed</a> 相机快门速度</h2>
+
+<p>快门速度是相机内的胶卷或数码感应器在拍照时（即相机快门打开时）暴露在光线下的时间长度。单位一般是秒。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/F-number">f-number</a> 相机f数</h2>
+
+<p>f-number又名：focal ratio, f-ratio, or f-stop，公式为：</p>
+
+<p>\[ N = \frac {f} {D} \]</p>
+
+<p>f是焦距，D是diameter of the entrance pupil/effective aperture（光圈/入瞳直径/有效孔径）。例如当镜头的焦距为10mm，入瞳直径为5mm时，我们记f数为f/2。</p>
+
+<p>N一般也被直接叫做<strong>aperture 光圈</strong>。</p>
+
+<h2>ISO 感光度/灵敏度</h2>
+
+<p>ISO是指数码相机中CMOS图像传感器对光线的敏感度。增大ISO，只能模拟提高了像素列的信号强度（亮度）。但同时会增大噪声。</p>
+
+<p>ISO符号为S，但ISO的单位比较含糊，认为没有单位即可。</p>
+
+<p>ISO 一般取值为100、200、400、800 · · ·。</p>
+
+<h2><a href="https://en.wikipedia.org/wiki/Exposure_value">EV, exposure value</a> 曝光值</h2>
+
+<p>EV指的是拍摄参数（camera settings）的组合，而不是什么基本物理参数。EV更确切的叫法是<strong>camera exposure settings 机身曝光参数</strong>。</p>
+
+<p>计算公式为：</p>
+
+<p>\[ EV  = log_2 \frac {f数^2}{快门速度} = log_2 \frac {N^2}{t} \]</p>
+
+<p>可见，EV和f数(光圈)成正比，和快门速度成反比，即：</p>
+
+<ul>
+<li>光圈固定，快门越快，t越小，EV越大</li>
+<li>快门固定，光圈越大，EV越大</li>
+<li>EV的范围一般是-6到+17</li>
+<li>因为光圈大小有限，有时候为了得到很低的EV，可能会采用超长时间的快门实现，例如几十秒的曝光时间</li>
+</ul>
+
+<p>显然，<strong>较高的EV会产生较暗的图像</strong>。但EV只是基于快门和光圈定义出来的参数，拍出来的照片到底有多亮，还得看实际的拍摄环境。</p>
+
+<p>例如当你想拍摄一个光线很充足的场景例如中午的室外时，应该使用一个高EV的相机设置，如+15，即用更快的快门或者更大的光圈去拍摄，否则就会产生<strong>曝光过度</strong>（overexposure）。</p>
+
+<p>当你想拍摄北极光时，则需要一个大约-5的EV，避免<strong>曝光不足</strong>（underexposure）。</p>
+
+<h2>ISO 100和EV</h2>
+
+<p>ISO 100是一个惯用标准，没什么复杂的，即那些拍摄参数参考表，都会默认拍摄时的ISO为100。</p>
+
+<p>注意到，上面的EV公式里缺少了相机参数ISO。为了把ISO融入进去，需要把EV符号改为：\( EV_S \)，表示感光度为S时的EV。</p>
+
+<p>根据上面的公式我们知道，\( EV_S \)无论S是多少，它都等于\(log_2 \frac {N^2}{t} \)。这样定义又似乎有点奇怪。</p>
+
+<p>这时候要引入\( EV_{100}  \)的概念，即ISO为100时的EV，\( EV_{100}  \)并不是一个常量，它的大小还是取决于快门和光圈。但是呢，因为拍摄环境的不同，<strong>最佳曝光</strong>应该为多少，是可以测量的，要用到 <a href="https://zh.wikipedia.org/wiki/%E6%B5%8B%E5%85%89%E8%A1%A8">测光表</a> ，<strong>在胶片感光度和光缐强度已知的情况下, 测光表给出获得最佳曝光的光圈值和快门速度组合</strong>。</p>
+
+<p>总之，\( EV_{100}  \)应该理解为，在该拍摄场景下且相机感光度为100时的最佳EV。</p>
+
+<p>例如强烈阳光下的一般场景（阴影很清晰），\( EV_{100}  \)测量值为15。</p>
+
+<p>再回到公式中来。因为EV是一个log2函数，所以可以假设有：</p>
+
+<p>\[ EV_S = EV_{100} + log_2 \frac {S}{100} \]</p>
+
+<p>代入S=100，发现等式确实成立：</p>
+
+<p>\[ EV_{S=100} = EV_{100} + log_2 \frac {100}{100} =   EV_{100} + 0 =  EV_{100} \]</p>
+
+<p>当S不等于100时，说明拍摄者正在用ISO去控制影响EV，让它增大或降低。</p>
+
+<p>对上式做一个变换：</p>
+
+<p>\[ EV_{100}  = EV_S - log_2 \frac {S}{100} \]</p>
+
+<p>\[ EV_{100}  = log_2 \frac {N^2}{t} - log_2 \frac {S}{100} \]</p>
+
+<p>这样就把ISO、光圈、快门统一到了一条公式中，这条公式的作用是，当光圈和快门固定不变后，如果还觉得EV过大或过小了，此时可以通关调节改大ISO，控制最终的EV，使得达到最佳曝光值\( EV_{100}  \)。</p>
+
+<p>将公式做一些变换，就和Filament中的代码对应上了：</p>
+
+<p>\[ EV_{100}  = log_2 \frac {N^2}{t} - log_2 \frac {S}{100} = log_2 \frac {N^2 * 100}{t * S } \]</p>
+
+<p>Filament中，camera.ev100的计算代码如下：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="kt">float</span> <span class="nf">ev100</span><span class="p">(</span><span class="k">const</span> <span class="n">Camera</span><span class="o">&amp;</span> <span class="n">c</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="n">FCamera</span><span class="o">&amp;</span> <span class="n">camera</span> <span class="o">=</span> <span class="n">upcast</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nf">ev100</span><span class="p">(</span><span class="n">camera</span><span class="p">.</span><span class="n">getAperture</span><span class="p">(),</span> <span class="n">camera</span><span class="p">.</span><span class="n">getShutterSpeed</span><span class="p">(),</span> <span class="n">camera</span><span class="p">.</span><span class="n">getSensitivity</span><span class="p">());</span>
+<span class="err">}</span>
+
+<span class="kt">float</span> <span class="nf">ev100</span><span class="p">(</span><span class="kt">float</span> <span class="n">aperture</span><span class="p">,</span> <span class="kt">float</span> <span class="n">shutterSpeed</span><span class="p">,</span> <span class="kt">float</span> <span class="n">sensitivity</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">log2</span><span class="p">((</span><span class="n">aperture</span> <span class="o">*</span> <span class="n">aperture</span><span class="p">)</span> <span class="o">/</span> <span class="n">shutterSpeed</span> <span class="o">*</span> <span class="mf">100.0</span><span class="n">f</span> <span class="o">/</span> <span class="n">sensitivity</span><span class="p">);</span>
+<span class="err">}</span>
+
+<span class="c1">//在CameraInfo的构造函数里调用了ev100接口</span>
+<span class="n">CameraInfo</span><span class="o">::</span><span class="n">CameraInfo</span><span class="p">(</span><span class="n">FCamera</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">camera</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="err">。。。</span>
+    <span class="n">ev100</span>              <span class="o">=</span> <span class="n">Exposure</span><span class="o">::</span><span class="n">ev100</span><span class="p">(</span><span class="n">camera</span><span class="p">);</span>
+    <span class="err">。。。</span>
+<span class="p">}</span>
+
+</code></pre></div>
+<ul>
+<li>camera.getAperture() 就是公式里的N，光圈</li>
+<li>camera.getShutterSpeed() 是快门时间 t</li>
+<li>camera.getSensitivity() 是感光度ISO</li>
+</ul>
+
+<h2>Exposure value 和 luminance 的关系</h2>
+
+<p>上上节给出了一个脱离实际拍摄场景的EV公式。实际上EV还可以从场景亮度L转换得到：</p>
+
+<p>\[ EV =  log_2 \frac { L\cdot S}{ K } \]</p>
+
+<p>S是ISO，K是一个<a href="https://en.wikipedia.org/wiki/Light_meter#Calibration_constants">反光校准常数</a>。K和摄像机制造商有关，以常见的Canon、Nikon为准的话，K等于12.5。</p>
+
+<p>上一节介绍了ISO 100这个惯用标准，那么可以得到：</p>
+
+<p>\[ EV =  log_2 \frac { L\cdot 100}{ 12.5 } \]</p>
+
+<p>此时可以想象一个游戏场景：这个场景特别黑，但是又需要让玩家看得清环境，那么把玩家视角当成相机的话，此时就是要提高曝光，也就是降EV（记住，<strong>较高的EV会产生较暗的图像</strong>）。具体要降多少的EV呢，可以先算出<strong>画面平均亮度</strong>，代入上面这条公式得到。</p>
+
+<p>有时候为了测试或验证，需要根据场景的EV100（一般是查表），算出场景对应的亮度：</p>
+
+<p>\[ L =  2^{EV_{100} } \frac { 12.5 }{ 100  }  = 2^{EV_{100} } 0.125 \]</p>
+
+<p>用python求得：math.log(0.125,2) = -3，于是有：</p>
+
+<p>\[ L  = 2^{EV_{100}  - 3}\]</p>
+
+<p>翻译成代码就是：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="n">luminance</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">EV</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">EV</span> <span class="o">=</span> <span class="n">log2</span><span class="p">(</span><span class="n">luminance</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span>
+</code></pre></div>
+<h2>Exposure compensation 曝光补偿</h2>
+
+<p>EC其实很简单，是指对EV做一个人为的偏移EC：</p>
+
+<p>\[ EV_{100}&#39; = EV_{100} - EC \]</p>
+
+<h2>photometric exposure（luminous exposure）</h2>
+
+<p>前面提到的exposure还有别的定义方式：</p>
+
+<p>\[ H = \frac {qLt}{N^2}\]</p>
+
+<p>来源于wiki <a href="https://en.wikipedia.org/wiki/Film_speed">Film speed</a> 的Measurements and calculations小节。</p>
+
+<p>其中的q和镜片透光率有关，一般为0.65。</p>
+
+<p>L是指拍摄场景的亮度Luminance，t是快门，N是光圈。</p>
+
+<p>这个公式的H是指luminous exposure，即可见光波段的曝光，单位是\(lux \cdot s\)。</p>
+
+<p>这个公式还缺少了ISO参数，这必须理解另外3个概念（上面的wiki里有）：</p>
+
+<ul>
+<li>saturation-based speed</li>
+<li>noise-based speed</li>
+<li>standard output sensitivity</li>
+</ul>
+
+<p>speed其实认为是ISO即可，暂时我搞不懂这3个东西。</p>
+
+<p>Filament选择了第一种，也就是这条公式：</p>
+
+<p>\[ H_{sat} = \frac {78}{S_{sat}} \]</p>
+
+<p>大写S就是ISO了，这个式子的sat下标是说，最佳的S和可以用78乘以最佳的H的倒数，算出来。具体不深究了。</p>
+
+<p>代入到上面的H的公式后得到：</p>
+
+<p>\[ L_{max} = \frac {N^2 78}{qtS}\]</p>
+
+<p>算这个是为了在渲染里，单位化一下Pbr着色出来的L值(rgb)：</p>
+
+<p>\[ L&#39; = L\frac {1}{ L_{max} }\]</p>
+
+<p>\( L_{max} \)可以用ISO=100化简：</p>
+
+<p>\[ L_{max} = \frac {N^2 78}{qtS} = 2^{EV_{100}} \frac {78}{qS} = 2^{EV_{100}} \frac {78}{0.65 \cdot 100}  = 2^{EV_{100}} \cdot 1.2 \]</p>
+
+<p>Filament里把\(\frac {1}{ L_{max}} \)当成了exposure：</p>
+
+<p>\[ exposure = \frac {1}{ L_{max}} = \frac {1}{ 2^{EV_{100}} \cdot 1.2 } \]</p>
+
+<p>对应代码是Exposure namespace下的静态函数exposure：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="kt">float</span> <span class="nf">exposure</span><span class="p">(</span><span class="kt">float</span> <span class="n">ev100</span><span class="p">)</span> <span class="k">noexcept</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mf">1.0</span><span class="n">f</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.2</span><span class="n">f</span> <span class="o">*</span> <span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="mf">2.0</span><span class="n">f</span><span class="p">,</span> <span class="n">ev100</span><span class="p">));</span>
+<span class="err">}</span>
+</code></pre></div>
+<p>在View.cpp的FView::prepareLighting里调用了exposure接口并用CameraInfo的ev100作为参数，计算出了exposure：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="p">...</span>
+ <span class="k">const</span> <span class="kt">float</span> <span class="n">exposure</span> <span class="o">=</span> <span class="n">Exposure</span><span class="o">::</span><span class="n">exposure</span><span class="p">(</span><span class="n">camera</span><span class="p">.</span><span class="n">ev100</span><span class="p">);</span>
+<span class="p">...</span>
+</code></pre></div>
+<h1>lighting</h1>
+
+<p>Filament中把direct、point、spot light等都统一到一个Light结构：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="k">struct</span> <span class="n">Light</span> <span class="p">{</span>
+    <span class="kt">vec4</span> <span class="n">colorIntensity</span><span class="p">;</span>  <span class="c1">// rgb, pre-exposed intensity</span>
+    <span class="kt">vec3</span> <span class="n">l</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">attenuation</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">NoL</span><span class="p">;</span>
+    <span class="kt">vec3</span> <span class="n">worldPosition</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">castsShadows</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">contactShadows</span><span class="p">;</span>
+    <span class="kt">uint</span> <span class="n">shadowIndex</span><span class="p">;</span>
+    <span class="kt">uint</span> <span class="n">shadowLayer</span><span class="p">;</span>
+    <span class="kt">uint</span> <span class="n">channels</span><span class="p">;</span>
+<span class="p">};</span>
+
+</code></pre></div>
+<p>本文关注的直接光的初始化代码：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="n">Light</span> <span class="nf">getDirectionalLight</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Light</span> <span class="n">light</span><span class="p">;</span>
+    <span class="c1">// note: lightColorIntensity.w is always premultiplied by the exposure</span>
+    <span class="n">light</span><span class="p">.</span><span class="n">colorIntensity</span> <span class="o">=</span> <span class="n">frameUniforms</span><span class="p">.</span><span class="n">lightColorIntensity</span><span class="p">;</span>
+    <span class="n">light</span><span class="p">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">frameUniforms</span><span class="p">.</span><span class="n">lightDirection</span><span class="p">;</span>
+    <span class="n">light</span><span class="p">.</span><span class="n">attenuation</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+    <span class="n">light</span><span class="p">.</span><span class="n">NoL</span> <span class="o">=</span> <span class="n">saturate</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">shading_normal</span><span class="p">,</span> <span class="n">light</span><span class="p">.</span><span class="n">l</span><span class="p">));</span>
+    <span class="n">light</span><span class="p">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">frameUniforms</span><span class="p">.</span><span class="n">lightChannels</span> <span class="o">&amp;</span> <span class="mh">0xFFu</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">light</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>其中重点要理解的是colorIntensity。</p>
+
+<h2>colorIntensity</h2>
+
+<p>direct light的colorIntensity在CPU中计算，代码在PerViewUniforms::prepareDirectionalLight里面：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="k">const</span> <span class="n">float4</span> <span class="n">colorIntensity</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">lcm</span><span class="p">.</span><span class="n">getColor</span><span class="p">(</span><span class="n">directionalLight</span><span class="p">),</span> <span class="n">lcm</span><span class="p">.</span><span class="n">getIntensity</span><span class="p">(</span><span class="n">directionalLight</span><span class="p">)</span> <span class="o">*</span> <span class="n">exposure</span> <span class="p">};</span>
+</code></pre></div>
+<p>exposure就是上一节用Exposure::exposure(camera.ev100)算出来的exposure。</p>
+
+<p>这个colorIntensity就是给shader用的：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="c1">//shading_model_standard.fs</span>
+
+<span class="kt">vec3</span> <span class="nf">surfaceShading</span><span class="p">(</span><span class="k">const</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">,</span> <span class="k">const</span> <span class="n">Light</span> <span class="n">light</span><span class="p">,</span> <span class="kt">float</span> <span class="n">occlusion</span><span class="p">)</span> <span class="p">{</span>
+   <span class="err">。。。</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">color</span> <span class="o">*</span> <span class="n">light</span><span class="p">.</span><span class="n">colorIntensity</span><span class="p">.</span><span class="n">rgb</span><span class="p">)</span> <span class="o">*</span>
+        <span class="p">(</span><span class="n">light</span><span class="p">.</span><span class="n">colorIntensity</span><span class="p">.</span><span class="n">w</span> <span class="o">*</span> <span class="n">light</span><span class="p">.</span><span class="n">attenuation</span> <span class="o">*</span> <span class="n">NoL</span> <span class="o">*</span> <span class="n">occlusion</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>color相当于反射率albedo，表示要反射多少direct light的光</li>
+<li>light.colorIntensity.rgb是lcm.getColor(directionalLight)，这个就是美术指定的rgb而已</li>
+<li>light.colorIntensity.w是lcm.getIntensity(directionalLight) * exposure</li>
+<li>lcm.getIntensity就是直接光光源的光强度，单位是lux</li>
+<li>occlusion就是visibility，要用shadow map计算得到，本文不谈这个</li>
+</ul>
+
+<p>Intensity由美术指定，也可以用光度计到目标环境测量，例如中午室外晴朗天气时是130000 lux。Intensity指的是入射角垂直于表面时的illuminance。所以公式还乘了NoL。</p>
+
+<p>假设去掉attenuation、occlusion，代码的含义会更清晰一些，如下：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="n">illuminance</span> <span class="o">=</span> <span class="n">lightIntensity</span> <span class="o">*</span> <span class="n">NoL</span><span class="p">;</span>
+<span class="kt">vec3</span> <span class="n">luminance</span> <span class="o">=</span> <span class="n">BSDF</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="o">*</span> <span class="n">illuminance</span><span class="p">;</span>
+<span class="k">return</span> <span class="n">luminance</span><span class="p">;</span>
+</code></pre></div>
+<h1>一些概念的补充</h1>
+
+<h3>白平衡</h3>
+
+<p><a href="https://zhuanlan.zhihu.com/p/421424655">https://zhuanlan.zhihu.com/p/421424655</a></p>
+
+<p>用户设置白色温度，默认是6500K，UE4里可以翻到相关c++代码：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="kt">float</span> <span class="n">WhiteTemp</span> <span class="o">=</span> <span class="mf">6500.0</span><span class="n">f</span><span class="p">;</span>
+</code></pre></div>
+<p>然后是shader里算CIE 1931 xy 坐标，算法来源于wiki <a href="https://en.wikipedia.org/wiki/Standard_illuminant">Standard illuminant</a>的Computation小节：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="c1">// Accurate for 4000K &lt; Temp &lt; 25000K</span>
+<span class="c1">// in: correlated color temperature</span>
+<span class="c1">// out: CIE 1931 chromaticity</span>
+<span class="n">float2</span> <span class="nf">D_IlluminantChromaticity</span><span class="p">(</span> <span class="kt">float</span> <span class="n">Temp</span> <span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// Correct for revision of Plank's law</span>
+    <span class="c1">// This makes 6500 == D65</span>
+    <span class="n">Temp</span> <span class="o">*=</span> <span class="mf">1.4388</span> <span class="o">/</span> <span class="mf">1.438</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">OneOverTemp</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">Temp</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">x</span> <span class="o">=</span>   <span class="n">Temp</span> <span class="o">&lt;=</span> <span class="mi">7000</span> <span class="o">?</span>
+                <span class="mf">0.244063</span> <span class="o">+</span> <span class="p">(</span> <span class="mf">0.09911e3</span> <span class="o">+</span> <span class="p">(</span> <span class="mf">2.9678e6</span> <span class="o">-</span> <span class="mf">4.6070e9</span> <span class="o">*</span> <span class="n">OneOverTemp</span> <span class="p">)</span> <span class="o">*</span> <span class="n">OneOverTemp</span><span class="p">)</span> <span class="o">*</span> <span class="n">OneOverTemp</span><span class="o">:</span>
+                <span class="mf">0.237040</span> <span class="o">+</span> <span class="p">(</span> <span class="mf">0.24748e3</span> <span class="o">+</span> <span class="p">(</span> <span class="mf">1.9018e6</span> <span class="o">-</span> <span class="mf">2.0064e9</span> <span class="o">*</span> <span class="n">OneOverTemp</span> <span class="p">)</span> <span class="o">*</span> <span class="n">OneOverTemp</span> <span class="p">)</span> <span class="o">*</span> <span class="n">OneOverTemp</span><span class="p">;</span>
+
+    <span class="kt">float</span> <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="mf">2.87</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="mf">0.275</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">float2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>这个算法只能算 4000K &lt; Temp &lt; 25000K的范围。对于Temp &lt; 4000K范围，又有一套算法，来源于wiki <a href="https://en.wikipedia.org/wiki/Planckian_locus">Planckian locus</a> 的Approximation小节，uv到xy的转换来源于wiki <a href="https://en.wikipedia.org/wiki/CIE_1960_color_space">CIE 1960 color space</a> 的Relation to CIE XYZ小节：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="c1">// Accurate for 1000K &lt; Temp &lt; 15000K</span>
+<span class="c1">// [Krystek 1985, "An algorithm to calculate correlated colour temperature"]</span>
+<span class="n">float2</span> <span class="nf">PlanckianLocusChromaticity</span><span class="p">(</span> <span class="kt">float</span> <span class="n">Temp</span> <span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">float</span> <span class="n">u</span> <span class="o">=</span> <span class="p">(</span> <span class="mf">0.860117757</span><span class="n">f</span> <span class="o">+</span> <span class="mf">1.54118254e-4</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span> <span class="o">+</span> <span class="mf">1.28641212e-7</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span><span class="o">*</span><span class="n">Temp</span> <span class="p">)</span> <span class="o">/</span> <span class="p">(</span> <span class="mf">1.0</span><span class="n">f</span> <span class="o">+</span> <span class="mf">8.42420235e-4</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span> <span class="o">+</span> <span class="mf">7.08145163e-7</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span><span class="o">*</span><span class="n">Temp</span> <span class="p">);</span>
+    <span class="kt">float</span> <span class="n">v</span> <span class="o">=</span> <span class="p">(</span> <span class="mf">0.317398726</span><span class="n">f</span> <span class="o">+</span> <span class="mf">4.22806245e-5</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span> <span class="o">+</span> <span class="mf">4.20481691e-8</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span><span class="o">*</span><span class="n">Temp</span> <span class="p">)</span> <span class="o">/</span> <span class="p">(</span> <span class="mf">1.0</span><span class="n">f</span> <span class="o">-</span> <span class="mf">2.89741816e-5</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span> <span class="o">+</span> <span class="mf">1.61456053e-7</span><span class="n">f</span> <span class="o">*</span> <span class="n">Temp</span><span class="o">*</span><span class="n">Temp</span> <span class="p">);</span>
+
+    <span class="kt">float</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">u</span> <span class="o">/</span> <span class="p">(</span> <span class="mi">2</span><span class="o">*</span><span class="n">u</span> <span class="o">-</span> <span class="mi">8</span><span class="o">*</span><span class="n">v</span> <span class="o">+</span> <span class="mi">4</span> <span class="p">);</span>
+    <span class="kt">float</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">v</span> <span class="o">/</span> <span class="p">(</span> <span class="mi">2</span><span class="o">*</span><span class="n">u</span> <span class="o">-</span> <span class="mi">8</span><span class="o">*</span><span class="n">v</span> <span class="o">+</span> <span class="mi">4</span> <span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">float2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>然后就可以实现白平衡了：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++">
+<span class="n">float3</span> <span class="nf">WhiteBalance</span><span class="p">(</span> <span class="n">float3</span> <span class="n">LinearColor</span> <span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">float2</span> <span class="n">SrcWhiteDaylight</span> <span class="o">=</span> <span class="n">D_IlluminantChromaticity</span><span class="p">(</span> <span class="n">WhiteTemp</span> <span class="p">);</span>
+    <span class="n">float2</span> <span class="n">SrcWhitePlankian</span> <span class="o">=</span> <span class="n">PlanckianLocusChromaticity</span><span class="p">(</span> <span class="n">WhiteTemp</span> <span class="p">);</span>
+
+    <span class="n">float2</span> <span class="n">SrcWhite</span> <span class="o">=</span> <span class="n">WhiteTemp</span> <span class="o">&lt;</span> <span class="mi">4000</span> <span class="o">?</span> <span class="n">SrcWhitePlankian</span> <span class="o">:</span> <span class="n">SrcWhiteDaylight</span><span class="p">;</span>
+    <span class="n">float2</span> <span class="n">D65White</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span> <span class="mf">0.31270</span><span class="p">,</span>  <span class="mf">0.32900</span> <span class="p">);</span> 
+
+    <span class="p">{</span>
+        <span class="c1">// Offset along isotherm</span>
+        <span class="n">float2</span> <span class="n">Isothermal</span> <span class="o">=</span> <span class="n">PlanckianIsothermal</span><span class="p">(</span> <span class="n">WhiteTemp</span><span class="p">,</span> <span class="n">WhiteTint</span> <span class="p">)</span> <span class="o">-</span> <span class="n">SrcWhitePlankian</span><span class="p">;</span>
+        <span class="n">SrcWhite</span> <span class="o">+=</span> <span class="n">Isothermal</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">bIsTemperatureWhiteBalance</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">float2</span> <span class="n">Temp</span> <span class="o">=</span> <span class="n">SrcWhite</span><span class="p">;</span>
+        <span class="n">SrcWhite</span> <span class="o">=</span> <span class="n">D65White</span><span class="p">;</span>
+        <span class="n">D65White</span> <span class="o">=</span> <span class="n">Temp</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">float3x3</span> <span class="n">WhiteBalanceMat</span> <span class="o">=</span> <span class="n">ChromaticAdaptation</span><span class="p">(</span> <span class="n">SrcWhite</span><span class="p">,</span> <span class="n">D65White</span> <span class="p">);</span>
+    <span class="n">WhiteBalanceMat</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span> <span class="n">XYZ_2_sRGB_MAT</span><span class="p">,</span> <span class="n">mul</span><span class="p">(</span> <span class="n">WhiteBalanceMat</span><span class="p">,</span> <span class="n">sRGB_2_XYZ_MAT</span> <span class="p">)</span> <span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">mul</span><span class="p">(</span> <span class="n">WhiteBalanceMat</span><span class="p">,</span> <span class="n">LinearColor</span> <span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>PlanckianIsothermal和PlanckianLocusChromaticity差不多，只是多了一步在uv空间下用Tint做一个便宜，再继续转到xy。</p>
+
+<p>D65White坐标来源于： <a href="https://en.wikipedia.org/wiki/Standard_illuminant">White points of standard illuminants</a>。</p>
+
+<h3>sRGB和CRT</h3>
+
+<p>因为早期计算器存储数据带宽有限(8bits)，线性空间的RGB直接存到8bits的话，会导致亮度低的区域编码不足，导致色调过少，<strong>且因为人眼对颜色的感知是非线性的，对低亮度的颜色更敏感</strong>，于是发明了sRGB非线性颜色空间，使得8bits可以存储更多的低亮度色调。</p>
+
+<p>同时那时候发明的CRT显示器有个问题是，<strong>输出的亮度和输入的电压并非线性关系</strong>，即不支持输入什么颜色就显示什么颜色，有色差，并且是让颜色变暗，这就刚好可以和带宽问题互补：保存图片时提高亮度，CRT显示图片时降低亮度，使得亮度平衡。</p>
+
+<p>sRGB和linear RGB的大约换算关系：</p>
+
+<ul>
+<li>linearRGB = pow(sRGB, 2.2)</li>
+<li>sRGB = pow(linearRGB, 1/2.2)</li>
+</ul>
+
+<p>大部分美术输出的贴图都是sRGB。</p>
+
+<h3>gamma encoding</h3>
+
+<p>gamma encoding指sRGB = pow(linearRGB, 1/2.2)这个操作。</p>
+
+<h3>gamma correction</h3>
+
+<p>gamma correction指linearRGB = pow(sRGB, 2.2)这个操作。</p>
+
+<p>gamma矫正对于单位化到0到1的rgb值，显然会让颜色变暗。</p>
+
+<h3>现代显示器</h3>
+
+<p>现代显示器和CRT不一样，技术上是可以做到<strong>颜色输入是linear RGB，显示就是linear RGB</strong>。但为了兼容sRGB图片以及优化带宽（能省则省），现代显示器<strong>大部分</strong>还是有gamma的。</p>
+
+<h3>PBR和gamma</h3>
+
+<p>PBR着色是在线性空间下算的，但大部分贴图都是sRGB空间，需要在采样时或者采样前，把贴图颜色做一次gamma correction，变换到线性空间。</p>
+
+<p>至于输出到显示器前需不需要做gamma encoding，得看显示器是否有gamma。假设显示器gamma为2.2，那么就要做pow(linearRGB, 1/2.2)。</p>
+
+<h3>tone mapping</h3>
+
+<p>pbr整个管线可以做到线性了，但是HDR范围下，shading出来的亮度会大于1，还是要做一个映射，把亮度限制在0到1之间，然后才能做gamma encoding并输出到屏幕，毕竟LDR显示器还是8bits通道的。</p>
+
+<p>这个映射就叫tone mapping。含义是色调映射，毕竟在映射前是正确的linear color space。</p>
+
+<h3><a href="https://en.wikipedia.org/wiki/Middle_gray">Middle gray</a> 和 <a href="https://en.wikipedia.org/wiki/Gray_card">Gray card</a></h3>
+
+<p>中灰，也称为18%灰，是用来描述完美曝光质量的数值。本质上是指对可见光波段18%的反射率。Gray card是一个可以买到的卡片，它的颜色就是middle gray。</p>
+
+<h3>Light meters 测光计</h3>
+
+<p>测光计会把拍摄场景转成灰度图，并算出灰度图的平均灰度值，也就是场景平均反射率。当反射率大于18%，就是过曝，小于18%就是曝光不足。</p>
+
+<p>测光计会用EV显示曝光度，当EV等于0，说明场景等于18%灰，也就是最佳曝光。</p>
+
+<h1>参考资料</h1>
+
+<p><a href="https://photographylife.com/exposure-value">https://photographylife.com/exposure-value</a></p>
+
+<p><a href="https://pixelsandwanderlust.com/what-is-middle-grey-understanding-18-grey-reflectance/">https://pixelsandwanderlust.com/what-is-middle-grey-understanding-18-grey-reflectance/</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on January 20, 2022
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

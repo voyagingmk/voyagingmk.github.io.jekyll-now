@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>线性代数之逆矩阵 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="逆矩阵是一个很基本的概念，这里就不说定义了。本文只介绍求解方法。
+
+初等变换求逆法——高斯消元法(Gauss-Jordan elimination)
+
+先在要求解逆矩阵的A的右边增加一个临时的单位矩阵（阶数显然和A一致）。那么A就变成了一个n行、2n列的矩阵A&#39;。
+然后对A&#39;进行高斯消元，也就是通过row operation不断对A&#39;做变换，直到A&#39;的左边的A变成单位矩阵时，A&#39;的右边部分就是A的逆矩阵了。
+要注意的是，A不一定有逆矩阵，当A没有逆矩阵时，这个高斯消元过程中肯定会出现A的某row全是0的情况。
+" />
+    <meta property="og:description" content="逆矩阵是一个很基本的概念，这里就不说定义了。本文只介绍求解方法。
+
+初等变换求逆法——高斯消元法(Gauss-Jordan elimination)
+
+先在要求解逆矩阵的A的右边增加一个临时的单位矩阵（阶数显然和A一致）。那么A就变成了一个n行、2n列的矩阵A&#39;。
+然后对A&#39;进行高斯消元，也就是通过row operation不断对A&#39;做变换，直到A&#39;的左边的A变成单位矩阵时，A&#39;的右边部分就是A的逆矩阵了。
+要注意的是，A不一定有逆矩阵，当A没有逆矩阵时，这个高斯消元过程中肯定会出现A的某row全是0的情况。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="线性代数之逆矩阵" />
+    <meta property="twitter:title" content="线性代数之逆矩阵" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-10/',
+		  'title': '线性代数之逆矩阵'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>线性代数之逆矩阵</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>逆矩阵是一个很基本的概念，这里就不说定义了。本文只介绍求解方法。</p>
+
+<h2>初等变换求逆法——高斯消元法(Gauss-Jordan elimination)</h2>
+
+<p>先在要求解逆矩阵的A的右边增加一个临时的单位矩阵（阶数显然和A一致）。那么A就变成了一个n行、2n列的矩阵A&#39;。
+然后对A&#39;进行高斯消元，也就是通过row operation不断对A&#39;做变换，直到A&#39;的左边的A变成单位矩阵时，A&#39;的右边部分就是A的逆矩阵了。
+要注意的是，A不一定有逆矩阵，当A没有逆矩阵时，这个高斯消元过程中肯定会出现A的某row全是0的情况。</p>
+
+<!--more-->
+
+<p>举例说明：</p>
+
+<p>设A：</p>
+
+<p>\[ A =  \left[ \begin{matrix} 1&amp;2&amp;3\\ 2&amp;5&amp;3\\ 1&amp;0&amp;8\\ \end{matrix} \right] \]</p>
+
+<p>扩展A，在A的右边增加(Adjoin)一个单位矩阵：</p>
+
+<p>\[ A&#39; =  \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 2&amp;5&amp;3&amp;0&amp;1&amp;0\\ 1&amp;0&amp;8&amp;0&amp;0&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>开始变换：</p>
+
+<p>\(  \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 2&amp;5&amp;3&amp;0&amp;1&amp;0\\ 1&amp;0&amp;8&amp;0&amp;0&amp;1\\ \end{matrix} \right] \xrightarrow{ R_{2}=R_{2}-2R_{1}, R_{3}=R_{3}-R_{1} }   \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 2-2*1&amp;5-2*2&amp;3-2*3&amp;0-2*1&amp;1-2*0&amp;0-2*0\\ 1-1&amp;0-2&amp;8-3&amp;0-1&amp;0-0&amp;1-0\\ \end{matrix} \right]\)</p>
+
+<p>\(  \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 0&amp;1&amp;-3&amp;-2&amp;1&amp;0\\ 0&amp;-2&amp;5&amp;-1&amp;0&amp;1\\ \end{matrix} \right] \xrightarrow{ R_{3}=R_{3}+2R_{2} }   \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 0&amp;1&amp;-3&amp;-2&amp;1&amp;0\\ 0+2*0&amp;-2+2*1&amp;5+2*(-3)&amp;-1+2*(-2)&amp;0+2*1&amp;1+2*0\\ \end{matrix} \right]\)</p>
+
+<p>\(  \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 0&amp;1&amp;-3&amp;-2&amp;1&amp;0\\ 0&amp;-0&amp;-1&amp;-5&amp;2&amp;1\\ \end{matrix} \right] \xrightarrow{ R_{3}=-R_{3} }   \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 0&amp;1&amp;-3&amp;-2&amp;1&amp;0\\ 0&amp;0&amp;1&amp;5&amp;-2&amp;-1\\ \end{matrix} \right]\)</p>
+
+<p>\(  \left[ \begin{matrix} 1&amp;2&amp;3&amp;1&amp;0&amp;0\\ 0&amp;1&amp;-3&amp;-2&amp;1&amp;0\\ 0&amp;0&amp;1&amp;5&amp;-2&amp;-1\\ \end{matrix} \right] \xrightarrow{ R_{1}=R_{1}-3R_{3},R_{2}=R_{2}+3R_{3} }   \left[ \begin{matrix} 1&amp;2&amp;0&amp;-14&amp;6&amp;3\\ 0&amp;1&amp;0&amp;13&amp;-5&amp;-3\\ 0&amp;0&amp;1&amp;5&amp;-2&amp;-1\\ \end{matrix} \right]\)</p>
+
+<p>\(  \left[ \begin{matrix} 1&amp;2&amp;0&amp;-14&amp;6&amp;3\\ 0&amp;1&amp;0&amp;13&amp;-5&amp;-3\\ 0&amp;0&amp;1&amp;5&amp;-2&amp;-1\\ \end{matrix} \right] \xrightarrow{ R_{1}=R_{1}-2R_{2} }   \left[ \begin{matrix} 1&amp;0&amp;0&amp;-40&amp;16&amp;9\\ 0&amp;1&amp;0&amp;13&amp;-5&amp;-3\\ 0&amp;0&amp;1&amp;5&amp;-2&amp;-1\\ \end{matrix} \right]\)</p>
+
+<p>所以A的逆矩阵为：</p>
+
+<p>\[  A^{-1} =  \left[ \begin{matrix} -40&amp;16&amp;9\\ 13&amp;-5&amp;-3\\ 5&amp;-2&amp;-1\\ \end{matrix} \right] \]</p>
+
+<h2>伴随矩阵求逆法</h2>
+
+<p>先回顾下2个定理：</p>
+
+<p>1.n阶行列式\(D=det(a_{ij}) \)等于它的任一行(列)的各元素与其代数余子式乘积之和，即：</p>
+
+<p>\[ D = a_{i1}A_{i1}+a_{i2}A_{i2}+\cdots + a_{in}A_{in} , i = 1,2,\cdots ,n \]
+\[ D = a_{1j}A_{1j}+a_{2j}A_{2j}+\cdots + a_{nj}A_{nj} , j = 1,2,\cdots ,n \]</p>
+
+<p>2.n阶行列式\(D=det(a_{ij}) \)的某一行(列)的元素与另一行(列)对应元素的代数余子式乘积之和等于零，即：</p>
+
+<p>\[ D = a_{i1}A_{s1}+a_{i2}A_{s2}+\cdots + a_{in}A_{sn} , i \neq s \]
+\[ D = a_{1j}A_{1t}+a_{2j}A_{2t}+\cdots + a_{nj}A_{nt} , j \neq t \]</p>
+
+<p>以及伴随矩阵的定义：</p>
+
+<p>设\(A=(a_{ij})_{nXm}\)，\(A_{ij}\)是A的行列式\( |A|=det(a_{ij}) \)的元素\( a_{ij} \)的代数余子式\( (i,j=1,2,\cdots,n)\), 则有：</p>
+
+<p>\[ (adj(A)) ^{T} =  \left[ \begin{matrix} A_{11}&amp;A_{12}&amp;\ldots&amp;A_{1n}\\ A_{21}&amp;A_{22}&amp;\ldots&amp;A_{2n}\\ \vdots \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ \\ A_{n1}&amp;A_{n2}&amp;\ldots &amp;A_{nn}\\ \end{matrix} \right]  \]</p>
+
+<p>\[ adj(A) =  \left[ \begin{matrix} A_{11}&amp;A_{21}&amp;\ldots&amp;A_{n1}\\ A_{12}&amp;A_{22}&amp;\ldots &amp;A_{n2}\\ \vdots \ \ \ \ &amp;\vdots  \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ \\ A_{1n}&amp;A_{2n}&amp;\ldots &amp;A_{nn}\\ \end{matrix} \right]  \]</p>
+
+<p>adj(A)称为伴随矩阵。</p>
+
+<p>利用上面2条定理，计算\(Aadj(A)\):</p>
+
+<p>\[ Aadj(A) =  \left[ \begin{matrix} a_{11}&amp;a_{12}&amp;\ldots&amp;a_{1n}\\ a_{21}&amp;a_{22}&amp;\ldots&amp;a_{2n}\\ \vdots \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ \\ a_{n1}&amp;a_{n2}&amp;\ldots &amp;a_{nn}\\ \end{matrix} \right] \left[ \begin{matrix} A_{11}&amp;A_{21}&amp;\ldots&amp;A_{n1}\\ A_{12}&amp;A_{22}&amp;\ldots &amp;A_{n2}\\ \vdots \ \ \ \ &amp;\vdots  \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ \\ A_{1n}&amp;A_{2n}&amp;\ldots &amp;A_{nn}\\ \end{matrix} \right]\]</p>
+
+<p>\[  =  \left[ \begin{matrix} |A|&amp;0&amp;\ldots&amp;0\\ 0&amp;|A|&amp;\ldots&amp;0\\ \vdots \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ &amp;\vdots \ \ \ \ \\ 0&amp;0&amp;\ldots &amp;|A|\\ \end{matrix} \right]  = |A|E \]</p>
+
+<p>即:
+\[ Aadj(A)  = |A|E \]</p>
+
+<p>从而有：</p>
+
+<p>\[ A^{-1}  = \frac {1}{|A|}adj(A) \]</p>
+
+<p>因为用这条公式求逆矩阵要计算adj(A)和|A|，这个计算太慢了。所以可以认为这个解法对阶数&lt;=3的矩阵才实用。</p>
+
+<p>现在用伴随矩阵求逆法来求第一节中的A的逆矩阵：</p>
+
+<p>\[ A =  \left[ \begin{matrix} 1&amp;2&amp;3\\ 2&amp;5&amp;3\\ 1&amp;0&amp;8\\ \end{matrix} \right] \]</p>
+
+<p>\( A_{11} = (-1)^{1+1}   \left| \begin{matrix} 5\ 3\\ 0\ 8\\ \end{matrix} \right| = 40 \)</p>
+
+<p>\( A_{12} = (-1)^{1+2}   \left| \begin{matrix} 2\ 3\\ 1\ 8\\ \end{matrix} \right| = -13\)</p>
+
+<p>\( A_{13} = (-1)^{1+3}   \left| \begin{matrix} 2\ 5\\ 1\ 0\\ \end{matrix} \right| = -5 \)</p>
+
+<p>\( A_{21} = (-1)^{2+1}   \left| \begin{matrix} 2\ 3\\ 0\ 8\\ \end{matrix} \right| = -16 \)</p>
+
+<p>\( A_{22} = (-1)^{2+2}   \left| \begin{matrix} 1\ 3\\ 1\ 8\\ \end{matrix} \right| = 5  \)</p>
+
+<p>\( A_{23} = (-1)^{2+3}   \left| \begin{matrix} 1\ 2\\ 1\ 0\\ \end{matrix} \right| = 2  \)</p>
+
+<p>\( A_{31} = (-1)^{3+1}   \left| \begin{matrix} 2\ 3\\ 5\ 3\\ \end{matrix} \right| = -9  \)</p>
+
+<p>\( A_{32} = (-1)^{3+2}   \left| \begin{matrix} 1\ 3\\ 2\ 3\\ \end{matrix} \right| = 3  \)</p>
+
+<p>\( A_{33} = (-1)^{3+3}   \left| \begin{matrix} 1\ 2\\ 2\ 5\\ \end{matrix} \right| = 1  \)</p>
+
+<p>于是:</p>
+
+<p>\[ adj(A) =  \left[ \begin{matrix} A_{11}&amp;A_{21}&amp;A_{31}\\ A_{12}&amp;A_{22}&amp;A_{32}\\ A_{13}&amp;A_{23}&amp;A_{33}\\ \end{matrix} \right] =  \left[ \begin{matrix} 40&amp;-16&amp;-9\\ -13&amp;5&amp;3\\ -5&amp;2&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>\[ |A| =  a_{31}A_{31} + a_{32}A_{32} + a_{33}A_{33} = 1*(-9) + 0*3 + 8*1 = -1 \]</p>
+
+<p>\[ A^{-1}  = \frac {1}{|A|}adj(A) =  \left[ \begin{matrix} -40&amp;16&amp;9\\ 13&amp;-5&amp;-3\\ 5&amp;-2&amp;-1\\ \end{matrix} \right]   \]</p>
+
+<h2>参考资料</h2>
+
+<p><a href="http://www.mathportal.org/linear-algebra/matrices/gauss-jordan.php">Inverse of a matrix by Gauss-Jordan elimination</a>
+<a href="http://www.sosmath.com/matrix/inverse/inverse.html">Determinant and Inverse of Matrices</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on December 19, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

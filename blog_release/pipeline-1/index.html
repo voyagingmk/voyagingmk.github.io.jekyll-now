@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Graphics Pipeline – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="本文简单梳理了实时渲染管线过程。主要参考了《RTR》3rd。
+
+（更新ing）
+" />
+    <meta property="og:description" content="本文简单梳理了实时渲染管线过程。主要参考了《RTR》3rd。
+
+（更新ing）
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="Graphics Pipeline" />
+    <meta property="twitter:title" content="Graphics Pipeline" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/pipeline-1/',
+		  'title': 'Graphics Pipeline'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>Graphics Pipeline</h1>
+ <h3>Tags: <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>本文简单梳理了实时渲染管线过程。主要参考了《RTR》3rd。</p>
+
+<p>（更新ing）</p>
+
+<!--more-->
+
+<h1>概览</h1>
+
+<h2>基本架构：三大阶段</h2>
+
+<ol>
+<li>Application：CPU负责，把各种几何体信息输送到Geometry阶段，如点、线、三角形。</li>
+<li>Geometry</li>
+<li>Rasterizer</li>
+</ol>
+
+<p>每一个阶段内部是次一级的管线。</p>
+
+<h2>Application阶段</h2>
+
+<p>这个阶段是不需要细分子管线的，因为是在CPU处理，假设是单线程，那么并没有管线处理的能力。不过可以用多核多线程，来实现并行计算。</p>
+
+<h2>Geometry阶段</h2>
+
+<p>细分：</p>
+
+<h3>model and view transform</h3>
+
+<p>简单地说，model transform用来控制对象在世界空间的位置、朝向、缩放等，而view transform和camera有关，camera决定了观察世界空间的角度（把世界空间转换到以摄像机为中心的摄像机空间），即决定了view transform。</p>
+
+<h3>vertex shading</h3>
+
+<p>顶点着色，不是必须，因为存在延迟渲染这种东西。pass。</p>
+
+<h3>projection</h3>
+
+<p>投影转换，作用是把处于view空间的顶点转换到规范化的view volume（也叫frustum）。规范化是指坐标范围会映射到[-1,-1,-1]到[1,1,1] 或者 [0,0,0]到[1,1,1]。</p>
+
+<p>有两种投影转换，一是平行(正交)投影，二是透视投影。</p>
+
+<h3>clipping</h3>
+
+<p>裁剪的依据是：几何体的部分或全部在view volume里时，这个几何体才需要被送往光栅化阶段。</p>
+
+<p>裁剪放在projection之后的好处是，裁剪时几何体都已在规范化的空间（unit cube）里了。</p>
+
+<p>裁剪是硬件上实现的。</p>
+
+<h3>screen mapping</h3>
+
+<p>这一步把frustum下的x、y坐标转换到屏幕坐标(screen coordinate)，如果算上z坐标就是窗口坐标（window coordinate)。</p>
+
+<p>x、y会被缩放到(x1, y1)和(x2,y2)范围，而z坐标不变。这样转换后的x、y、z会被送往光栅化阶段。</p>
+
+<p>(x1,y1)和(x2,y2)是像素坐标了，但像素坐标是整数，浮点数转换到整数有个取整问题。一般认为像素中心是在0.5的地方，例如假设(x1,y1)和(x2,y2）不小于0，那么最左像素的左边界是0，中心是0.5，右边界是1。</p>
+
+<h2>Rasterizer阶段</h2>
+
+<p>细分：</p>
+
+<h3>triangle setup</h3>
+
+<p>准备三角形数据阶段。硬件实现。</p>
+
+<h3>triangle traversal</h3>
+
+<p>首先这里出现了一个fragment的概念：fragment是指被光栅化阶段的三角形覆盖(全覆盖或部分覆盖）到的像素格子其中之一。</p>
+
+<p>找出每个三角形的fragments，就叫triangle traversal，或叫scan conversion。</p>
+
+<p>也是硬件实现。</p>
+
+<h3>pixel shading</h3>
+
+<p>这个众所周知了不做介绍。</p>
+
+<h3>merging</h3>
+
+<p>就是把pixel shading的输出合并到color buffer。</p>
+
+<p>这个阶段不可编程，但可以配置。</p>
+
+<p>其中要注意，depth test和stencil test发生在这个阶段。</p>
+
+<h1>资料</h1>
+
+<p>偶然google到了2份很不错的管线图：</p>
+
+<ul>
+<li><a href="http://www.g-truc.net/doc/OpenGL%204.4%20Pipeline%20Map.svg">OpenGL pipeline map 4.4</a></li>
+<li><a href="http://www.g-truc.net/doc/OpenGL%20ES%203.0%20Pipeline%20Map.svg">OpenGL pipeline map ES 3.0</a></li>
+</ul>
+
+<p>（来源：<a href="http://www.g-truc.net/post-0637.html#menu">http://www.g-truc.net/post-0637.html#menu</a> )</p>
+
+<p><a href="https://blog.csdn.net/wenzhilu/article/details/72356320">https://blog.csdn.net/wenzhilu/article/details/72356320</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on August  5, 2018
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

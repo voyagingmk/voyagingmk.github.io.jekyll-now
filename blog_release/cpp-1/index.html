@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>More Effective C++ 笔记 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="基础议题(basics)
+
+条款1：仔细区别pointers和references
+
+
+使用引用，可以不做null判断
+当需要考虑“不指向任何对象”的可能性时，或是考虑“在不同时间指向不同对象”的能力时，你就应该采用pointer，前一种情况可以将pointer设为null，后一种情况可以改变pointer所指对象。
+当确定“总是会代表某个对象”，而且“一旦代表了该对象就不能够再改变”，那么应该选用reference。
+总是令operator[]返回一个reference。
+
+" />
+    <meta property="og:description" content="基础议题(basics)
+
+条款1：仔细区别pointers和references
+
+
+使用引用，可以不做null判断
+当需要考虑“不指向任何对象”的可能性时，或是考虑“在不同时间指向不同对象”的能力时，你就应该采用pointer，前一种情况可以将pointer设为null，后一种情况可以改变pointer所指对象。
+当确定“总是会代表某个对象”，而且“一旦代表了该对象就不能够再改变”，那么应该选用reference。
+总是令operator[]返回一个reference。
+
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="More Effective C++ 笔记" />
+    <meta property="twitter:title" content="More Effective C++ 笔记" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/cpp-1/',
+		  'title': 'More Effective C++ 笔记'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+
+<h1>More Effective C++ 笔记</h1>
+<h3>Tags: <a href="/tag/c%2B%2B/" rel="tag">c++</a></h3>
+<article class="post">
+  <div class="entry">
+    <h2>基础议题(basics)</h2>
+
+<h3>条款1：仔细区别pointers和references</h3>
+
+<ul>
+<li>使用引用，可以不做null判断</li>
+<li>当需要考虑“不指向任何对象”的可能性时，或是考虑“在不同时间指向不同对象”的能力时，你就应该采用pointer，前一种情况可以将pointer设为null，后一种情况可以改变pointer所指对象。</li>
+<li>当确定“总是会代表某个对象”，而且“一旦代表了该对象就不能够再改变”，那么应该选用reference。</li>
+<li>总是令operator[]返回一个reference。</li>
+</ul>
+
+<!--more-->
+
+<h3>条款2：最好使用C++转型操作符</h3>
+
+<ul>
+<li>需要使用类型转换时，先考虑能不能用static_cast</li>
+<li>不能用static_cast的情况有：
+
+<ul>
+<li>移除表达式的常量性(constness)或变易性(volatileness) [用const_cast]</li>
+<li>继承体系的转型 [用dynamic_cast]</li>
+</ul></li>
+<li>const_cast无法进行继承体系的向下转型(cast down)</li>
+<li>dynamic_cast无法用在缺乏虚函数的类型身上，也不能改变常量性</li>
+<li>reinterpret_cast不具移植性，是平台相关的</li>
+</ul>
+
+<h3>条款3：绝对不要以多态(polymorphically)方式处理数组</h3>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="code"><pre><span class="kt">void</span> <span class="nf">printBSTArray</span><span class="p">(</span><span class="n">ostream</span><span class="o">&amp;</span> <span class="n">s</span><span class="p">,</span> <span class="k">const</span> <span class="n">BST</span> <span class="n">array</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">numElements</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">numElements</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+        <span class="n">s</span><span class="o">&lt;&lt;</span><span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">BST</span> <span class="n">BSTArray</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="n">BalanceBST</span> <span class="n">bBSTArray</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="n">printBSTArray</span><span class="p">(</span><span class="n">cout</span><span class="p">,</span> <span class="n">BSTArray</span><span class="p">,</span><span class="mi">10</span><span class="p">);</span><span class="c1">//OK</span>
+<span class="n">printBSTArray</span><span class="p">(</span><span class="n">cout</span><span class="p">,</span> <span class="n">bBSTArray</span><span class="p">,</span><span class="mi">10</span><span class="p">);</span><span class="c1">//Not OK</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>array[i]其实是一个“指针算术表达式”的简写；它代表的其实是* (array+i)。array所指内存和array+i所指内存的距离是i*sizeof(数组中的单个元素)。而因为printBSTArray中，声明了array的元素的类型为BST，所以距离是i*sizeof(BST)。但当传入的是BalanceBST的数组时，就会出错了。</p>
+
+<p>在删除数组时，也有这个问题，C++语言规范中说，通过base class指针删除一个由derived classes objects构成的数组，其结果未定义。</p>
+
+<p>总的一句话：多态和指针算术不能混用，数组对象几乎总是会涉及指针的算法运算，所以数组和多态不要混用。</p>
+
+<h3>条款4：非必要不提供 default constructor</h3>
+
+<ul>
+<li>有default constructor时，可以避免3个问题，一是类数组的初始化不支持带参数的构造函数，二是一些c++模板库，要求被实例化的目标类型必须要有default constructor，三是类的虚继承体系中，如果基类没有default constructor，那么每一层的子类都必须了解基类的构造函数。</li>
+<li>反过来看，使用default constructor时，可能会增加了类的复杂度，因为不能保证每个字段都有意义（default constructor导致赋予字段一个缺省值，这个缺省值可能是多余的）。并且，使用这些字段的调用者，都需要做一个“测试”，测试字段是否真的被初始化了。</li>
+</ul>
+
+<h2>操作符(operators)</h2>
+
+<h3>条款5：对定制的“类型转换函数”保持警觉</h3>
+
+<ul>
+<li>用一个普通函数来替代类型转换操作符。因为这种操作符重载是&quot;隐式(implicit)&quot;的：</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="code"><pre><span class="k">class</span> <span class="nc">Rational</span><span class="p">{</span>
+<span class="nl">public:</span>
+<span class="k">operator</span> <span class="kt">double</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span> <span class="c1">//not good</span>
+<span class="kt">double</span> <span class="n">asDouble</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span> <span class="c1">//good</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<ul>
+<li>单自变量构造函数，前面要加一个explicit声明。</li>
+<li>用proxy classes 技术时，可以使用隐式类型转换，因为不能连续执行多个类型转换行为（详情见条款30）。</li>
+</ul>
+
+<h3>条款6：区别 increment/decrement操作符的前置和后置形式</h3>
+
+<ul>
+<li>后置式应以其前置式为基础（即后置式的函数体的累加实现，是调用了前置式）。</li>
+<li>后置式的返回类型必须加const，从而禁止obj++++这种写法。</li>
+<li>后置式的函数声明的参数要带一个毫无意义的int，只是用来和前置式做区分。</li>
+<li>虽然禁止obj+++++，但是++++obj是允许的。</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="code"><pre><span class="k">class</span> <span class="nc">UPInt</span><span class="p">{</span>
+    <span class="kt">int</span> <span class="n">m_num</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="n">UPInt</span><span class="p">(</span><span class="kt">int</span> <span class="n">num</span><span class="p">)</span><span class="o">:</span><span class="n">m_num</span><span class="p">(</span><span class="n">num</span><span class="p">){};</span>
+    <span class="n">UPInt</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">++</span><span class="p">(){</span>
+        <span class="n">m_num</span><span class="o">++</span><span class="p">;</span>
+        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="k">const</span> <span class="n">UPInt</span> <span class="k">operator</span><span class="o">++</span><span class="p">(</span><span class="kt">int</span><span class="p">){</span>
+        <span class="n">UPInt</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+        <span class="o">++</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span> 
+        <span class="k">return</span> <span class="n">oldValue</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="kt">int</span> <span class="n">get</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="n">m_num</span><span class="p">;</span>
+    <span class="p">}</span>    
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<h3>条款7：千万不要重载&amp;&amp;、||和, 操作符</h3>
+
+<p>直接贴上我写的一个代码片段：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre></td><td class="code"><pre><span class="cp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+    
+<span class="k">class</span> <span class="nc">Boolean</span><span class="p">{</span>
+    <span class="n">string</span> <span class="n">m_name</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">m_bool</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="n">Boolean</span><span class="p">(</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">b</span><span class="p">)</span><span class="o">:</span><span class="n">m_name</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">m_bool</span><span class="p">(</span><span class="n">b</span><span class="p">){};</span>
+    <span class="kt">bool</span> <span class="k">operator</span> <span class="o">&amp;&amp;</span><span class="p">(</span><span class="kt">bool</span> <span class="n">b</span><span class="p">){</span>
+        <span class="k">if</span><span class="p">((</span><span class="kt">bool</span><span class="p">)(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">b</span><span class="p">){</span>
+            <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="k">operator</span> <span class="kt">bool</span><span class="p">(){</span>
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"get:"</span><span class="o">&lt;&lt;</span><span class="n">m_name</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">m_bool</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Boolean</span> <span class="n">a</span><span class="p">(</span><span class="s">"a"</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+    <span class="n">Boolean</span> <span class="n">b</span><span class="p">(</span><span class="s">"b"</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+    <span class="kt">bool</span> <span class="n">result</span> <span class="o">=</span> <span class="n">a</span> <span class="o">&amp;&amp;</span> <span class="n">b</span><span class="p">;</span>
+    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"a &amp;&amp; b = "</span><span class="o">&lt;&lt;</span><span class="n">result</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>运行结果为:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="code"><pre><span class="nl">get:</span><span class="n">b</span>
+<span class="n">get</span><span class="o">:</span><span class="n">a</span>
+<span class="n">a</span> <span class="o">&amp;&amp;</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>a &amp;&amp; b这个表达式，b先求值了，这不反人类么。</p>
+
+<p>所以：</p>
+
+<ul>
+<li>&amp;&amp; || , 被重载后，“函数调用语义” 会取代 “骡死式语义”。前者的求值顺序是未定义的（C++规范里没有定义），后者必然是从左至右。</li>
+</ul>
+
+<h3>条款8：了解各种不同意义的new和delete</h3>
+
+<h4>关于new</h4>
+
+<ul>
+<li>new operator是指：</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="n">string</span> <span class="o">*</span> <span class="n">ps</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">string</span><span class="p">(</span><span class="s">"Hello"</span><span class="p">);</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>这样子的代码里的new。这个操作符是由语言内建的，就像sizeof一样，不能被改变意义，总是做相同的事情。它的动作分为2个方面，第一，它分配足够的内存，用来放置某类型的对象；第二，它调用一个constructor，为刚才分配的内存中的那个对象设定初值。new operator总是做这两件事，你无法改变其行为。</p>
+
+<ul>
+<li>operator new的一般用法，用来分配且仅分配内存（不调用构造函数）：</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="code"><pre><span class="cp">#include &lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">class</span> <span class="nc">Widget</span><span class="p">{</span>
+    <span class="kt">char</span> <span class="n">member</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="sc">'a'</span><span class="p">,</span><span class="sc">'\0'</span><span class="p">};</span>
+<span class="nl">public:</span>
+    <span class="n">Widget</span><span class="p">(){};</span>
+    <span class="kt">void</span> <span class="n">print</span><span class="p">(){</span>
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"member="</span><span class="o">&lt;&lt;</span><span class="n">member</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="o">*</span> <span class="n">rawMemory</span> <span class="o">=</span> <span class="k">operator</span> <span class="k">new</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Widget</span><span class="p">));</span>
+    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">rawMemory</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="s">","</span><span class="o">&lt;&lt;</span><span class="n">rawMemory</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">Widget</span> <span class="o">*</span> <span class="n">widget</span> <span class="o">=</span> <span class="p">(</span><span class="n">Widget</span><span class="o">*</span><span class="p">)</span> <span class="n">rawMemory</span><span class="p">;</span>
+    <span class="n">widget</span><span class="o">-&gt;</span><span class="n">print</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>输出：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="code"><pre><span class="mi">8</span><span class="p">,</span><span class="mh">0x306850</span>
+<span class="n">member</span><span class="o">=</span><span class="n">Pm0</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<ul>
+<li>placement new 用法：</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="code"><pre><span class="cp">#include &lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">class</span> <span class="nc">Widget</span><span class="p">{</span>
+    <span class="kt">char</span> <span class="n">member</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="sc">'a'</span><span class="p">,</span><span class="sc">'\0'</span><span class="p">};</span>
+<span class="nl">public:</span>
+    <span class="n">Widget</span><span class="p">(){};</span>
+<span class="p">};</span>
+
+<span class="n">Widget</span><span class="o">*</span> <span class="nf">constructWidgetInBuf</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span> <span class="n">buffer</span><span class="p">){</span>
+    <span class="k">return</span> <span class="k">new</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="n">Widget</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Widget</span><span class="p">)];</span>
+    <span class="n">Widget</span> <span class="o">*</span> <span class="n">w</span> <span class="o">=</span> <span class="n">constructWidgetInBuf</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="s">","</span><span class="o">&lt;&lt;</span><span class="n">buf</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+ 
+
+<p>输出：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="mi">2</span><span class="p">,</span><span class="n">a</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<ul>
+<li>使用策略：如果你希望将对象产生于heap内存，请使用new operator。它不但分配内存而且为该对象调用一个constructor。如果你只是打算分配内存，请调用operator new，那就没有任何constructor会被调用。如果你打算在heap objects产生时自己决定内存分配方式，请写一个自己的operator new（重载），并使用new operator，它将会自动调用你所写的operator new。如果你打算在已分配的内存中构造对象，请使用placement new。</li>
+</ul>
+
+<h4>关于delete</h4>
+
+<ul>
+<li>类似new，delete也分为 delete operator 和 operator delete。</li>
+<li>当成对使用operator new、operator delete时，相当于C的malloc和free。</li>
+</ul>
+
+<h4>关于数组</h4>
+
+<ul>
+<li>array new指的是：</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="n">string</span> <span class="o">*</span><span class="n">ps</span> <span class="o">=</span> <span class="k">new</span> <span class="n">string</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>这样子的代码里的new operator，由于诞生的是数组，所以内存是由一个兄弟函数：operator new[]负责分配。</p>
+
+<ul>
+<li><p>array new 不仅要分配多个对象的内存(operator new[])，且要对每一个对象的内存调用一次default constructor。</p></li>
+<li><p>array delete(即 operator delete[])，类似array new，不过它是先调用每个对象的dtor，再调用 operator delete[]以释放内存。</p></li>
+</ul>
+
+<h2>异常</h2>
+
+<p>大概读了一遍这些条款，最后作者的结论是，能不使用异常就不使用异常，这是因为使用异常会有附加的性能开销。但是具体的影响值不明朗，和具体的编译器有关系。</p>
+
+<h3>条款9：利用destructors避免泄露资源</h3>
+
+<p>问题：C++函数调用过程中，如果出现异常，就会导致这个函数的后续代码不被执行。想一想，如果函数开头new了一个对象，在函数末尾会delete这个对象，而异常出现在中间，那么这个对象就不会被析构，于是内存发生泄露。</p>
+
+<p>解决之道就是，用智能指针来管理堆对象，因为智能指针是局部变量，当异常发生时，局部变量是会正常析构的，而，智能指针所绑定的heap对象，会在智能指针析构时也顺带析构。那么这个问题就算是解决了。（真的吗？）</p>
+
+<p>想一下，如果是在智能指针绑定那个对象（取得资源）过程中发生异常，或者是在资源被析构时发生异常，确定不会出问题吗？</p>
+
+<p>很不幸，确实问题并没有完美解决。</p>
+
+<h3>条款10：在constructors内阻止资源泄露（resource leak）</h3>
+
+<p>首先要知道一个事实：C++不自动清理那些“构造期间抛出异常”的对象。</p>
+
+<p>所以，构造函数的编写要小心，要确保构造过程中抛出异常时，仍能对已初始化的变量进行回收处理，避免泄露。</p>
+
+<p>解决方法：使用trycatch，确保构造函数所有可能被抛出的异常都能够捕获到，在catch里释放资源，并，再把异常往上继续抛出。</p>
+
+<p>这个事情实际上并不简单。比如，如果构造函数使用了初始化列表，而初始化列表代码中使用了new，这个new就没法写trycatch了。如果初始化列表有2个变量A、B，A成功拿到对对象，和B的对象构造失败（bad_alloc），A的堆对象就没机会释放了，就悲剧了。（针对这个情况，可以把new操作封装在某个成员函数里，然后在这个成员函数写trycatch，初始化列表调用这个成员函数即可）。</p>
+
+<p>更明智的做法是，把这种“需要获得对对象的成员变量”，改成使用智能指针。还是那2个A、B，当B出事时，A因为是一个智能指针成员变量，且已经完整构造，A会正常析构，析构的时候会正常地把堆对象也释放。</p>
+
+<h3>条款11：禁止异常流出destructors之外</h3>
+
+<p>析构函数在2种情况下会被调用：一，对象在正常状态下被销毁；二，对象呗异常处理机制销毁。</p>
+
+<p>如果异常流出析构函数，当程序是处在上述第二种情况时，会导致程序被terminate。</p>
+
+<p>解决办法是，在析构函数里写trycatch，捕获一切可能的异常，并把catch留空，即，捕获异常后不做任何事情。</p>
+
+<p>另外一个不让异常流出析构函数的理由是，如果析构过程中，某个敌方抛出异常，并传播到上层，那么这个析构函数的后续代码就没有被执行，这个析构函数就没有完成它负责的任务。</p>
+
+<h3>条款12：了解“抛出一个异常”与“传递一个参数”或“调用一个虚函数”之间的差异</h3>
+
+<p>事实：一个对象被抛出作为异常时，总是会发生复制。（即使声明为static；即使是by reference方式）</p>
+
+<h3>条款13：以by reference方式捕捉异常</h3>
+
+<h3>条款14：明智运用exception specifications</h3>
+
+<h3>条款15：了解异常处理的成本</h3>
+
+<p>为了能够在运行时期处理异常，程序需要做大量记录工作：在每一个执行点，必须能够确认“如果发生异常，哪些对象需要析构”，他们必须在每一个try语句块的进入点和离开点做记号，针对每个try语句块必须记录对应的catch子句及能偶处理的异常类型。</p>
+
+<p>运行时期的比对工作（以确保符合exception specifications)不是免费的；异常被抛出时销毁适当对象并找出正确的catch子句也不是免费的。</p>
+
+<p>第二个成本是，try语句块。代码会膨胀，效率也会下降。（这还是没有异常出现时就有这个开销了）</p>
+
+<h2>效率</h2>
+
+<h3>条款16：谨记80-20法则</h3>
+
+<p>2个点：</p>
+
+<ul>
+<li>理性地优化代码来提升程序性能。有的代码优化了，并不一定能带来质的性能提升；要找到性能瓶颈之处才行。</li>
+<li>利用profiler工具来找到性能瓶颈。</li>
+</ul>
+
+<h3>条款17：考虑使用lazy evaluation（缓式评估）</h3>
+
+<p>其实就是“能拖就拖”，减少不必要的计算。</p>
+
+<ul>
+<li>引用计数 &amp;&amp; 区分读和写</li>
+</ul>
+
+<p>考虑这样的代码：</p>
+
+<p>string s1 =&quot;hello&quot;; string s2 = s1;</p>
+
+<p>执行s2=s1时，执行了一次复制构造函数。这个调用是否昂贵？这个调用是否可以避免？事实上，要具体情况具体考虑。如果s2只是被“读”，而不会被“修改”，那么s2只需要存一个指向s1的引用即可，不应该创建一个副本。<strong>在你真正需要之前，不必着急为某物做一个副本。</strong></p>
+
+<ul>
+<li>Lazy Fetching（缓式取出）</li>
+</ul>
+
+<p>简单地说，就是读取数据库数据时，能少拿一点就少拿一点，能不拿就不拿。</p>
+
+<p>比如我自己在使用redis（KV数据库），就可以把一个class实例（有多个成员变量），用hash表来存。使用这个实例时（读or写），不直接hgetall或hsetall（全部读写），而是用hget或hset（单个读写）。</p>
+
+<ul>
+<li>Lazy Expression Evaluation（表达式换评估）</li>
+</ul>
+
+<p>Lazy Evaluation的反义词是Eager Evaluation（急式评估）。
+贴书中的例子：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="code"><pre><span class="n">Matrix</span> <span class="nf">m1</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1000</span><span class="p">);</span>
+<span class="n">Matrix</span> <span class="nf">m2</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1000</span><span class="p">);</span>
+<span class="n">Matrix</span> <span class="n">m3</span> <span class="o">=</span> <span class="n">m1</span> <span class="o">+</span> <span class="n">m2</span><span class="p">;</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>m3是m1和m2的合，这是一个百万级的加法操作。如果m3的值实际上是不会被程序用到，那么这个计算就应该被忽略。</p>
+
+<p>一般来说，定义了m3，应该下文就会用到m3。那么m3的计算就在所难免了，但如果是这样的情况：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">m3</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>显然，按照这一个条款的指示，应该使得，m3.at(2,2)执行时，只计算(2,2)处的值，而不计算其他的值。</p>
+
+<h3>条款18：分期摊还预期的计算成本</h3>
+
+<p>如果预期到某个操作必然要执行，就可以考虑把这个计算提前，甚至计算结果可以被复用。（caching法）</p>
+
+<p>另一种做法是Prefetching（预先取出）。具体就是说，做一个计算时，可以一次过做多一些（batch）。比如磁盘的块读取，或者动态数组的内存动态扩张。</p>
+
+<h3>条款19：了解临时对象的来源</h3>
+
+<p>当程序产生一个non-heap object而没有为它命名，便诞生了一个临时对象。（匿名对象）</p>
+
+<p>一般有2种情况产生临时对象：</p>
+
+<ul>
+<li>隐式类型转换。比如传参时参数有可能被自动转换。</li>
+<li>函数返回对象。返回的变量的类型和函数的返回类型不同时发生。</li>
+</ul>
+
+<p>第一种类型，只当对象以by value的方式传递，或当对象被传递给一个reference-to-const参数时，才会发生。如果对象被传递给一个reference-to-non-const参数，并不会发生此类转换。</p>
+
+<p>第二种情况，感觉这本书的分析过时了，c++11的右值引用，应该是解决这个情况的最有力武器。</p>
+
+<h3>条款20：协助完成“返回值优化”</h3>
+
+<p>撇开c++11，对于返回by value的函数，最佳的return写法是，return后面紧跟一个类构造函数。</p>
+
+<p>这样做可能可以让编译器优化掉这个构造函数产生的临时对象。
+（这一招叫做return value optimization）。</p>
+
+<h3>条款21：利用重载技术（overload）避免隐式类型转换（implicit type conversions）</h3>
+
+<p>很显然，就是通过增加定制的重载函数（函数参数类型和实际的参数类型一致），避免不必要的类型转换开销。</p>
+
+<h3>条款22：考虑以操作符复合形式（op=）取代其独身形式（op）</h3>
+
+<p>大部分程序员都希望，如果他们能够这样写：</p>
+
+<p>x = x + y</p>
+
+<p>他们也能够写成这样：</p>
+
+<p>x += y</p>
+
+<p>一般而言，复合操作符比其对应的独身版本效率高，因为独身版本通常返回一个新对象，而我们必须因此负担一个临时对象的构造和析构成本。</p>
+
+<p>另外，如果同时提供某个操作符的复合形式和独身形式，便允许你的客户在效率与便利性之间做取舍。（虽然这个选择不易）</p>
+
+<p>比如：</p>
+
+<p>d = a + b + c;</p>
+
+<p>和：</p>
+
+<p>d = 0; d += a; d += b; d += c;</p>
+
+<p>后者要比前者效率要高，因为没有复制对象。</p>
+
+<h3>条款23：考虑使用其他程序库</h3>
+
+<p>以iosteam和stdio这2个官方库来说明，不同的库有不同的性能。选择一个适合的库，也是提升性能的好方法。</p>
+
+<h3>条款24：了解virtual functions、multiple inheritance、virtual base classes、runtime type identification的成本</h3>
+
+<p>暂时跳过</p>
+
+<h2>技术 Techniques</h2>
+
+<h3>条款25: 将construtor和non-member functions虚化</h3>
+
+<p>所谓virtual constructor是某种函数，视其获得的输入，可产生不同类型的对象。</p>
+
+<p>也就是说，constructor无法被真正虚化。而是借虚化的成员函数来实现构造函数的虚化。</p>
+
+<h4>virtual copy constructor</h4>
+
+<p>virtual copy constructor，或者叫clone函数，会返回一个指针，指向对象自己的一个新副本。</p>
+
+<p>注意：重载父类的虚函数时，允许改变返回类型。</p>
+
+<h4>将non-member functions的行为虚化</h4>
+
+<p>和constructor无法被真正虚化一样，non-member functions也不行。但是可以用技巧实现。</p>
+
+<p>首先写一个虚成员函数做实际工作，再写一个什么都不做的内联的非虚非成员函数(inline non-member function)，只负责调用这个虚成员函数。</p>
+
+<h3>条款26: 限制某个class所能产生的对象数量</h3>
+
+<h4>允许0个或1个对象</h4>
+
+<p>每当即将产生一个对象，我们确知一件事情：会有一个构造函数被调用。</p>
+
+<p>将构造函数声明为private，就可以禁止每个人产出对象的权利。这是0个对象的实现方法。</p>
+
+<p>如果要使得一个雷有且只有1个对象，要用到一些‘技巧’，比如说用static:</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="code"><pre><span class="k">class</span> <span class="nc">A</span><span class="p">{</span>
+<span class="k">friend</span> <span class="n">A</span><span class="o">&amp;</span> <span class="n">theA</span><span class="p">();</span>
+<span class="nl">private:</span>
+    <span class="n">A</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="n">A</span><span class="o">&amp;</span> <span class="n">theA</span><span class="p">(){</span>
+    <span class="k">static</span> <span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>三个要点：1)构造函数private；2)全局函数被声明为friend，使得theA不受A的private的约束；3)theA里的static。</p>
+
+<p>或者把theA写成静态成员函数(static member function)：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="code"><pre><span class="k">class</span> <span class="nc">A</span><span class="p">{</span>
+<span class="k">static</span> <span class="n">A</span><span class="o">&amp;</span> <span class="n">theA</span><span class="p">();</span>
+<span class="nl">private:</span>
+    <span class="n">A</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="n">A</span><span class="o">&amp;</span> <span class="n">A</span><span class="o">::</span><span class="n">theA</span><span class="p">(){</span>
+    <span class="k">static</span> <span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>改写成这样的好处是，去掉了全局函数；坏处是，调用theA变麻烦了，要A::theA()。(其实也没多麻烦吧)</p>
+
+<p>还可以把A和theA放进一个namespace：</p>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="code"><pre><span class="k">namespace</span> <span class="n">Test</span><span class="p">{</span>
+
+<span class="k">class</span> <span class="nc">A</span><span class="p">{</span>
+<span class="k">friend</span> <span class="n">A</span><span class="o">&amp;</span> <span class="n">theA</span><span class="p">();</span>
+<span class="nl">private:</span>
+    <span class="n">A</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="n">A</span><span class="o">&amp;</span> <span class="n">theA</span><span class="p">(){</span>
+    <span class="k">static</span> <span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="p">};</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>然后调用方法就是: Test::theA()。</p>
+
+<p>或者先执行: using Test::theA，然后就可以直接执行 theA()。</p>
+
+  </div>
+  <div class="entry">
+  (未经授权禁止转载)
+  </div>
+  <div class="date">
+    Written on September  6, 2015
+  </div>
+  <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+  <img src="../images/dashang1.jpeg" />
+  <img src="../images/dashang2.jpeg" />
+    
+    
+  
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

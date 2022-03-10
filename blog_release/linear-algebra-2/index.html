@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>线性代数之矩阵与行列式(2) – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="行列式的意义
+
+貌似一般的线性代数教科书并没有告诉读者行列式的实际意义，只是教会了读者行列式的定义和计算方法。（起码我所阅读的线性代数课本没有提及）
+
+那么在这里我简单地介绍一下。
+
+一阶行列式
+
+要说行列式的意义，得先从行列式的&quot;|&quot;符号谈起。下面是一阶方阵的行列式：
+
+\[ |x| = x \]
+
+是不是想到什么？一阶方阵，其实就是一个数，且它的行列式等于这个数。且，一阶方列式的写法，恰好就是高中数学里的绝对值写法！
+
+想一下绝对值的几何意义：指明了一个实数（这里不提虚数）距离数轴原点的大小。
+" />
+    <meta property="og:description" content="行列式的意义
+
+貌似一般的线性代数教科书并没有告诉读者行列式的实际意义，只是教会了读者行列式的定义和计算方法。（起码我所阅读的线性代数课本没有提及）
+
+那么在这里我简单地介绍一下。
+
+一阶行列式
+
+要说行列式的意义，得先从行列式的&quot;|&quot;符号谈起。下面是一阶方阵的行列式：
+
+\[ |x| = x \]
+
+是不是想到什么？一阶方阵，其实就是一个数，且它的行列式等于这个数。且，一阶方列式的写法，恰好就是高中数学里的绝对值写法！
+
+想一下绝对值的几何意义：指明了一个实数（这里不提虚数）距离数轴原点的大小。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="线性代数之矩阵与行列式(2)" />
+    <meta property="twitter:title" content="线性代数之矩阵与行列式(2)" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-2/',
+		  'title': '线性代数之矩阵与行列式(2)'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>线性代数之矩阵与行列式(2)</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h1>行列式的意义</h1>
+
+<p>貌似一般的线性代数教科书并没有告诉读者行列式的实际意义，只是教会了读者行列式的定义和计算方法。（起码我所阅读的线性代数课本没有提及）</p>
+
+<p>那么在这里我简单地介绍一下。</p>
+
+<h2>一阶行列式</h2>
+
+<p>要说行列式的意义，得先从行列式的&quot;|&quot;符号谈起。下面是一阶方阵的行列式：</p>
+
+<p>\[ |x| = x \]</p>
+
+<p>是不是想到什么？一阶方阵，其实就是一个数，且它的行列式等于这个数。且，一阶方列式的写法，恰好就是高中数学里的绝对值写法！</p>
+
+<p>想一下绝对值的<strong>几何意义</strong>：指明了一个实数（这里不提虚数）距离数轴原点的大小。</p>
+
+<!--more-->
+
+<h2>二阶行列式</h2>
+
+<p>现在看一下二阶行列式：</p>
+
+<p>\( \left| \begin{matrix} x_{0}\ x_{1}\\ y_{0}\ y_{1}\\ \end{matrix} \right| \)</p>
+
+<p>再变成用向量来表示：</p>
+
+<p>\( |\ \alpha\ \beta\ | \)</p>
+
+<p>于是，二阶行列式等于2个向量的&quot;绝对值&quot;。那么，对于2个向量，这个绝对值是什么？</p>
+
+<p>首先，搬出向量的夹角公式：</p>
+
+<p>\[ cos\theta = \dfrac {\alpha \cdot\ \beta } {|\alpha |\times|\beta |} \]</p>
+
+<p>从上面的式子可以推出：</p>
+
+<p>\[ sin\theta = \sqrt{1 - \dfrac {(\alpha \cdot\ \beta )^{2}} {|\alpha |^{2}\times |\beta |^{2}} } \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta = \sqrt{ |\alpha |^{2} \times |\beta |^{2} - (\alpha \cdot\ \beta )^{2} } \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta = \sqrt{ (x_{0}^{2} + y_{0}^{2})\times (x_{1}^{2} + y_{1}^{2}) - (x_{0}x_{1}+y_{0}y_{1})^{2} } \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta = \sqrt{ x_{0}^{2}x_{1}^{2} + x_{0}^{2}y_{1}^{2} + y_{0}^{2}x_{1}^{2} + y_{0}^{2}y_{1}^{2} - x_{0}^{2}x_{1}^{2} - x_{0}x_{1}y_{0}y_{1} - y_{0}^{2}y_{1}^{2} } \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta = \sqrt{ x_{0}^{2}y_{1}^{2} + x_{1}^{2}y_{0}^{2} - 2x_{0}x_{1}y_{0}y_{1} } \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta = \sqrt{ (x_{0}y_{1} - x_{1}y_{0})^{2} } \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta = x_{0}y_{1} - x_{1}y_{0} \]</p>
+
+<p>\[ |\alpha |\times |\beta |\times sin\theta =     \left| \begin{matrix} x_{0}\ x_{1}\\ y_{0}\ y_{1}\\ \end{matrix} \right| = |\ \alpha\ \beta\ | \]</p>
+
+<p>注意到了吗，这个式子的左边，赫然是平行四边形的面积公式！</p>
+
+<p>所以，二阶行列式的几何意义就是<strong>2个向量组成的平行四边形的面积</strong>。</p>
+
+<p><img src="../images/2015.8/parallelogram.svg" alt="parallelogram.png"></p>
+
+<h2>三阶行列式</h2>
+
+<p>通过上面的分析，可以知道行列式在几何数学中是有某种意义的，那么三阶行列式又是什么东西呢？</p>
+
+<p>三阶行列式：</p>
+
+<p>\( \left| \begin{matrix} x_{0}\ x_{1}\ x_{2}\\ y_{0}\ y_{1}\ y_{2}\\ z_{0}\ z_{1}\ z_{2}\\ \end{matrix} \right| \)</p>
+
+<p>再变成用向量来表示：</p>
+
+<p>\( |\ \alpha\ \beta\ \gamma\ | \)</p>
+
+<p>3个3维向量，想到了什么呢？没错，就是3维空间中的3个向量！</p>
+
+<p>设 \( \alpha = (1,0,0)^{T} \) \( \beta = (0,1,0)^{T} \) \( \gamma = (0,0,1)^{T} \) ， 即相当于3维正交坐标系的3条轴的单位向量。这样的3个单位向量组成的行列式，值等于1。</p>
+
+<p>另外，巧合的是，这3个单位向量组成的正方体，体积也为1。实际上，3阶行列式确实等价于平行六面体的体积。</p>
+
+<p>证明过程（暂无）。</p>
+
+<p><img src="../images/2015.8/parallelepiped.svg" alt="parallelogram.png"></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on August 29, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

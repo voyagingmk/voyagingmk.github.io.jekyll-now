@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>曲线数学之贝塞尔曲线Bézier Curves – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="本文主要关注的是公式的推导。
+
+在讲贝塞尔曲线之前先复习下组合数学。
+" />
+    <meta property="og:description" content="本文主要关注的是公式的推导。
+
+在讲贝塞尔曲线之前先复习下组合数学。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="曲线数学之贝塞尔曲线Bézier Curves" />
+    <meta property="twitter:title" content="曲线数学之贝塞尔曲线Bézier Curves" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/bezier-1/',
+		  'title': '曲线数学之贝塞尔曲线Bézier Curves'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>曲线数学之贝塞尔曲线Bézier Curves</h1>
+ <h3>Tags: <a href="/tag/math/" rel="tag">math</a>, <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>本文主要关注的是公式的推导。</p>
+
+<p>在讲贝塞尔曲线之前先复习下组合数学。</p>
+
+<!--more-->
+
+<h1>组合数学</h1>
+
+<h2>排列 permutation</h2>
+
+<p>注意，排列的英文是permutation，这个词也就是线性代数里的“置换”。联想置换矩阵的概念，就可以近似理解“排列”的意义。</p>
+
+<p>permutation的公式是：</p>
+
+<p>\[ P(n,k) = P_{n}^{k} = \frac {n!}{(n-k)!} \]</p>
+
+<p>含义：从n个数取出某k个数总共有多少种排列。</p>
+
+<p>所以，排列是<strong>有顺序</strong>的。</p>
+
+<h2>组合 combination</h2>
+
+<p>组合这个东西可以用“排列”来理解，比如对于某3个不同的数a、b、c，有\[ P_{3}^{3} = \frac {3!}{(3-3)!} = 6 \]种排列: abc、acb、bac、bca、cab、cba，然而，组合数只有一个，也就是[a、b、c]。</p>
+
+<p>所以，组合是<strong>没有顺序</strong>的。</p>
+
+<p>combination的公式是：</p>
+
+<p>\[ C(n,k)  = C_{n}^{k} = \frac { P_{n}^{k} } { P_{k}^{k} } = \frac {n!}{k!(n-k)!} , 0 &lt; k &lt;= n\]</p>
+
+<p>性质1：</p>
+
+<p>\(  C_{n}^{k} = \frac {n!}{k!(n-k)!} \)</p>
+
+<p>\( = \frac {n!}{(n-(n-k))!(n-k)!} \)</p>
+
+<p>\( = \frac {n!}{(n-k)!(n-(n-k))!} \)</p>
+
+<p>\( = C_{n}^{n-k} \)</p>
+
+<p>性质2：</p>
+
+<p>\[  C_{n}^{k} = \frac {n!}{k!(n-k)!} = 0 【 k &lt;= 0 ， k &gt; n】 \] </p>
+
+<p>(当k&lt;=0或k&gt;n时，右边的式子会出现负数的阶乘。负数阶乘在组合数公式的计算中，可以认为等于0)</p>
+
+<p>combination很重要，比如说二项式定理里的展开式就用到了它：</p>
+
+<p>\[ (a+b)^{n} = \sum_{r=0}^{n}C_{n}^{r}a^{n-r}b^{r} \]</p>
+
+<p>combination还有一条公式要注意下：</p>
+
+<p>\[ C_{n}^{k} = C_{n-1}^{k-1} + C_{n-1}^{k} , 0 &lt; k &lt; n \]</p>
+
+<p>顺便给个简单证明：</p>
+
+<p>\( C_{n-1}^{k-1} + C_{n-1}^{k} = \)</p>
+
+<p>\( \frac {(n-1)!}{(n-1-(k-1))!(k-1)!} + \frac {(n-1)!}{(n-1-k)!k!}  = \)</p>
+
+<p>\( \frac {(n-1)!}{(n-k)!(k-1)!} + \frac {(n-1)!}{(n-1-k)!k!}  = \)</p>
+
+<p>\( \frac {k(n-1)!}{k(n-k)!(k-1)!} + \frac {(n-k)(n-1)!}{(n-k)(n-1-k)!k!}  = \)</p>
+
+<p>\( \frac {k(n-1)!}{(n-k)!k!} + \frac {(n-k)(n-1)!}{(n-k)!k!}  = \)</p>
+
+<p>\( \frac {k(n-1)!+(n-k)(n-1)!}{(n-k)!k!}  = \)</p>
+
+<p>\( \frac {n(n-1)!}{(n-k)!k!}  =  \frac {n!}{(n-k)!k!}  =   C_{n}^{k} \)</p>
+
+<h1>贝塞尔曲线</h1>
+
+<h2>定义</h2>
+
+<p>给定n个控制点\(P_{0},P_{1},\cdots ,P_{n}\)，贝塞尔曲线的公式如下：</p>
+
+<p>\[ P(t) = \sum_{i=0}^{n}P_{i}B_{i,n}(t) , t\in [0,1] \]</p>
+
+<p>其中的\( B_{i,n}(t) \)叫Bernstein polynomial（伯思斯坦多项式），定义如下：</p>
+
+<p>\[ B_{i,n}(t) = C_{n}^{i}t^{i}(1-t)^{n-i} = \frac {n!}{i!(n-i)!}t^{i}(1-t)^{n-i} 【i=0,1,\cdots ,n】 \]</p>
+
+<h2>Bézier曲线的特性</h2>
+
+<p>特性1：改变单个控制点会引起整条曲线的改变。</p>
+
+<h2>Bernstein polynomial的特性</h2>
+
+<h4>递归性</h4>
+
+<p>\[ B_{i,n}(t) = (1-t)B_{i,n-1}(t) + tB_{i-1,n-1}(t)   【i=0,1,\cdots ,n】 \]</p>
+
+<p>证明：</p>
+
+<p>\( B_{i,n}(t) \)</p>
+
+<p>\( = C_{n}^{i}t^{i}(1-t)^{n-i} \)</p>
+
+<p>\( = (C_{n-1}^{i-1} + C_{n-1}^{i})t^{i}(1-t)^{n-i} \)</p>
+
+<p>\( = C_{n-1}^{i-1}t^{i}(1-t)^{n-i} + C_{n-1}^{i}t^{i}(1-t)^{n-i} \)</p>
+
+<p>\( = (1-t)C_{n-1}^{i}t^{i}(1-t)^{(n-1)-i} + tC_{n-1}^{i-1}t^{i-1}(1-t)^{(n-1)-(i-1)} \)</p>
+
+<p>\( = (1-t)B_{i,n-1}(t) + tB_{i-1,n-1}(t) \)</p>
+
+<h4>归一性</h4>
+
+<p>\[ \sum_{i=0}^{n}B_{i,n}(t) \equiv 1   【t\in (0,1)】 \]</p>
+
+<p>证明：</p>
+
+<p>根据二项式定理有：</p>
+
+<p>\[ \sum_{i=0}^{n}B_{i,n}(t) \]
+\[ = \sum_{i=0}^{n}C_{n}^{i}t^{i}(1-t)^{n-i} \]
+\[ [(1-t)+t]^{n} \equiv 1  \]</p>
+
+<h4>Partition of Unity</h4>
+
+<p>\[ \sum_{i=0}^{n}B_{i,n}(t) = \sum_{i=0}^{n-1}B_{i,n-1}(t) = 1 \]</p>
+
+<p>证明:</p>
+
+<p>利用递归公式，有：</p>
+
+<p>\( \sum_{i=0}^{n}B_{i,n}(t) \)</p>
+
+<p>\( = \sum_{i=0}^{n}[(1-t)B_{i,n-1}(t) + tB_{i-1,n-1}(t)] \)</p>
+
+<p>\( = \sum_{i=0}^{n}[(1-t)B_{i,n-1}(t)] + \sum_{i=0}^{n}[tB_{i-1,n-1}(t)] \)</p>
+
+<p>\( = (1-t)\sum_{i=0}^{n}[B_{i,n-1}(t)] + t\sum_{i=0}^{n}[B_{i-1,n-1}(t)] \)</p>
+
+<p>\( = (1-t)[\sum_{i=0}^{n-1}B_{i,n-1}(t) + B_{n,n-1}(t) ] + t[\sum_{i=1}^{n}B_{i-1,n-1}(t) + B_{-1,n-1}(t) ] \)</p>
+
+<p>因为:</p>
+
+<p>\[ B_{n,n-1}(t) = C_{n-1}^{n}t^{n}(1-t)^{n-1-n} = 0 \]</p>
+
+<p>\[ B_{-1,n-1}(t) = C_{n-1}^{-1}t^{-1}(1-t)^{(n-1)-(-1)} = 0 \]</p>
+
+<p>(这里利用了上文提到的组合数公式性质2)</p>
+
+<p>所以可简化为：</p>
+
+<p>\( \sum_{i=0}^{n}B_{i,n}(t) \)</p>
+
+<p>\( = (1-t)[\sum_{i=0}^{n-1}B_{i,n-1}(t)] + t[\sum_{i=1}^{n}B_{i-1,n-1}(t)] \)</p>
+
+<p>\( = (1-t)[\sum_{i=0}^{n-1}B_{i,n-1}(t)] + t[\sum_{i=0}^{n-1}B_{i,n-1}(t)] \)</p>
+
+<p>\( = (1-t+t)[\sum_{i=0}^{n-1}B_{i,n-1}(t)] \)</p>
+
+<p>\( = \sum_{i=0}^{n-1}B_{i,n-1}(t) \)</p>
+
+<h4>对称性</h4>
+
+<p>\[ B_{i,n}(1 - t) = B_{n-i,n}(t) \]</p>
+
+<p>证明：</p>
+
+<p>由定义：</p>
+
+<p>\[ B_{i,n}(t) = C_{n}^{i}t^{i}(1-t)^{n-i} \]</p>
+
+<p>有：</p>
+
+<p>\( B_{n-i,n}(t) = C_{n}^{n-i}t^{n-i}(1-t)^{n-(n-i)}  \)</p>
+
+<p>\( = C_{n}^{n-i}t^{n-i}(1-t)^{i}  \)</p>
+
+<p>\( = C_{n}^{i}t^{n-i}(1-t)^{i} \)</p>
+
+<p>\( B_{i,n}(1 - t) =  C_{n}^{i}(1 - t)^{i}(1-(1 - t))^{n-i} \)</p>
+
+<p>\( = C_{n}^{i}(1 - t)^{i}t^{n-i} \)</p>
+
+<p>\( = C_{n}^{i}t^{n-i}(1-t)^{i} \)</p>
+
+<p>得证。</p>
+
+<h4>非负性</h4>
+
+<p>当 t = 0 时：</p>
+
+<p>\[ B_{i,n}(0) = 0 , 【i &gt; 0】\]</p>
+
+<p>\[ B_{i,n}(0) = 1 , 【i = 0】\]</p>
+
+<p>当 t = 1 时：</p>
+
+<p>\[ B_{i,n}(0) = 0 , 【i &gt; 0】\]</p>
+
+<p>\[ B_{i,n}(0) = 1 , 【i = 0】\]</p>
+
+<p>当 t= (0,1) 时：</p>
+
+<p>\[ B_{i,n}(t) &gt; 0 , 【i =0,1,2,\cdots ,n-1】\]</p>
+
+<p>证明：把数值代入定义公式就可以了。</p>
+
+<h2>Bernstein基(Bernstein Basis)到幂基(Power Basis)的转换</h2>
+
+<p>由二项式定理：</p>
+
+<p>\[ (a+b)^{n} = \sum_{r=0}^{n}C_{n}^{r}a^{n-r}b^{r} \]</p>
+
+<p>得到：</p>
+
+<p>\[ (1-t)^{n} = \sum_{r=0}^{n}C_{n}^{r}1^{n-r}(-t)^{r} = \sum_{r=0}^{n}C_{n}^{r}(-t)^{r}\]</p>
+
+<p>所以：</p>
+
+<p>\[ B_{i,n}(t) = C_{n}^{i}t^{i}(1-t)^{n-i} \]</p>
+
+<p>\[ = C_{n}^{i}t^{i}\sum _{k=0}^{n-i}C_{n-i}^{k}(-t)^{k} \]</p>
+
+<p>\[ = C_{n}^{i}t^{i}\sum _{k=0}^{n-i}C_{n-i}^{k}(-1)^{k}t^{k} \]</p>
+
+<p>\[ = \sum _{k=0}^{n-i}C_{n}^{i}t^{i}C_{n-i}^{k}(-1)^{k}t^{k} \]</p>
+
+<p>\[ = \sum _{k=0}^{n-i}C_{n}^{i}C_{n-i}^{k}(-1)^{k}t^{k+i} \]</p>
+
+<p>这时设g = k + i ，则有 k = g - i，i = g - k，上式变成：</p>
+
+<p>\[ = \sum _{g - i=0}^{n-(g-k)}C_{n}^{i}C_{n-i}^{g - i}(-1)^{g - i}t^{g} \]</p>
+
+<p>\[ = \sum _{g=i}^{n-g+k}C_{n}^{i}C_{n-i}^{g - i}(-1)^{g - i}t^{g}\]</p>
+
+<p>把g换成k，上式变成：</p>
+
+<p>\[ = \sum _{k=i}^{n-k+k}C_{n}^{i}C_{n-i}^{k - i}(-1)^{k - i}t^{k} \]</p>
+
+<p>\[ = \sum _{k=i}^{n}C_{n}^{i}C_{n-i}^{k - i}(-1)^{k - i}t^{k} \]</p>
+
+<p>其中\(C_{n}^{i}C_{n-i}^{k - i}\)可以进一步简化：</p>
+
+<p>\( C_{n}^{i} C_{n-i}^{k - i} \)
+\( = \frac {n!}{i!(n-i)!} \frac {(n-i)!}{(k-i)!((n-i)-(k-i))!}  \)</p>
+
+<p>\( = \frac {n!}{i!(n-i)!} \frac {(n-i)!}{(k-i)!((n-k)!}  \)</p>
+
+<p>\( = \frac {n!(n-i)!}{i!(n-i)!(k-i)!((n-k)!} \)</p>
+
+<p>\( = \frac {n!}{i!(k-i)!((n-k)!} \)</p>
+
+<p>\( = \frac {n!k!}{i!(k-i)!((n-k)!k!} \)</p>
+
+<p>\( = \frac {n!}{k!(n-k)!} \frac {k!}{i!((k-i)!} \)</p>
+
+<p>\( = C_{n}^{k} C_{k}^{i} \)</p>
+
+<p>所以：</p>
+
+<p>\[  \sum _{k=i}^{n}C_{n}^{i}C_{n-i}^{k - i}(-1)^{k - i}t^{k} = \sum _{k=i}^{n}C_{n}^{k} C_{k}^{i}(-1)^{k - i}t^{k} \]</p>
+
+<p>综上:</p>
+
+<p>\[  B_{i,n}(t) = \sum _{k=i}^{n}C_{n}^{k} C_{k}^{i}(-1)^{k - i}t^{k} \]</p>
+
+<p>设\( b_{k,i} = C_{n}^{k} C_{k}^{i}(-1)^{k - i} \)</p>
+
+<p>则上式变成：</p>
+
+<p>\[  B_{i,n}(t) = \sum _{k=i}^{n}b_{k,i}t^{k} \]</p>
+
+<p>展开后：</p>
+
+<p>\[  B_{i,n}(t) = b_{i,i}t^{i} + b_{i+1,i}t^{i+1} + \cdots + b_{n,i}t^{n} \]</p>
+
+<h1>Bézier曲线的递推形式(de Casteljau算法)</h1>
+
+<p>前面讲的是Bézier曲线的曲线方程定义，现在介绍一个简单实用的算法:de Casteljau&#39;s Algorithm。</p>
+
+<p>先分享我找到的一些演示程序：</p>
+
+<p><a href="http://myst729.github.io/bezier-curve/">http://myst729.github.io/bezier-curve/</a>。</p>
+
+<p><a href="https://www.jasondavies.com/animated-bezier/">https://www.jasondavies.com/animated-bezier/</a>。</p>
+
+<p>以及油管上的:<a href="https://www.youtube.com/watch?v=YATikPP2q70">https://www.youtube.com/watch?v=YATikPP2q70</a>。</p>
+
+<p>递推公式如下：</p>
+
+<p>\[ P_{i}^{k} =\begin {cases} P_{i}  【k=0】 \\  (1-t)P_{i}^{k-1}+tP_{i+1}^{k-1} 【k=1,2,\cdots ,n,i=0,1,\cdots ,n-k】 \end {cases}  \]</p>
+
+<p><img src="../images/2015.12/2.png" alt="2.png"></p>
+
+<p>以上图为例演示下这条公式：</p>
+
+<p>因为有\( P_{0},P_{1},P_{2},P_{3} \)4个控制点，所以n的值是3(要减1)。</p>
+
+<p>然后求该贝塞尔曲线在 t = 1/2时的坐标点B(1/2)的步骤如下：</p>
+
+<p>k = 0时，\(i = 0,1,\cdots ,n-k = 0,1,2,3 \)，所以有:</p>
+
+<p>\( P_{i}^{k=0} = P_{i} \) </p>
+
+<p>\( P_{0}^{k=0} = P_{0} \)</p>
+
+<p>\( P_{1}^{k=0} = P_{1} \)</p>
+
+<p>\( P_{2}^{k=0} = P_{2} \)</p>
+
+<p>\( P_{3}^{k=0} = P_{3} \)</p>
+
+<p>k = 1时，\(i = 0,1,\cdots ,n-k = 0,1,2 \)，所以有:</p>
+
+<p>\( P_{i}^{k=1} = (1-t)P_{i}^{1-1}+tP_{i+1}^{1-1}  = (1-t)P_{i}^{0}+tP_{i+1}^{0} \)</p>
+
+<p>\( P_{0}^{k=1} = (1-t)P_{0}^{0}+tP_{1}^{0} = 0.5P_{0} + 0.5P_{1} = m_{0} \)</p>
+
+<p>\( P_{1}^{k=1} = (1-t)P_{1}^{0}+tP_{2}^{0} = 0.5P_{1} + 0.5P_{2} = m_{1} \)</p>
+
+<p>\( P_{2}^{k=1} = (1-t)P_{2}^{0}+tP_{3}^{0} = 0.5P_{2} + 0.5P_{3} = m_{2} \)</p>
+
+<p>k = 2时，\(i = 0,1,\cdots ,n-k = 0,1\)，所以有:</p>
+
+<p>\( P_{i}^{k=2} = (1-t)P_{i}^{1}+tP_{i+1}^{1} \)</p>
+
+<p>\( P_{0}^{k=2} = (1-t)P_{0}^{1}+tP_{1}^{1} = 0.5m_{0} + 0.5m_{1} = q_{0} \)</p>
+
+<p>\( P_{1}^{k=2} = (1-t)P_{1}^{1}+tP_{2}^{1} = 0.5m_{1} + 0.5m_{2} = q_{1} \)</p>
+
+<p>k = 3时，\(i = 0,1,\cdots ,n-k = 0\)，所以有:</p>
+
+<p>\( P_{i}^{k=3} = (1-t)P_{i}^{2}+tP_{i+1}^{2} \)</p>
+
+<p>\( P_{0}^{k=3} = (1-t)P_{0}^{2}+tP_{1}^{2} = 0.5q_{0} + 0.5q_{1} = B(1/2) \)</p>
+
+<h1>Bézier曲线的矩阵形式</h1>
+
+<p>由上上一节推导出来的2条式子：</p>
+
+<p>\[ b_{k,i} = C_{n}^{k} C_{k}^{i}(-1)^{k - i} \]</p>
+
+<p>\[  B_{i,n}(t) = \sum _{k=i}^{n}b_{k,i}t^{k} = b_{i,i}t^{i} + b_{i+1,i}t^{i+1} + \cdots + b_{n,i}t^{n} \]</p>
+
+<p>可以推导出矩阵：</p>
+
+<p>\[  \left[ \begin{matrix} B_{0,n}(t)&amp;B_{1,n}(t)&amp;\cdots &amp;B_{n,n}(t)\\ \end{matrix} \right] \]</p>
+
+<p>\[ =  \left[ \begin{matrix} \sum _{k=0}^{n}b_{k,0}t^{k}&amp;\sum _{k=1}^{n}b_{k,1}t^{k}&amp;\cdots &amp;\sum _{k=n}^{n}b_{k,n}t^{k}\\ \end{matrix} \right] \]</p>
+
+<p>\[ =  \left[ \begin{matrix} t^{0}&amp;t^{1}&amp;t^{2}&amp;\cdots &amp;t^{n}\\ \end{matrix} \right] \left[ \begin{matrix} b_{0,0}&amp;0&amp;0&amp;\cdots &amp;0\\  b_{1,0}&amp;b_{1,1}&amp;0&amp;\cdots &amp;0\\  b_{2,0}&amp;b_{2,1}&amp;b_{2,2}&amp;\cdots &amp;0\\  \vdots &amp;\vdots &amp;\vdots &amp;\ddots &amp;\vdots \\  b_{n,0}&amp;b_{n,1}&amp;b_{n,2}&amp;\cdots &amp;b_{n,n}\\ \end{matrix} \right] \]</p>
+
+<p>再由Bézier曲线的公式：</p>
+
+<p>\[ P(t) = \sum_{i=0}^{n}P_{i}B_{i,n}(t) , t\in [0,1] \]</p>
+
+<p>有：</p>
+
+<p>\[ P(t) =  \left[ \begin{matrix} t^{0}&amp;t^{1}&amp;t^{2}&amp;\cdots &amp;t^{n}\\ \end{matrix} \right] \left[ \begin{matrix} b_{0,0}&amp;0&amp;0&amp;\cdots &amp;0\\  b_{1,0}&amp;b_{1,1}&amp;0&amp;\cdots &amp;0\\  b_{2,0}&amp;b_{2,1}&amp;b_{2,2}&amp;\cdots &amp;0\\  \vdots &amp;\vdots &amp;\vdots &amp;\ddots &amp;\vdots \\  b_{n,0}&amp;b_{n,1}&amp;b_{n,2}&amp;\cdots &amp;b_{n,n}\\ \end{matrix} \right]  \left[ \begin{matrix} P^{0}\\ P^{1}\\ P^{2}\\ \vdots \\ P^{n}\\ \end{matrix} \right] \]</p>
+
+<p>注意，中间的矩阵B是常量(取决于阶数):</p>
+
+<p>n = 2时：</p>
+
+<p>\( b_{k,i} = C_{2}^{k} C_{k}^{i}(-1)^{k - i} \)</p>
+
+<p>\( b_{0,0} = C_{2}^{0} C_{0}^{0}(-1)^{0 - 0} =  1*1=1 \)</p>
+
+<p>\( b_{1,0} = C_{2}^{1} C_{1}^{0}(-1)^{1 - 0} =  2*1*(-1)=-2 \)</p>
+
+<p>\( b_{2,0} = C_{2}^{2} C_{2}^{0}(-1)^{2 - 0} =  1*1=1 \)</p>
+
+<p>\( b_{1,1} = C_{2}^{1} C_{1}^{1}(-1)^{1 - 1} =  2*1=2 \)</p>
+
+<p>\( b_{2,1} = C_{2}^{2} C_{2}^{1}(-1)^{2 - 1} =  1*2*(-1)=-2 \)</p>
+
+<p>\( b_{2,2} = C_{2}^{2} C_{2}^{2}(-1)^{2 - 2} =  1*1=1 \)</p>
+
+<p>\[ B =  \left[ \begin{matrix} 1&amp;0&amp;0\\ -2&amp;2&amp;0\\ 1&amp;-2&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>n = 3时：</p>
+
+<p>\[ B =  \left[ \begin{matrix} 1&amp;0&amp;0&amp;0\\ -3&amp;3&amp;0&amp;0\\ 3&amp;-6&amp;3&amp;0\\ -1&amp;3&amp;-3&amp;1\\ \end{matrix} \right] \]</p>
+
+<h2>测试一下正确性</h2>
+
+<p>测试代码基于我正在开发中的<a href="https://github.com/voyagingmk/renderer">renderer</a></p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#include "transform.hpp"
+#include "geometry.hpp"
+</span>
+<span class="n">using</span> <span class="n">namespace</span> <span class="n">renderer</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span> <span class="n">argv</span><span class="p">){</span>
+    <span class="n">Matrix3x3</span> <span class="n">P</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">20</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">20</span><span class="p">.</span><span class="n">f</span><span class="p">,</span>     <span class="mi">0</span><span class="p">,</span>  <span class="c1">//P0</span>
+        <span class="mi">770</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">30</span><span class="p">.</span><span class="n">f</span><span class="p">,</span>    <span class="mi">0</span><span class="p">,</span>  <span class="c1">//P1</span>
+        <span class="mi">400</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">780</span><span class="p">.</span><span class="n">f</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>  <span class="c1">//P2</span>
+    <span class="p">};</span>
+
+    <span class="n">Matrix3x3</span> <span class="n">B</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>  <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">};</span>
+
+    <span class="n">Matrix3x3</span> <span class="n">BP</span> <span class="o">=</span> <span class="n">B</span> <span class="o">*</span> <span class="n">P</span><span class="p">;</span>
+
+    <span class="k">typedef</span> <span class="n">Matrix</span><span class="o">&lt;</span><span class="n">MxN</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="o">&gt;&gt;</span> <span class="n">Matrix1x3</span><span class="p">;</span>
+
+    <span class="n">cil</span><span class="o">::</span><span class="n">CImg</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span> <span class="n">img</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+
+    <span class="n">img</span><span class="p">.</span><span class="n">atXYZC</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+    <span class="n">img</span><span class="p">.</span><span class="n">atXYZC</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+    <span class="n">img</span><span class="p">.</span><span class="n">atXYZC</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">float</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">;</span> <span class="n">t</span> <span class="o">+=</span> <span class="mi">0</span><span class="p">.</span><span class="mo">0001</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Matrix1x3</span> <span class="n">T</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span> <span class="p">};</span>
+        <span class="n">Matrix1x3</span> <span class="n">TBP</span> <span class="o">=</span> <span class="n">T</span> <span class="o">*</span> <span class="n">BP</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">int</span><span class="p">(</span><span class="n">TBP</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="kt">int</span><span class="p">(</span><span class="n">TBP</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">img</span><span class="p">.</span><span class="n">atXYZC</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">img</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s">""</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div>
+<p><img src="../images/2015.12/1.png" alt="1.png"></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on December 26, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

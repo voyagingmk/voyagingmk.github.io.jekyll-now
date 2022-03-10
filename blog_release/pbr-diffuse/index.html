@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lambertian Diffuse和Disney Diffuse – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="Lambertian Diffuse和Disney Diffuse" />
+    <meta property="twitter:title" content="Lambertian Diffuse和Disney Diffuse" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/pbr-diffuse/',
+		  'title': 'Lambertian Diffuse和Disney Diffuse'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>Lambertian Diffuse和Disney Diffuse</h1>
+ <h3>Tags: <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<h2>Lambertian Diffuse</h2>
+
+<p>例如假设有一束光达到一个白色木板上，并且该白色木板不吸收热辐射，那么白色木板应该反射多少光（能量）出去？显然是100%，因为假定了白色木板不吸收能量，并且木板也不是电介质，没有产生折射，
+光必然100%反射到各个方向去了。此时BSDF是多少呢？这就要看白色模板的材质。</p>
+
+<p>假设白色木板是用的Lambertian Diffuse材质，即一束光会均匀地散射到所有方向。</p>
+
+<p>直接搬出Lambertian Diffuse BSDF公式：</p>
+
+<p>\[ f = \frac {ρ_{albedo}}{\pi } \]</p>
+
+<p>其中的\(ρ_{albedo}\)是指diffuse物体的<strong>反射率</strong>。</p>
+
+<p>这个其实就是3D模型基本都会有的albedo纹理，是同个东西。例如如果给白色木板画个纹理，那就是一张纯白色的图片，反射率为(1.0, 1.0, 1.0)，表示打到木板上的光线全部反射，不吸收。</p>
+
+<p>当albedo不等于(1.0, 1.0, 1.0)时，例如(0.5, 0.5, 0.5)，说明木板吸收了光束一半的辐射；当albedo等于(0,0,0)时，木板完全不反射，光的能量全部吸收掉。</p>
+
+<p>至于为什么要除以π才是diffuse物体的BSDF，得从渲染方程说起。</p>
+
+<p>（在我的这篇 <a href="https://www.qiujiawei.com/rendering-equation/">渲染基础理论的介绍</a> 文章中有介绍相关的公式推导 ）</p>
+
+<p>先看下wiki里的渲染方程：</p>
+
+<p><img src="../images/2016.7/18.png" alt="18.png"></p>
+
+<p>这公式是在说，已知出射方向\(w_o\)，那么把被渲染的点(shading point)自身沿着\(w_o\)方向发射的radiance部分、以及接收到的radiance并且要反射出去的部分，通通加起来，就是总共的要沿着\(w_o\)发射出去的radiance。</p>
+
+<p>再看我的无伤大雅的简化版（去掉了波长变量以及时间变量）：</p>
+
+<p>\[ L_{o}(p, \omega _{o}) = L_{e}(p, \omega _{o})  + \int _{\Omega }f(p, \omega _{o}, \omega _{i}) L_{i}(p, \omega _{i}) |cos \theta _{i}|d\omega _{i} \]</p>
+
+<p>因为现在讨论的是diffuse材质，没有自发光，可以去掉自发光项；另外把公式改成用spherical angle表达（需要一点<a href="http://127.0.0.1:4000/solid-angle/">立体角</a>的知识），结果如下：</p>
+
+<p>\[ L_{o} = \int _{0 }^{ 2π } \int _{0 }^{ \frac {π}{2} } f(p, \theta ,\phi ) L_{i} (p,\theta ,\phi ) cos\theta sin\theta d\theta d\phi \]</p>
+
+<p>再因为diffuse材质会吧把收到的光线均匀地散射出去，即\(L_i\)不影响后面的反射，同时因为均匀性，f也是个常数，所以右边的积分里，可以把\(L_i\)、f当成常量提到外面去，只关注剩下的积分式：</p>
+
+<p>\[  \int _{0 }^{ 2π } \int _{0 }^{ \frac {π}{2} }   cos\theta sin\theta d\theta d\phi \]</p>
+
+<p>这是个可以算出来的式子，结果等于π。于是有：</p>
+
+<p>\[ L_{o} =  L_{i} \cdot f \cdot π \]</p>
+
+<p>因为能量要守恒，所以 f必须等于 \( \frac {1}{\pi } \)。但在渲染里既然要模拟光被吸收，使得物体呈现不同的颜色，能量应该是允许不守恒的，那么f应该等于多少呢？答案在上文其实已经给出了：</p>
+
+<p>\[ f = \frac {ρ_{albedo}}{\pi } \]</p>
+
+<p>再搬出那块白色木板，它百分百反射所有光，\(ρ_{albedo} \)为1，所以它的f为 \( \frac {1}{\pi } \)。</p>
+
+<p>（这篇文章也很好地解释了diffuse BSDF公式的推导：
+<a href="https://sakibsaikia.github.io/graphics/2019/09/10/Deriving-Lambertian-BRDF-From-First-Principles.html">Deriving Lambertian BRDF from first principles</a> ）</p>
+
+<h2>非Lambertian Diffuse</h2>
+
+<p>Lambertian Diffuse直接认为Diffuse材质时完全均匀反射所有光线，然而这个假设过于笼统了。Disney研究了现实世界Diffuse材质后发现，可以用一种更复杂的公式模拟Diffuse，使得Diffuse材质更真实。</p>
+
+<p>它的公式如下：</p>
+
+<p><img src="../images/2022.1/4.png" alt="4.png"></p>
+
+<p>(from disney的论文)</p>
+
+<p>其中\(\theta _l \)和\(\theta _v \)分别是光线l、视线v与法线n的夹角，\(\theta _d \)是光线l和半程向量h的夹角（h一般为0.5*(v + l) ）。</p>
+
+<p>baseColor就是上一节的\(ρ_{albedo} \)，可见disney的这个公式还是没有脱离上一节的推导的，只是在Lambertian Diffuse的f后面加了一坨计算。</p>
+
+<h2>两种Diffuse的实现代码</h2>
+
+<p>第一份是从Filament里扒的：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++">
+<span class="kt">float</span> <span class="nf">Fd_Lambert</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">PI</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">F_Schlick</span><span class="p">(</span><span class="kt">float</span> <span class="n">f0</span><span class="p">,</span> <span class="kt">float</span> <span class="n">f90</span><span class="p">,</span> <span class="kt">float</span> <span class="n">VoH</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">f0</span> <span class="o">+</span> <span class="p">(</span><span class="n">f90</span> <span class="o">-</span> <span class="n">f0</span><span class="p">)</span> <span class="o">*</span> <span class="n">pow5</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">VoH</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">Fd_Burley</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">LoH</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Burley 2012, "Physically-Based Shading at Disney"</span>
+    <span class="kt">float</span> <span class="n">f90</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">roughness</span> <span class="o">*</span> <span class="n">LoH</span> <span class="o">*</span> <span class="n">LoH</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">lightScatter</span> <span class="o">=</span> <span class="n">F_Schlick</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">f90</span><span class="p">,</span> <span class="n">NoL</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">viewScatter</span>  <span class="o">=</span> <span class="n">F_Schlick</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">f90</span><span class="p">,</span> <span class="n">NoV</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">lightScatter</span> <span class="o">*</span> <span class="n">viewScatter</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">PI</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">diffuse</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">LoH</span><span class="p">)</span> <span class="p">{</span>
+<span class="cp">#if BRDF_DIFFUSE == DIFFUSE_LAMBERT
+</span>    <span class="k">return</span> <span class="n">Fd_Lambert</span><span class="p">();</span>
+<span class="cp">#elif BRDF_DIFFUSE == DIFFUSE_BURLEY
+</span>    <span class="k">return</span> <span class="n">Fd_Burley</span><span class="p">(</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+
+<span class="c1">// diffuseLobe返回该像素点真正的diffuse color</span>
+<span class="c1">// pixel.diffuseColor即albedo</span>
+<span class="n">vec3</span> <span class="nf">diffuseLobe</span><span class="p">(</span><span class="k">const</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">LoH</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">pixel</span><span class="p">.</span><span class="n">diffuseColor</span> <span class="o">*</span> <span class="n">diffuse</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>这个是从知乎找的精简版：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++">
+<span class="n">float3</span> <span class="nf">Diffuse_Burley_Disney</span><span class="p">(</span> <span class="n">float3</span> <span class="n">albedo</span><span class="p">,</span> <span class="kt">float</span> <span class="n">Roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">VoH</span> <span class="p">)</span> 
+<span class="p">{</span> 
+       <span class="kt">float</span> <span class="n">FD90</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">VoH</span> <span class="o">*</span> <span class="n">VoH</span> <span class="o">*</span> <span class="n">Roughness</span><span class="p">;</span> 
+       <span class="kt">float</span> <span class="n">FdV</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">FD90</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">Pow5</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">NoV</span> <span class="p">);</span> 
+       <span class="kt">float</span> <span class="n">FdL</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">FD90</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">Pow5</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">NoL</span> <span class="p">);</span> 
+       <span class="k">return</span> <span class="n">albedo</span> <span class="o">*</span> <span class="p">(</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">PI</span><span class="p">)</span> <span class="o">*</span> <span class="n">FdV</span> <span class="o">*</span> <span class="n">FdL</span> <span class="p">);</span> 
+<span class="p">}</span> 
+
+</code></pre></div>
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on January 18, 2022
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

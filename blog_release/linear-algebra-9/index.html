@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>线性代数之奇异值(SVD)分解 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="在线性代数中，SVD(Singular Value Decomposition)是对实数矩阵(甚至复数矩阵)的一种因式分解。在信号、统计、图像图形学中都有应用。
+
+SVD非常强大且实用，因为数学界前辈已经证明任意的一个矩阵都可以做SVD分解。这一点特别重要，因为相比SVD分解，和SVD相近的特征值分解只能应用于方阵。
+
+第二个重要的点是：SVD分解可用来解决非方阵不能计算逆矩阵的问题。
+" />
+    <meta property="og:description" content="在线性代数中，SVD(Singular Value Decomposition)是对实数矩阵(甚至复数矩阵)的一种因式分解。在信号、统计、图像图形学中都有应用。
+
+SVD非常强大且实用，因为数学界前辈已经证明任意的一个矩阵都可以做SVD分解。这一点特别重要，因为相比SVD分解，和SVD相近的特征值分解只能应用于方阵。
+
+第二个重要的点是：SVD分解可用来解决非方阵不能计算逆矩阵的问题。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="线性代数之奇异值(SVD)分解" />
+    <meta property="twitter:title" content="线性代数之奇异值(SVD)分解" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-9/',
+		  'title': '线性代数之奇异值(SVD)分解'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>线性代数之奇异值(SVD)分解</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>在线性代数中，SVD(Singular Value Decomposition)是对实数矩阵(甚至复数矩阵)的一种因式分解。在信号、统计、图像图形学中都有应用。</p>
+
+<p>SVD非常强大且实用，因为数学界前辈已经证明任意的一个矩阵都可以做SVD分解。这一点特别重要，因为相比SVD分解，和SVD相近的<strong>特征值分解</strong>只能应用于方阵。</p>
+
+<p>第二个重要的点是：SVD分解可用来解决<strong>非方阵不能计算逆矩阵</strong>的问题。</p>
+
+<!--more-->
+
+<h2>SVD的定义</h2>
+
+<p>先给出公式的全貌：</p>
+
+<p>设有一个m X n的矩阵M，它的SVD分解是：</p>
+
+<p>\[ M = UΣV^{*} \]</p>
+
+<p>其中：</p>
+
+<ul>
+<li>U是一个m X m的单式矩阵(<a href="https://en.wikipedia.org/wiki/Unitary_matrix">Unitary Matrix</a>)</li>
+<li>Σ是m X n的矩形对角矩阵(<a href="https://en.wikipedia.org/wiki/Diagonal_matrix">Rectangular Diagonal Matrix</a>)，并且在对角线上的元素都是非负实数\(\sigma _{i}\)，称为M的奇异值</li>
+<li>V*是一个n X n的单式矩阵，也是V的共轭转置矩阵(<a href="https://en.wikipedia.org/wiki/Conjugate_transpose">Conjugate Transpose Matrix</a>)</li>
+</ul>
+
+<p>一些补充:</p>
+
+<ol>
+<li>U矩阵的m个列向量、V的n个列向量分别被称为M的左奇异向量，和M的右奇异向量</li>
+<li>约定Σ矩阵的对角线上的奇异值\(\sigma _{i}\)用降序排列</li>
+<li>由第2点可以看出，Σ矩阵完全由M决定，和U、V无关</li>
+</ol>
+
+<h2>SVD和特征值分解的联系</h2>
+
+<ul>
+<li>M的左奇异向量 是 \(MM^{*}\)的特征向量</li>
+<li>M的右奇异向量 是 \(M^{*}M\)的特征向量</li>
+<li>M的非零奇异值（即Σ的对角线上的元素）分别是\(M^{*}M\)以及\(MM^{*}\)的所有非零特征值的开平方</li>
+</ul>
+
+<p>由单式矩阵的定义，知：</p>
+
+<p>\[ U^{*}U = I = U^{-1}U \]</p>
+
+<p>\[ V^{*}V = I = V^{-1}V \]</p>
+
+<p>\[ U^{*} = U^{-1} \]</p>
+
+<p>\[ V^{*} = V^{-1} \]</p>
+
+<p>由矩形对角矩阵的定义，知：</p>
+
+<p>\[ Σ_{m,n}Σ_{m,n}^{*} = Σ_{m,n}Σ&#39;_{n,m} = D_{m,m} \]</p>
+
+<p>\[ Σ_{m,n}^{*}Σ_{m,n} = Σ&#39;_{n,m}Σ_{m,n} = D_{n,n} \]</p>
+
+<p>(D = Diagonal Square Matrix)</p>
+
+<p>即，Σ和Σ的转置相乘，等于一个新的方阵D，D的阶数等于左边的Σ矩阵的行数；D还是一个对角方阵，且对角线上的元素分别是Σ的对角线上的元素的平方。</p>
+
+<p>再根据SVD公式：</p>
+
+<p>\[ M = UΣV^{*} \]</p>
+
+<p>有：</p>
+
+<p>\[ M^{*}M = V\Sigma ^{*}U^{*}U\Sigma V^{*} = V\Sigma ^{*}(U^{*}U)\Sigma V^{*} = V\Sigma ^{*}\Sigma V^{*} = V(\Sigma  ^{*}\Sigma )V^{-1}  \]</p>
+
+<p>\[ MM^{*} = U\Sigma V^{*}V\Sigma ^{*}U^{*} = U\Sigma (V^{*}V)\Sigma ^{*}U^{*} = U\Sigma \Sigma ^{*}U^{*} = U(\Sigma \Sigma ^{*})U^{-1} \]</p>
+
+<p>右边的东西符合特征分解的定义，所以上述两式子都是特征分解。</p>
+
+<h2>SVD的几何意义以及应用</h2>
+
+<p>推荐阅读这篇文章:<a href="http://blog.chinaunix.net/uid-20761674-id-4040274.html">http://blog.chinaunix.net/uid-20761674-id-4040274.html</a>。</p>
+
+<p>英文原文:<a href="http://www.ams.org/samplings/feature-column/fcarc-svd">http://www.ams.org/samplings/feature-column/fcarc-svd</a></p>
+
+<p>不过这文章只讲了和图像有关的应用，实际上，SVD的应用非常广泛，比如机器学习领域也在用。</p>
+
+<h2>SVD的求法</h2>
+
+<p>SVD的解法有很多种而且看起来很复杂，比如这篇文章就列举了很多种:<a href="http://www.cs.utexas.edu/users/inderjit/public_papers/HLA_SVD.pdf">http://www.cs.utexas.edu/users/inderjit/public_papers/HLA_SVD.pdf</a>。</p>
+
+<p>因为矩阵有稠密和稀疏之分，所以针对不同的矩阵就有不同的解法。学习SVD的解法想必是一件艰苦的事情。因为目前还没有深入学习SVD的需求，所以博主就此罢笔。</p>
+
+<h2>参考资料</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">https://en.wikipedia.org/wiki/Singular_value_decomposition</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on October 27, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

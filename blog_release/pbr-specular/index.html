@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Filament中的anisotropic specular和isotropic specular – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="Filament中的anisotropic specular和isotropic specular" />
+    <meta property="twitter:title" content="Filament中的anisotropic specular和isotropic specular" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/pbr-specular/',
+		  'title': 'Filament中的anisotropic specular和isotropic specular'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>Filament中的anisotropic specular和isotropic specular</h1>
+ <h3>Tags: <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<p>很久前总结了pbr公式内容：<a href="https://www.qiujiawei.com/pbr-rendering/">PBR渲染原理</a>，但没有说到各向异性的问题。</p>
+
+<p>最近发现<a href="https://google.github.io/filament/Filament.html">Filament</a>详细介绍了pbr相关的知识，也有源码可读，可以好好学习一番。</p>
+
+<p>pbr理论中，高光项的公式如下：</p>
+
+<p>\[ f_ r(v,l) = \frac { D(h,\alpha ) G(v,l,\alpha ) F(v,h,F_0) } { 4 (n \cdot v)(n \cdot l) } \]</p>
+
+<p>Filament用一个specularLobe统一描述了各向同性和各向异性的高光项：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="n">vec3</span> <span class="nf">specularLobe</span><span class="p">(</span><span class="k">const</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">,</span> <span class="k">const</span> <span class="n">Light</span> <span class="n">light</span><span class="p">,</span> <span class="k">const</span> <span class="n">vec3</span> <span class="n">h</span><span class="p">,</span>
+        <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoH</span><span class="p">,</span> <span class="kt">float</span> <span class="n">LoH</span><span class="p">)</span> <span class="p">{</span>
+<span class="cp">#if defined(MATERIAL_HAS_ANISOTROPY)
+</span>    <span class="k">return</span> <span class="n">anisotropicLobe</span><span class="p">(</span><span class="n">pixel</span><span class="p">,</span> <span class="n">light</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">,</span> <span class="n">NoH</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span>
+<span class="cp">#else
+</span>    <span class="k">return</span> <span class="n">isotropicLobe</span><span class="p">(</span><span class="n">pixel</span><span class="p">,</span> <span class="n">light</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">,</span> <span class="n">NoH</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+</code></pre></div>
+<p>本文的目标是理解这里面的代码。</p>
+
+<h1>Filament的着色流程</h1>
+
+<p>代码都在shaders/src目录，根据宏变体，会组合这里面的代码，最终生成目标shader。</p>
+
+<p>main.fs的main是入口:</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">filament_lodBias</span> <span class="o">=</span> <span class="n">frameUniforms</span><span class="p">.</span><span class="n">lodBias</span><span class="p">;</span>
+
+    <span class="c1">// See shading_parameters.fs</span>
+    <span class="c1">// Computes global variables we need to evaluate material and lighting</span>
+    <span class="n">computeShadingParams</span><span class="p">();</span> <span class="c1">// 计算一些全局参数</span>
+
+    <span class="c1">// Initialize the inputs to sensible default values, see material_inputs.fs</span>
+    <span class="n">MaterialInputs</span> <span class="n">inputs</span><span class="p">;</span>
+    <span class="n">initMaterial</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span> <span class="c1">// 初始化默认值</span>
+
+    <span class="c1">// Invoke user code</span>
+    <span class="n">material</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span> <span class="c1">//调用.mat文件里的用户代码</span>
+
+    <span class="n">fragColor</span> <span class="o">=</span> <span class="n">evaluateMaterial</span><span class="p">(</span><span class="n">inputs</span><span class="p">);</span> <span class="c1">// 着色</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>其中的evaluateMaterial具体是哪一个实现，得看选择的shading model。以基本的pbr为例（即LIT模型），代码在shading_lit.fs：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="n">vec4</span> <span class="nf">evaluateLights</span><span class="p">(</span><span class="k">const</span> <span class="n">MaterialInputs</span> <span class="n">material</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">;</span>
+    <span class="n">getPixelParams</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">pixel</span><span class="p">);</span> <span class="c1">// 从材质参数转换得到后续计算用的PixelParams</span>
+
+    <span class="n">vec3</span> <span class="n">color</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+
+    <span class="n">evaluateIBL</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">pixel</span><span class="p">,</span> <span class="n">color</span><span class="p">);</span> <span class="c1">// 默认都有IBL间接光</span>
+
+<span class="cp">#if defined(HAS_DIRECTIONAL_LIGHTING)
+</span>    <span class="n">evaluateDirectionalLight</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">pixel</span><span class="p">,</span> <span class="n">color</span><span class="p">);</span> <span class="c1">// 下面会分析的重点接口</span>
+<span class="cp">#endif
+</span>
+    <span class="p">...</span>
+
+    <span class="k">return</span> <span class="n">vec4</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">computeDiffuseAlpha</span><span class="p">(</span><span class="n">material</span><span class="p">.</span><span class="n">baseColor</span><span class="p">.</span><span class="n">a</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">vec4</span> <span class="nf">evaluateMaterial</span><span class="p">(</span><span class="k">const</span> <span class="n">MaterialInputs</span> <span class="n">material</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">vec4</span> <span class="n">color</span> <span class="o">=</span> <span class="n">evaluateLights</span><span class="p">(</span><span class="n">material</span><span class="p">);</span>
+    <span class="n">addEmissive</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">color</span><span class="p">);</span> <span class="c1">// 自发光，先忽略</span>
+    <span class="k">return</span> <span class="n">color</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>然后就看evaluateDirectionalLight，代码在light_directional.fs：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">evaluateDirectionalLight</span><span class="p">(</span><span class="k">const</span> <span class="n">MaterialInputs</span> <span class="n">material</span><span class="p">,</span>
+        <span class="k">const</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">,</span> <span class="n">inout</span> <span class="n">vec3</span> <span class="n">color</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">Light</span> <span class="n">light</span> <span class="o">=</span> <span class="n">getDirectionalLight</span><span class="p">();</span>
+    <span class="p">...</span>
+    <span class="kt">float</span> <span class="n">visibility</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+<span class="cp">#if defined(HAS_SHADOWING)
+</span>    <span class="c1">//算阴影 得到visibility</span>
+    <span class="p">...</span>
+<span class="cp">#endif
+</span>
+<span class="cp">#if defined(MATERIAL_HAS_CUSTOM_SURFACE_SHADING)
+</span>    <span class="n">color</span><span class="p">.</span><span class="n">rgb</span> <span class="o">+=</span> <span class="n">customSurfaceShading</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">pixel</span><span class="p">,</span> <span class="n">light</span><span class="p">,</span> <span class="n">visibility</span><span class="p">);</span>
+<span class="cp">#else
+</span>    <span class="n">color</span><span class="p">.</span><span class="n">rgb</span> <span class="o">+=</span> <span class="n">surfaceShading</span><span class="p">(</span><span class="n">pixel</span><span class="p">,</span> <span class="n">light</span><span class="p">,</span> <span class="n">visibility</span><span class="p">);</span> <span class="c1">// 重点</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+
+</code></pre></div>
+<p>surfaceShading的代码在shading_model_standard.fs，这个就已经是pbr的核心代码了。</p>
+
+<h1>几个材质关键参数的计算</h1>
+
+<p>MaterialInputs是用户端的参数，即给美术编辑用的：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="k">struct</span> <span class="n">MaterialInputs</span> <span class="p">{</span>
+    <span class="kt">vec4</span>  <span class="n">baseColor</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">roughness</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">metallic</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">reflectance</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">ior</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>PixelParams存了每个着色点的基本系数，一般这些系数和具体的着色算法无关：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="k">struct</span> <span class="n">PixelParams</span> <span class="p">{</span>
+    <span class="kt">vec3</span>  <span class="n">diffuseColor</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">perceptualRoughness</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">perceptualRoughnessUnclamped</span><span class="p">;</span>
+    <span class="kt">vec3</span>  <span class="n">f0</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">roughness</span><span class="p">;</span>
+    <span class="kt">vec3</span>  <span class="n">dfg</span><span class="p">;</span>
+    <span class="kt">vec3</span>  <span class="n">energyCompensation</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>根据MaterialInputs计算PixelParams的代码，主要是算了pixel.diffuseColor和pixel.f0 ：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">vec3</span> <span class="nf">computeDiffuseColor</span><span class="p">(</span><span class="k">const</span> <span class="kt">vec4</span> <span class="n">baseColor</span><span class="p">,</span> <span class="kt">float</span> <span class="n">metallic</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">baseColor</span><span class="p">.</span><span class="n">rgb</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">metallic</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">getCommonPixelParams</span><span class="p">(</span><span class="k">const</span> <span class="n">MaterialInputs</span> <span class="n">material</span><span class="p">,</span> <span class="k">inout</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">vec4</span> <span class="n">baseColor</span> <span class="o">=</span> <span class="n">material</span><span class="p">.</span><span class="n">baseColor</span><span class="p">;</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">diffuseColor</span> <span class="o">=</span> <span class="n">computeDiffuseColor</span><span class="p">(</span><span class="n">baseColor</span><span class="p">,</span> <span class="n">material</span><span class="p">.</span><span class="n">metallic</span><span class="p">);</span>
+
+<span class="cp">#if !defined(SHADING_MODEL_SUBSURFACE) &amp;&amp; (!defined(MATERIAL_HAS_REFLECTANCE) &amp;&amp; defined(MATERIAL_HAS_IOR))
+</span>    <span class="kt">float</span> <span class="n">reflectance</span> <span class="o">=</span> <span class="n">iorToF0</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">material</span><span class="p">.</span><span class="n">ior</span><span class="p">),</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+<span class="cp">#else
+</span>    <span class="c1">// Assumes an interface from air to an IOR of 1.5 for dielectrics</span>
+    <span class="kt">float</span> <span class="n">reflectance</span> <span class="o">=</span> <span class="n">computeDielectricF0</span><span class="p">(</span><span class="n">material</span><span class="p">.</span><span class="n">reflectance</span><span class="p">);</span>
+<span class="cp">#endif
+</span>    <span class="n">pixel</span><span class="p">.</span><span class="n">f0</span> <span class="o">=</span> <span class="n">computeF0</span><span class="p">(</span><span class="n">baseColor</span><span class="p">,</span> <span class="n">material</span><span class="p">.</span><span class="n">metallic</span><span class="p">,</span> <span class="n">reflectance</span><span class="p">);</span>
+
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>pixel.roughness和pixel.perceptualRoughness</h2>
+
+<p>原文解释 <a href="https://google.github.io/filament/Filament.html#toc4.8.3.3">Roughness remapping and clamping</a></p>
+
+<p>material.roughness被叫做<strong>用户设置的perceptualRoughness</strong>，pixel.roughness是真正用于pbr计算的Roughness。</p>
+
+<p>\[pixel.roughness = material.roughness ^2  \]</p>
+
+<p>直观理解就是，当美术设置了0.5的粗糙度时，实际的渲染是用的0.25。0.25渲染出来的效果，会让美术好理解。</p>
+
+<p>如果直接让美术控制实际的粗糙度，那么当渲染比较光滑的物体时，粗糙度范围会小到很难设置，大约在[0, 0.05]之间。</p>
+
+<p>代码：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">perceptualRoughnessToRoughness</span><span class="p">(</span><span class="kt">float</span> <span class="n">perceptualRoughness</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">perceptualRoughness</span> <span class="o">*</span> <span class="n">perceptualRoughness</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">getRoughnessPixelParams</span><span class="p">(</span><span class="k">const</span> <span class="n">MaterialInputs</span> <span class="n">material</span><span class="p">,</span> <span class="k">inout</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">perceptualRoughness</span> <span class="o">=</span> <span class="n">material</span><span class="p">.</span><span class="n">roughness</span><span class="p">;</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">perceptualRoughnessUnclamped</span> <span class="o">=</span> <span class="n">perceptualRoughness</span><span class="p">;</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">perceptualRoughness</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">perceptualRoughness</span><span class="p">,</span> <span class="n">MIN_PERCEPTUAL_ROUGHNESS</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">roughness</span> <span class="o">=</span> <span class="n">perceptualRoughnessToRoughness</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">perceptualRoughness</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>pixel.diffuseColor</h2>
+
+<p>从computeDiffuseColor可见，metallic越大，pixel.diffuseColor就越接近黑色，黑色即表示几乎没有漫反射光。</p>
+
+<h2>pixel.f0</h2>
+
+<p>首先是理解什么是F0, F0等于 <strong>Fresnel Reflectance at 0 Degrees</strong>，是一个介于0到1的数，它表示<strong>当入射光线和表面垂直时，有x%的radiance变成镜面反射出去</strong>（剩下的1-x%发生折射）。</p>
+
+<p>为什么要知道F0呢，因为pbr计算过程中有一个费涅尔项F（Fresnel term），需要用到F0。</p>
+
+<p>有几个重要知识点要记一下：</p>
+
+<ol>
+<li>电介质(dielectrics)的F0是非彩色的(achromatic)，即认为RGB各分量相等</li>
+<li>金属(metallic)的F0是彩色的(chromatic)，RGB分量不相等</li>
+<li>F90必然等于1.0，F90表示当光线以grazing angles打到表面时，100%发生镜面反射，无论是电介质还是金属都一样</li>
+<li>一般来说，大部分电介质的F0是4%；水是2%；F0最高的电介质是宝石(gemstones)，16%左右。</li>
+</ol>
+
+<p><img src="../images/2022.1/7.png" alt="7.png"></p>
+
+<h3>F0计算方法1</h3>
+
+<p>为了方便美术调节F0，于是业界大佬发明了映射公式：</p>
+
+<p>\[ f_0 = 0.16 \cdot f_{linear} ^2 \]</p>
+
+<p>\(f_{linear}\)是个0到1的线性值，其中0.5对应水的F0（2%），1.0对应宝石的F0(16%)。Filament shader里的material.reflectance即是\(f_{linear}\)，computeDielectricF0就是做这个映射的接口：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">computeDielectricF0</span><span class="p">(</span><span class="kt">float</span> <span class="n">reflectance</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">.</span><span class="mi">16</span> <span class="o">*</span> <span class="n">reflectance</span> <span class="o">*</span> <span class="n">reflectance</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3>F0计算方法2</h3>
+
+<p>另一种算法是基于材质的<a href="https://en.wikipedia.org/wiki/Refractive_index">ior</a>。ior是指光穿过两种介质界面时的折射率，例如空气\(\rightarrow \)水界面的ior是1.33。</p>
+
+<p>ior也是一个给美术调节的系数，即Filament shader里的material.ior。</p>
+
+<p>ior涉及到两种介质，但在游戏里一般其中一种介质是空气，因此可以认为，各种介质相对空气的ior，即为该介质的ior，记为\(n_{ior}\)。空气的(n_{ior}\)即为1。</p>
+
+<p>由ior算F0的公式如下：</p>
+
+<p>\[  f_0 ( n_{ior} ) =  ( \frac {n_{ior} - 1}{n_{ior} + 1} ) ^2 \]</p>
+
+<p>这条公式不是随便拟合出的，是真实的物理公式简化得到的。详情可阅读：</p>
+
+<ul>
+<li><p><a href="https://en.wikipedia.org/wiki/Fresnel_equations">Fresnel equations</a></p></li>
+<li><p><a href="http://www1.udel.edu/chem/sneal/sln_tchng/CHEM620/CHEM620/Chi_4._Light_at_Interfaces.html#:%7E:text=For%20water%20and%20diamond%2C%20which,to%20see%20glass%20in%20air.">Light at Interfaces</a></p></li>
+</ul>
+
+<p>涉及到极化性质什么的，就不细究了。</p>
+
+<p>总之能简化成上述公式的原因是，\(f_{0}\)描述的是垂直角度的反射率。</p>
+
+<p>另外补充一下，当其中一种介质并不是空气时，此时也可以根据这两种介质相对空气的ior，来算\(f_{0}\)，公式如下：</p>
+
+<p>\[  f_0 = ( \frac { n_{1} - n_{2} }{ n_{1} + n_{2} } ) ^2 \]</p>
+
+<p>分子分母同时除以\(n_{2}\)，就和前一条公式差不多了：</p>
+
+<p>\[  f_0 = ( \frac { \frac {n_{1} } { n_{2} } - 1 }{ \frac {n_{1} } { n_{2} } + 1 } ) ^2 \]</p>
+
+<p>当\(n_{2}\)为空气的ior 1.0时，就是第一条公式了。</p>
+
+<p>Filament中的实现代码如下：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">iorToF0</span><span class="p">(</span><span class="kt">float</span> <span class="n">transmittedIor</span><span class="p">,</span> <span class="kt">float</span> <span class="n">incidentIor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">sq</span><span class="p">((</span><span class="n">transmittedIor</span> <span class="o">-</span> <span class="n">incidentIor</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">transmittedIor</span> <span class="o">+</span> <span class="n">incidentIor</span><span class="p">));</span>
+<span class="p">}</span>
+
+</code></pre></div>
+<p>transmittedIor即\(n_{1}\)，incidentIor即\(n_{2}\)。</p>
+
+<p>调用代码：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="n">reflectance</span> <span class="o">=</span> <span class="n">iorToF0</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">material</span><span class="p">.</span><span class="n">ior</span><span class="p">),</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<p>可见，Filament直接约束了transmittedIor不低于1，且让incidentIor固定为空气ior 1.0。</p>
+
+<h3>根据material.metallic插值</h3>
+
+<p>上面算出来的\(f_{0}\)是个标量（scalar）（非彩色），只限定于电介质，为了和金属材质统一起来，所以还需要根据材质的metallic（金属度），做插值：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">vec3</span> <span class="nf">computeF0</span><span class="p">(</span><span class="k">const</span> <span class="kt">vec4</span> <span class="n">baseColor</span><span class="p">,</span> <span class="kt">float</span> <span class="n">metallic</span><span class="p">,</span> <span class="kt">float</span> <span class="n">reflectance</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">baseColor</span><span class="p">.</span><span class="n">rgb</span> <span class="o">*</span> <span class="n">metallic</span> <span class="o">+</span> <span class="p">(</span><span class="n">reflectance</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">metallic</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">pixel</span><span class="p">.</span><span class="n">f0</span> <span class="o">=</span> <span class="n">computeF0</span><span class="p">(</span><span class="n">baseColor</span><span class="p">,</span> <span class="n">material</span><span class="p">.</span><span class="n">metallic</span><span class="p">,</span> <span class="n">reflectance</span><span class="p">);</span>
+</code></pre></div>
+<p>可见，金属度越高，pixel.f0越接近于材质属性里的baseColor（彩色）；金属度越低，越接近前面算出来的电介质reflectance（非彩色）。</p>
+
+<h1>isotropic specular</h1>
+
+<p>先从各向同性开始：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="n">vec3</span> <span class="nf">isotropicLobe</span><span class="p">(</span><span class="k">const</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">,</span> <span class="k">const</span> <span class="n">Light</span> <span class="n">light</span><span class="p">,</span> <span class="k">const</span> <span class="n">vec3</span> <span class="n">h</span><span class="p">,</span>
+        <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoH</span><span class="p">,</span> <span class="kt">float</span> <span class="n">LoH</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kt">float</span> <span class="n">D</span> <span class="o">=</span> <span class="n">distribution</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoH</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">V</span> <span class="o">=</span> <span class="n">visibility</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">);</span>
+    <span class="n">vec3</span>  <span class="n">F</span> <span class="o">=</span> <span class="n">fresnel</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">D</span> <span class="o">*</span> <span class="n">V</span><span class="p">)</span> <span class="o">*</span> <span class="n">F</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>发现代码里少了\( 4 (n \cdot v)(n \cdot l) \)部分，这是因为Filament把specular公式拆成三部分：</p>
+
+<p>\[ f_ r(v,l) = D(h,\alpha ) \cdot  \frac {  G(v,l,\alpha ) } { 4 (n \cdot v)(n \cdot l) }  \cdot F(v,h,F_0) = D \cdot V \cdot F \]</p>
+
+<p>\( 4 (n \cdot v)(n \cdot l) \)被放进了V项中了。</p>
+
+<h2>isotropic-D项</h2>
+
+<p>Filament里只有GGX一种（说明够用）:</p>
+
+<p><img src="../images/2022.1/D.png" alt="7.png"></p>
+
+<p>做一些变换，方便和代码对应：</p>
+
+<p>\[ D = \frac {1}{\pi } \cdot (\frac {\alpha  } { (n\cdot h)^ 2(\alpha ^ 2 - 1) + 1 })^ 2 \]</p>
+
+<p>\[  = \frac {1}{\pi }  (\frac {\alpha  } { (n\cdot h)^ 2 \alpha ^ 2 - (n\cdot h)^ 2 + 1 })^ 2 \]</p>
+
+<p>\[  = \frac {1}{\pi }  (\frac {\alpha  } { ( (n\cdot h) \alpha) ^ 2 + (1 - (n\cdot h)^ 2)  })^ 2 \]</p>
+
+<p>代码如下：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">D_GGX</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoH</span><span class="p">,</span> <span class="k">const</span> <span class="kt">vec3</span> <span class="n">h</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">oneMinusNoHSquared</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">NoH</span> <span class="o">*</span> <span class="n">NoH</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">a</span> <span class="o">=</span> <span class="n">NoH</span> <span class="o">*</span> <span class="n">roughness</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">k</span> <span class="o">=</span> <span class="n">roughness</span> <span class="o">/</span> <span class="p">(</span><span class="n">oneMinusNoHSquared</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">d</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">/</span> <span class="n">PI</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">saturateMediump</span><span class="p">(</span><span class="n">d</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">distribution</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoH</span><span class="p">,</span> <span class="k">const</span> <span class="kt">vec3</span> <span class="n">h</span><span class="p">)</span> <span class="p">{</span>
+<span class="cp">#if BRDF_SPECULAR_D == SPECULAR_D_GGX
+</span>    <span class="k">return</span> <span class="n">D_GGX</span><span class="p">(</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoH</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+</code></pre></div>
+<h2>isotropic-G项</h2>
+
+<p>G项的话，Filament用了这篇论文里的equation 99： <a href="https://jcgt.org/published/0003/02/03/paper.pdf">Understanding the Masking-Shadowing Function
+in Microfacet-Based BRDFs</a>。这条公式的好处推导相当复杂，直接用即可。</p>
+
+<p><img src="../images/2022.1/G.png" alt="G.png"></p>
+
+<p>里面的符号的解释：</p>
+
+<p>\(\omega _o\), \(\omega _i\), \(\omega _m\)分别表示出射方向、入射方向、微平面法线方向。</p>
+
+<p>\(\chi ^+ \) 是指heaviside function，也叫unit step function，单位阶跃函数，值要么是0要么是1。</p>
+
+<p><img src="../images/2022.1/X.png" alt="X.png"></p>
+
+<p>因为specular只考虑反射光，所以出入射方向和微平面法线夹角小于180°，分子等于1。</p>
+
+<p>另外因为\( 4 (n \cdot v)(n \cdot l) \)被合并到了G项里（所以就换了个名字叫V项）。</p>
+
+<p>最终的V公式如下：</p>
+
+<p><img src="../images/2022.1/V.png" alt="V.png"></p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">V_SmithGGXCorrelated</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">roughness</span> <span class="o">*</span> <span class="n">roughness</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">lambdaV</span> <span class="o">=</span> <span class="n">NoL</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">NoV</span> <span class="o">-</span> <span class="n">a2</span> <span class="o">*</span> <span class="n">NoV</span><span class="p">)</span> <span class="o">*</span> <span class="n">NoV</span> <span class="o">+</span> <span class="n">a2</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">lambdaL</span> <span class="o">=</span> <span class="n">NoV</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">NoL</span> <span class="o">-</span> <span class="n">a2</span> <span class="o">*</span> <span class="n">NoL</span><span class="p">)</span> <span class="o">*</span> <span class="n">NoL</span> <span class="o">+</span> <span class="n">a2</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span> <span class="o">/</span> <span class="p">(</span><span class="n">lambdaV</span> <span class="o">+</span> <span class="n">lambdaL</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">saturateMediump</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>这里又有个经典技巧，牺牲精度换时间。因为开平方和平方操作都比较耗，直接干掉，公式变成：</p>
+
+<p><img src="../images/2022.1/V2.png" alt="V2.png"></p>
+
+<p>这个只是近似公式，数学上是错的，但不用深究，用就是了。</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">V_SmithGGXCorrelated_Fast</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="cm">/*
+    float a = roughness;
+    float GGXV = NoL * (NoV * (1.0 - a) + a);
+    float GGXL = NoV * (NoL * (1.0 - a) + a);
+    return 0.5 / (GGXV + GGXL);
+    */</span>
+    <span class="kt">float</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span> <span class="o">/</span> <span class="n">mix</span><span class="p">(</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">*</span> <span class="n">NoL</span> <span class="o">*</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span> <span class="o">+</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">roughness</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">saturateMediump</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">visibility</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">)</span> <span class="p">{</span>
+<span class="cp">#if BRDF_SPECULAR_V == SPECULAR_V_SMITH_GGX
+</span>    <span class="k">return</span> <span class="n">V_SmithGGXCorrelated</span><span class="p">(</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">);</span>
+<span class="cp">#elif BRDF_SPECULAR_V == SPECULAR_V_SMITH_GGX_FAST
+</span>    <span class="k">return</span> <span class="n">V_SmithGGXCorrelated_Fast</span><span class="p">(</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+</code></pre></div>
+<h2>isotropic-F项</h2>
+
+<p><img src="../images/2022.1/F.png" alt="F.png"></p>
+
+<p>\(f_{0}\)、\(f_{90}\)上面已经分析过了，不再介绍。</p>
+
+<p>当\(f_{90}\)为1时，有以下等价公式：</p>
+
+<p>\[ f_{90} = 1\]</p>
+
+<p>\[ f = (1 - v\cdot h)^ 5 \]</p>
+
+<p>\[ F = f_{90}(1 - v\cdot h)^ 5 - f_{0}( 1 - (1 - v\cdot h)^ 5 ) \]</p>
+
+<p>\[ = (1 - v\cdot h)^ 5 - f_{0}( 1 - (1 - v\cdot h)^ 5 ) \]</p>
+
+<p>\[ = f - f_{0}( 1 - f ) \]</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">vec3</span> <span class="nf">F_Schlick</span><span class="p">(</span><span class="k">const</span> <span class="kt">vec3</span> <span class="n">f0</span><span class="p">,</span> <span class="kt">float</span> <span class="n">VoH</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">VoH</span><span class="p">,</span> <span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">f</span> <span class="o">+</span> <span class="n">f0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">f</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">F_Schlick</span><span class="p">(</span><span class="kt">float</span> <span class="n">f0</span><span class="p">,</span> <span class="kt">float</span> <span class="n">f90</span><span class="p">,</span> <span class="kt">float</span> <span class="n">VoH</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">f0</span> <span class="o">+</span> <span class="p">(</span><span class="n">f90</span> <span class="o">-</span> <span class="n">f0</span><span class="p">)</span> <span class="o">*</span> <span class="n">pow5</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">VoH</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">vec3</span> <span class="nf">fresnel</span><span class="p">(</span><span class="k">const</span> <span class="kt">vec3</span> <span class="n">f0</span><span class="p">,</span> <span class="kt">float</span> <span class="n">LoH</span><span class="p">)</span> <span class="p">{</span>
+<span class="cp">#if FILAMENT_QUALITY == FILAMENT_QUALITY_LOW
+</span>    <span class="k">return</span> <span class="n">F_Schlick</span><span class="p">(</span><span class="n">f0</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span> <span class="c1">// f90 = 1.0</span>
+<span class="cp">#else
+</span>    <span class="kt">float</span> <span class="n">f90</span> <span class="o">=</span> <span class="n">saturate</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">f0</span><span class="p">,</span> <span class="kt">vec3</span><span class="p">(</span><span class="mi">50</span><span class="p">.</span><span class="mi">0</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">33</span><span class="p">)));</span>
+    <span class="k">return</span> <span class="n">F_Schlick</span><span class="p">(</span><span class="n">f0</span><span class="p">,</span> <span class="n">f90</span><span class="p">,</span> <span class="n">LoH</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+</code></pre></div>
+<p>代码里实现了一种更准确的F项，具体细节看这里: <a href="https://google.github.io/filament/Filament.html#toc5.6.2">Specular occlusion</a></p>
+
+<h1>anisotropic specular</h1>
+
+<p>各向异性的specular，也是基于pbr公式改的。</p>
+
+<h2>anisotropic-D项</h2>
+
+<p>首先是D项发生了变化：</p>
+
+<p><img src="../images/2022.1/AD.png" alt="AD.png"></p>
+
+<p>其中多了2个新的标量参数\( \alpha _{t}\)和\( \alpha _{b}\)， 即\( \alpha _{tangent}\)和\( \alpha _{bitangent}\)，切线方向的粗糙度和副切线方向的粗糙度。</p>
+
+<p>以及多了2个向量t和b，即切线和副切线。</p>
+
+<p>\( \alpha _{t}\)和\( \alpha _{b}\)的计算方法如下：</p>
+
+<p><img src="../images/2022.1/AA.png" alt="AA.png"></p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl">    <span class="kt">float</span> <span class="n">at</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">roughness</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">+</span> <span class="n">pixel</span><span class="p">.</span><span class="n">anisotropy</span><span class="p">),</span> <span class="n">MIN_ROUGHNESS</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">ab</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">roughness</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">pixel</span><span class="p">.</span><span class="n">anisotropy</span><span class="p">),</span> <span class="n">MIN_ROUGHNESS</span><span class="p">);</span>
+</code></pre></div>
+<p>切线pixel.anisotropicT和副切线pixel.anisotropicB是在世界空间下的，它们的计算代码如下：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">void</span> <span class="nf">getAnisotropyPixelParams</span><span class="p">(</span><span class="k">const</span> <span class="n">MaterialInputs</span> <span class="n">material</span><span class="p">,</span> <span class="k">inout</span> <span class="n">PixelParams</span> <span class="n">pixel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">vec3</span> <span class="n">direction</span> <span class="o">=</span> <span class="n">material</span><span class="p">.</span><span class="n">anisotropyDirection</span><span class="p">;</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">anisotropy</span> <span class="o">=</span> <span class="n">material</span><span class="p">.</span><span class="n">anisotropy</span><span class="p">;</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">anisotropicT</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">shading_tangentToWorld</span> <span class="o">*</span> <span class="n">direction</span><span class="p">);</span>
+    <span class="n">pixel</span><span class="p">.</span><span class="n">anisotropicB</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">getWorldGeometricNormalVector</span><span class="p">(),</span> <span class="n">pixel</span><span class="p">.</span><span class="n">anisotropicT</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>切线空间下的切线方向direction，本来应该是从纹理读的，但性能考虑，直接用材质参数material.anisotropyDirection了。</p>
+
+<p>再来看D项公式的化简：</p>
+
+<p>\[ D_{aniso}(h,\alpha ) = \frac{1}{\pi \alpha _t \alpha _b} \frac{1}{ ((\frac {t\cdot h}{\alpha _t})^2 + (\frac {b\cdot h}{\alpha _b})^2 + (n\cdot h)^2)^2 } \]</p>
+
+<p>令：</p>
+
+<p>\[ d = (\frac {t\cdot h}{\alpha _t}, \frac {b\cdot h}{\alpha _b}, n\cdot h) \]</p>
+
+<p>得到：</p>
+
+<p>\[ D_{aniso}(h,\alpha ) = \frac{1}{\pi \alpha _t \alpha _b} \frac{1}{  (d\cdot d)^2 } \]</p>
+
+<p>再设d&#39;：</p>
+
+<p>\[ d&#39; = \alpha _t \alpha _b d = (\alpha _b t\cdot h,\alpha _t b\cdot h, \alpha _t \alpha _b n\cdot h) \]</p>
+
+<p>于是：</p>
+
+<p>\[ d = \frac {d&#39;}{\alpha _t \alpha _b} = \frac {(\alpha _b t\cdot h,\alpha _t b\cdot h, \alpha _t \alpha _b n\cdot h)}{\alpha _t \alpha _b} \]</p>
+
+<p>\[ d\cdot d = \frac {d&#39;\cdot d&#39;}{(\alpha _t \alpha _b)^2} \]</p>
+
+<p>\[ (d\cdot d)^2 =\frac { (d&#39;\cdot d&#39;)^2 }{(\alpha _t \alpha _b)^4} \]</p>
+
+<p>\[ \frac { 1 } { (d\cdot d)^2 } = \frac { (\alpha _t \alpha _b)^4 }{ (d&#39;\cdot d&#39;)^2 } \]</p>
+
+<p>\[ D_{aniso}(h,\alpha ) = \frac{1}{\pi \alpha _t \alpha _b} \frac { (\alpha _t \alpha _b)^4 }{ (d&#39;\cdot d&#39;)^2 } =  \frac{1}{\pi } \frac { (\alpha _t \alpha _b)^3 }{ (d&#39;\cdot d&#39;)^2 } \]</p>
+
+<p>完整的D项代码如下，和推导出来的公式对得上：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">D_GGX_Anisotropic</span><span class="p">(</span><span class="kt">float</span> <span class="n">at</span><span class="p">,</span> <span class="kt">float</span> <span class="n">ab</span><span class="p">,</span> <span class="kt">float</span> <span class="n">ToH</span><span class="p">,</span> <span class="kt">float</span> <span class="n">BoH</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoH</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">at</span> <span class="o">*</span> <span class="n">ab</span><span class="p">;</span>
+    <span class="kt">highp</span> <span class="kt">vec3</span> <span class="n">d</span> <span class="o">=</span> <span class="kt">vec3</span><span class="p">(</span><span class="n">ab</span> <span class="o">*</span> <span class="n">ToH</span><span class="p">,</span> <span class="n">at</span> <span class="o">*</span> <span class="n">BoH</span><span class="p">,</span> <span class="n">a2</span> <span class="o">*</span> <span class="n">NoH</span><span class="p">);</span>
+    <span class="kt">highp</span> <span class="kt">float</span> <span class="n">d2</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">b2</span> <span class="o">=</span> <span class="n">a2</span> <span class="o">/</span> <span class="n">d2</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">a2</span> <span class="o">*</span> <span class="n">b2</span> <span class="o">*</span> <span class="n">b2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">/</span> <span class="n">PI</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>anisotropic-V项</h2>
+
+<p>各向异性的V项公式贼复杂，就不研究了，直接套代码即可。需要的参数上面都介绍过了：</p>
+<div class="highlight"><pre><code class="language-glsl" data-lang="glsl"><span class="kt">float</span> <span class="nf">visibilityAnisotropic</span><span class="p">(</span><span class="kt">float</span> <span class="n">roughness</span><span class="p">,</span> <span class="kt">float</span> <span class="n">at</span><span class="p">,</span> <span class="kt">float</span> <span class="n">ab</span><span class="p">,</span>
+        <span class="kt">float</span> <span class="n">ToV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">BoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">ToL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">BoL</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoV</span><span class="p">,</span> <span class="kt">float</span> <span class="n">NoL</span><span class="p">)</span> <span class="p">{</span>
+<span class="cp">#if BRDF_ANISOTROPIC_V == SPECULAR_V_SMITH_GGX
+</span>    <span class="k">return</span> <span class="n">V_SmithGGXCorrelated</span><span class="p">(</span><span class="n">roughness</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">);</span>
+<span class="cp">#elif BRDF_ANISOTROPIC_V == SPECULAR_V_GGX_ANISOTROPIC
+</span>    <span class="k">return</span> <span class="n">V_SmithGGXCorrelated_Anisotropic</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ab</span><span class="p">,</span> <span class="n">ToV</span><span class="p">,</span> <span class="n">BoV</span><span class="p">,</span> <span class="n">ToL</span><span class="p">,</span> <span class="n">BoL</span><span class="p">,</span> <span class="n">NoV</span><span class="p">,</span> <span class="n">NoL</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span>
+</code></pre></div>
+<p>从代码里看出，可以直接用各向同性的V项。</p>
+
+<h2>anisotropic-F项</h2>
+
+<p>各向异性的F项和各向同性的F项一样。</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on January 18, 2022
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

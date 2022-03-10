@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>线性代数之PLU分解 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="行列式的求解
+
+从行列式的定义出发去求行列式，是一个简单但低效的方法。而实际上，解决数学问题的途径往往有多种。这里，我将介绍其中一种比较常见的快速解法：PLU分解。
+
+PLU的LU
+
+要理解PLU，得先搞懂LU分解。（这里分享一个外教的讲解视频，简单好理解：https://www.youtube.com/watch?v=UlWcofkUDDU 能翻墙的同学就直接看吧。)
+
+LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三角矩阵和上三角矩阵。
+
+下面手动演示下LU分解过程：
+" />
+    <meta property="og:description" content="行列式的求解
+
+从行列式的定义出发去求行列式，是一个简单但低效的方法。而实际上，解决数学问题的途径往往有多种。这里，我将介绍其中一种比较常见的快速解法：PLU分解。
+
+PLU的LU
+
+要理解PLU，得先搞懂LU分解。（这里分享一个外教的讲解视频，简单好理解：https://www.youtube.com/watch?v=UlWcofkUDDU 能翻墙的同学就直接看吧。)
+
+LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三角矩阵和上三角矩阵。
+
+下面手动演示下LU分解过程：
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="线性代数之PLU分解" />
+    <meta property="twitter:title" content="线性代数之PLU分解" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-3/',
+		  'title': '线性代数之PLU分解'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>线性代数之PLU分解</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h1>行列式的求解</h1>
+
+<p>从行列式的定义出发去求行列式，是一个简单但低效的方法。而实际上，解决数学问题的途径往往有多种。这里，我将介绍其中一种比较常见的快速解法：<strong>PLU分解</strong>。</p>
+
+<h2>PLU的LU</h2>
+
+<p>要理解PLU，得先搞懂LU分解。（这里分享一个外教的讲解视频，简单好理解：<a href="https://www.youtube.com/watch?v=UlWcofkUDDU">https://www.youtube.com/watch?v=UlWcofkUDDU</a> 能翻墙的同学就直接看吧。)</p>
+
+<p>LU分别代表：Lower Triangular Matrix 和 Upper Triangular Matrix，即下三角矩阵和上三角矩阵。</p>
+
+<p>下面手动演示下LU分解过程：</p>
+
+<!--more-->
+
+<p>设A：</p>
+
+<p>\[ A =  \left[ \begin{matrix} 9&amp;6&amp;0\\ 6&amp;5&amp;4\\ 3&amp;4&amp;10\\ \end{matrix} \right] \]</p>
+
+<p>要把A分解成LU，第一步是先用高斯消元法，把A变成阶梯型矩阵U：</p>
+
+<ul>
+<li>\( R2 -= R1 * a_{10}/a_{00} = R1 * 6/9 \)</li>
+</ul>
+
+<p>\[ A_{0} =  \left[ \begin{matrix} 9&amp;6&amp;0\\ 0&amp;1&amp;4\\ 3&amp;4&amp;10\\ \end{matrix} \right] = E_{0}A =  \left[ \begin{matrix} 1&amp;0&amp;0\\ -6/9&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right]
+ \left[ \begin{matrix} 9&amp;6&amp;0\\ 6&amp;5&amp;4\\ 3&amp;4&amp;10\\ \end{matrix} \right] \]</p>
+
+<ul>
+<li>\( R3 -= R1 * a_{20}/a_{00} = R1 * 3/9 \)</li>
+</ul>
+
+<p>\[ A_{1} =  \left[ \begin{matrix} 9&amp;6&amp;0\\ 0&amp;1&amp;4\\ 0&amp;2&amp;10\\ \end{matrix} \right] = E_{1}A_{0} =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ -3/9&amp;0&amp;1\\ \end{matrix} \right]
+ \left[ \begin{matrix} 9&amp;6&amp;0\\ 0&amp;1&amp;4\\ 3&amp;4&amp;10\\ \end{matrix} \right]  \]</p>
+
+<ul>
+<li>\( R3 -= R2 * a_{21}/a_{11} = R1 * 2/1 \)</li>
+</ul>
+
+<p>\[ U = A_{2} =  \left[ \begin{matrix} 9&amp;6&amp;0\\ 0&amp;1&amp;4\\ 0&amp;0&amp;2\\ \end{matrix} \right] = E_{2}A_{1} =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;-2/1&amp;1\\ \end{matrix} \right]
+ \left[ \begin{matrix} 9&amp;6&amp;0\\ 0&amp;1&amp;4\\ 0&amp;2&amp;10\\ \end{matrix} \right]  \]</p>
+
+<ul>
+<li><p>因此得：\( U = E_{2}A_{1} = E_{2}E_{1}A_{0} = E_{2}E_{1}E_{0}A \)</p></li>
+<li><p>再调换下，得到：\( A = E_{0}^{-1}E_{1}^{-1}E_{2}^{-1}U \)</p></li>
+<li><p>所以， \( L = E_{0}^{-1}E_{1}^{-1}E_{2}^{-1} \)</p></li>
+</ul>
+
+<p>要得到最终的L，需要算3个\(E_{x}\)矩阵的逆矩阵，看似麻烦，其实很简单，因为\(E_{x}\)有这样的性质：</p>
+
+<p>\[  \left[ \begin{matrix} 1&amp;0&amp;0\\ a&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} 1&amp;0&amp;0\\ -a&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right] =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>\[  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ a&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ -a&amp;0&amp;1\\ \end{matrix} \right] =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>\[  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;a&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;-a&amp;1\\ \end{matrix} \right] =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>所以：</p>
+
+<p>\[ L = E_{0}^{-1}E_{1}^{-1}E_{2}^{-1} =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 6/9&amp;1&amp;0\\ 0&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 3/9&amp;0&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} 1&amp;0&amp;0\\ 0&amp;1&amp;0\\ 0&amp;2/1&amp;1\\ \end{matrix} \right] \]</p>
+
+<p>只要搞定右边的3矩阵乘法运算，就能得到L。而又因为：</p>
+
+<p>\[  \left[ \begin{matrix} 1&amp;0&amp;0\\ a_{1}&amp;1&amp;0\\ b_{1}&amp;c_{1}&amp;1\\ \end{matrix} \right] \left[ \begin{matrix} 1&amp;0&amp;0\\ a_{2}&amp;1&amp;0\\ b_{2}&amp;c_{2}&amp;1\\ \end{matrix} \right] =  \left[ \begin{matrix} 1&amp;0&amp;0\\ a_{1}+a_{2}&amp;1&amp;0\\ b_{1}+a_{2}c_{2}+b_{2}&amp;c_{1}+c_{2}&amp;1\\ \end{matrix} \right]
+\]</p>
+
+<p>所以，L的结果可以迅速得到：</p>
+
+<p>\[ L = E_{0}^{-1}E_{1}^{-1}E_{2}^{-1} =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 6/9&amp;1&amp;0\\ 3/9&amp;2/1&amp;1\\ \end{matrix} \right]  \]</p>
+
+<p>于是，A的LU分解完成了：</p>
+
+<p>\[ A = LU =  \left[ \begin{matrix} 1&amp;0&amp;0\\ 6/9&amp;1&amp;0\\ 3/9&amp;2/1&amp;1\\ \end{matrix} \right]  \left[ \begin{matrix} 9&amp;6&amp;0\\ 0&amp;1&amp;4\\ 0&amp;0&amp;2\\ \end{matrix} \right]  \]</p>
+
+<h2>PLU的P</h2>
+
+<p>这里的P，指的是Permutation Matrix，置换矩阵。</p>
+
+<p>何谓置换矩阵？其实就是经过一系列初等变换的单位矩阵，且元素\( a_{ij} = 0 or 1 \)。</p>
+
+<p>置换矩阵的作用，是用来交换某个矩阵的行（列）顺序。</p>
+
+<p>比如：</p>
+
+<p>\[ P =  \left[ \begin{matrix} 0&amp;1&amp;0\\ 0&amp;0&amp;1\\ 1&amp;0&amp;0\\ \end{matrix} \right]\ \  A =  \left[ \begin{matrix} 3&amp;4&amp;0\\ 1&amp;2&amp;9\\ 0&amp;5&amp;6\\ \end{matrix} \right] \]</p>
+
+<p>\[ PA =  \left[ \begin{matrix} 0&amp;1&amp;0\\ 0&amp;0&amp;1\\ 1&amp;0&amp;0\\ \end{matrix} \right]  \left[ \begin{matrix} 3&amp;4&amp;0\\ 1&amp;2&amp;9\\ 0&amp;5&amp;6\\ \end{matrix} \right] =  \left[ \begin{matrix} 1&amp;2&amp;9\\ 0&amp;5&amp;6\\ 3&amp;4&amp;0\\ \end{matrix} \right] \]</p>
+
+<p>\[ AP =  \left[ \begin{matrix} 3&amp;4&amp;0\\ 1&amp;2&amp;9\\ 0&amp;5&amp;6\\ \end{matrix} \right]  \left[ \begin{matrix} 0&amp;1&amp;0\\ 0&amp;0&amp;1\\ 1&amp;0&amp;0\\ \end{matrix} \right]  =  \left[ \begin{matrix} 0&amp;3&amp;4\\ 9&amp;1&amp;2\\ 6&amp;0&amp;5\\ \end{matrix} \right] \]</p>
+
+<p>从这个例子就可以看出，P左乘A时，改变了A的行的顺序；P右乘A时，改变了A的列的顺序。</p>
+
+<h2>PA = LU？</h2>
+
+<p>为什么要先对A做P置换后，再做LU分解？这是因为不这样做的话，LU会不稳定(stability)。</p>
+
+<p>举个例子：</p>
+
+<p>\[ A =  \left[ \begin{matrix} 10^{-20}&amp;1\\ 1&amp;1\\ \end{matrix} \right]  =  \left[ \begin{matrix} 1&amp;0\\ 10^{20}&amp;1\\ \end{matrix} \right] \left[ \begin{matrix} 10^{-20}&amp;1\\ 0&amp;1-10^{20}\\ \end{matrix} \right] = L_{0}U_{0} \]</p>
+
+<p>直接分解后得到的L、U矩阵，出现了<strong>大数</strong>。所以这是不能接受的。</p>
+
+<p>而神奇的是，对A做一些P置换后，再来LU分解，是可以变稳定的：</p>
+
+<p>\[ PA =  \left[ \begin{matrix} 0&amp;1\\ 1&amp;0\\ \end{matrix} \right] \left[ \begin{matrix} 10^{-20}&amp;1\\ 1&amp;1\\ \end{matrix} \right] =  \left[ \begin{matrix} 1&amp;1\\ 10^{-20}&amp;1\\ \end{matrix} \right]  =  \left[ \begin{matrix} 1&amp;0\\ 10^{-20}&amp;1\\ \end{matrix} \right] \left[ \begin{matrix} 1&amp;1\\ 0&amp;1-10^{-20}\\ \end{matrix} \right] = L_{1}U_{1} \]</p>
+
+<p>L、U中没有出现大数，于是认为这样的分解是稳定的。</p>
+
+<p>PA的P，需要对A做一些检测后才可以得到，策略就是：<strong>沿着对角线从左上角到右下角遍历A，并检测当前列的最大元素在下方的哪一行（当前行上方的行保持不变），找到后就将当前行和目标行交换，并记录下一个\(P_{i}\)。最后按顺序算\(P_{i}\)的乘积就得到了P。</strong></p>
+
+<h2>A的行列式</h2>
+
+<p>在<a href="http://yiqizhumeng.com:4000/linear-algebra/">&lt;复习向&gt;线性代数之矩阵与行列式(1)</a>中，已经提到了一条行列式公式：</p>
+
+<p>\[ det(AB) = det(A)det(B) \]</p>
+
+<p>而，\( PA = LU \)又可以变成 \( A = P^{-1}LU \)，所以：</p>
+
+<p>\[ det(A) = det(P^{-1}LU) = det(P^{-1})det(L)det(U) \]</p>
+
+<p>可以进一步将这个式子简化：</p>
+
+<ul>
+<li>L、U矩阵分别是下三角矩阵和上三角矩阵，它们的行列式等于对角线上元素的乘积</li>
+<li>L矩阵对角线上的元素都为1</li>
+</ul>
+
+<p>于是有：</p>
+
+<p>\[ det(A) = det(P^{-1})u_{11}u_{22}\cdots u_{nn} \]</p>
+
+<p>因为： \( PP^{-1} = PP^{T} =  1 \)，\( det(P^{T}) = det(P) \)，所以问题变成了求det(P)。</p>
+
+<p>P怎么求？首先，P相当于多个\(E_i\)矩阵的乘积，而又有\( det(E_i)=-1 \)  (行列式的基本性质：交换行列式的两行，行列式变号），所以有：</p>
+
+<p>\[ P = E_t\cdots E_2E_1 \implies \det(P) = \prod^t_{i=1}\det(E_i)=(-1)^t \]</p>
+
+<p>于是：</p>
+
+<p>\[ det(A) = det(P^{-1}LU) = det(P)u_{11}u_{22}\cdots u_{nn} = (-1)^{t}u_{11}u_{22}\cdots u_{nn} \]</p>
+
+<h2>总结</h2>
+
+<p>矩阵的分解(factorization)有很多种，PA=LU只是其中一种，但此类分解法都离不开<strong>高斯消元</strong>这把大杀器。理解好高斯消元是关键。</p>
+
+<p>P.S. 已经有人证明了，任何方阵都存在它的PLU分解:<a href="">http://arxiv.org/pdf/math/0506382v1.pdf</a>。</p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on August 31, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

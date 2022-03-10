@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>直线与平面相交算法 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="直线与平面相交算法" />
+    <meta property="twitter:title" content="直线与平面相交算法" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/line-plane-intersection/',
+		  'title': '直线与平面相交算法'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>直线与平面相交算法</h1>
+ <h3>Tags: <a href="/tag/math/" rel="tag">math</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<h1>平面的方程</h1>
+
+<p>设位于平面P上的某个点为\( \vec p_{0} \)(已知量)，平面P的法向量为\( \vec n \)(已知量)，该平面P的任意一点设为\( \vec p \)，则平面P的方程为：</p>
+
+<p>\[ (\vec p -  \vec p_{0} )\cdot \vec n = 0 \]</p>
+
+<p>使得这个方程成立的原理是，位于平面P上的任意一个向量\( (\vec p -  \vec p_{0} ) \)，必然和平面P的法向量垂直，互相垂直的向量的点积必然为0。</p>
+
+<h1>直线的方程</h1>
+
+<p>设位于直线上的某个点为\( \vec o \)(已知量)，直线的方向向量为\( \vec d \)(已知量)，直线上的任意一点为\( \vec p \)，则直线的方程为:</p>
+
+<p>\[ \vec p = \vec o + t\vec d, t\in R \]</p>
+
+<p>注意，式子右边的t是一个Scalar（一个实数标量），这个t决定了\(\vec p\)的位置。</p>
+
+<h1>直线与平面的相交</h1>
+
+<p>直线与平面的相交，必然是一个点。将上面的直线方程代入平面方程，得到：</p>
+
+<p>\[ ( \vec o + t\vec d -  \vec p_{0} )\cdot \vec n = 0  \]</p>
+
+<p>其中，\( \vec o 、\vec d 、\vec p_{0} 、\vec n \)都是已知量，只有t是未知量，<strong>所以求直线与平面的相交点等同于求t的值</strong>。</p>
+
+<p>化简这个式子，得到：</p>
+
+<p>\[ t\vec d \cdot \vec n + (\vec o -  \vec p_{0} )\cdot \vec n = 0  \]</p>
+
+<p>\[ t\vec d \cdot \vec n = ( \vec p_{0} - \vec o )\cdot \vec n  \]</p>
+
+<p>\[ t = \frac { ( \vec p_{0} - \vec o )\cdot \vec n }{ \vec d \cdot \vec n }  \]</p>
+
+<h1>实例 (基于三维坐标系)</h1>
+
+<p>本小节的实例是结合实际需求设计的。在3D图形学中，直线与平面相交算法一般是应用到了光线与包围盒的相交判定问题中。</p>
+
+<p>那么下面就设直线为任意直线(光线都是任意方向的)，而平面设为某几种特定的特殊平面，来展示上面的算法的流程。</p>
+
+<h2>1. 法向量为\( (1,0,0) \)并且经过点\( (x_{0},0,0) \)的平面</h2>
+
+<p>根据上面的定义，可以知道：</p>
+
+<p>\[ \vec n =  (1,0,0)  \]</p>
+
+<p>\[ \vec p_{0} =  (x_{0},0,0)  \]</p>
+
+<p>代入上面的方程，得到：</p>
+
+<p>\[ t = \frac { ( (x_{0},0,0) - \vec o )\cdot (1,0,0) }{ \vec d \cdot (1,0,0) }  \]</p>
+
+<p>化简得到：</p>
+
+<p>\[ t = \frac { x_{0} -  o_{x} }{ d_{x} }  \]</p>
+
+<h2>2. 法向量为\( (0,1,0) \)并且经过点\( (0,y_{0},0) \)的平面</h2>
+
+<p>同上，可以得到：</p>
+
+<p>\[ t = \frac { y_{0} -  o_{y} }{ d_{y} }  \]</p>
+
+<h2>3. 法向量为\( (0,0,1) \)并且经过点\( (0,0,z_{0}) \)的平面</h2>
+
+<p>同上，可以得到：</p>
+
+<p>\[ t = \frac { z_{0} -  o_{z} }{ d_{z} }  \]</p>
+
+<h1>应用，判定直线与BBox是否相交</h1>
+
+<p>BBox是一个分别和x、y、z轴平行的长方体。在判定直线与BBox是否相交的问题中，要把BBox想象成6个无限大的平面，每个平面称为一个slab。然后就可以应用上面的公式，计算直线与6个slab的相交点(即，算出t值)，根据t值，就可以知道直线是不是和BBox相交了。</p>
+
+<h2>2维的情况</h2>
+
+<p>以此图为例：</p>
+
+<p><img src="../images/2016.7/1.png" alt="1.png"></p>
+
+<p>图中的红色区域是一个BBox，一般定义一个BBox只需要记录它的2个对角顶点的坐标值即可。图中BBox的左下顶点坐标为(3,1)，右上顶点坐标为(6,3)；</p>
+
+<p>图中绿色直线的方程为 y = x - 1。</p>
+
+<p>BBox的4个slab分别为:</p>
+
+<ul>
+<li><p>法向量为\( (1,0) \)并且经过点\( (3,0) \)的直线a</p></li>
+<li><p>法向量为\( (1,0) \)并且经过点\( (6,0) \)的直线b</p></li>
+<li><p>法向量为\( (0,1) \)并且经过点\( (0,1) \)的直线c</p></li>
+<li><p>法向量为\( (0,1) \)并且经过点\( (0,3) \)的直线d</p></li>
+</ul>
+
+<p>绿色直线的o和d分别为：</p>
+
+<ul>
+<li><p>o = (1,0)</p></li>
+<li><p>d = (1,1)</p></li>
+</ul>
+
+<p>根据上面的交点公式，可以知道绿色直线与4个slab的相交点A、B、C、D，它们的t值分别为：</p>
+
+<p>\[ t_{A} = \frac { x_{0} -  o_{x} }{ d_{x} }  = \frac { 3 - 1 }{ 1 } = 2  \]</p>
+
+<p>\[ t_{B} = \frac { x_{1} -  o_{x} }{ d_{x} }  = \frac { 6 - 1 }{ 1 } = 5  \]</p>
+
+<p>\[ t_{C} = \frac { y_{0} -  o_{y} }{ d_{y} }  = \frac { 1 - 0 }{ 1 } = 1  \]</p>
+
+<p>\[ t_{D} = \frac { y_{1} -  o_{y} }{ d_{y} }  = \frac { 3 - 0 }{ 1 } = 3  \]</p>
+
+<p>得到这4个t值之后，怎么知道相交还是不相交呢？这需要分析一下：</p>
+
+<ul>
+<li><p>\( t_{A} \)、\( t_{B} \)的意义是：对于在BBox内的任意一个点P，它的分量x关于直线的t值，必然在\( [ t_{A} ,  t_{B} ] \)之间；</p></li>
+<li><p>\( t_{C} \)、\( t_{D} \)的意义是：对于在BBox内的任意一个点P，它的分量y关于直线的t值，必然在\( [ t_{C} ,  t_{D} ] \)之间；</p></li>
+</ul>
+
+<p>结合例子来说就是：若BBox内存在一个点P，它的x、y分量的t值分别满足\( 2 \leq t_{x} \leq 5 \)、\( 1 \leq t_{y} \leq 3 \)时，这个BBox就必然与直线y = x - 1相交。</p>
+
+<p>但是这个方案并不是最佳方案。</p>
+
+<p>接着分析下。</p>
+
+<p>因为我们给直线定义了o和d，所以直线的另一个表达式是 \(\vec o + t\vec d\)。根据这个表达式，\( t_{A} \)、\( t_{B} \) 和  \( t_{C} \)、\( t_{D} \)有了新的意义：</p>
+
+<ul>
+<li><p>\( t_{A} \)、\( t_{B} \)限定了一条在直线上的有限长度线段\( \overline {AB} \)，起点是\(\vec o + t_{A}\vec d \)，终点是\(\vec o + t_{B}\vec d \)</p></li>
+<li><p>\( t_{C} \)、\( t_{D} \)限定了一条在直线上的有限长度线段\( \overline {CD} \)，起点是\(\vec o + t_{C}\vec d \)，终点是\(\vec o + t_{D}\vec d \)</p></li>
+</ul>
+
+<p>于是，判定直线与BBox是否相交的充分必要条件呼之欲出：<strong>s1和s2两个线段存在重叠</strong>。</p>
+
+<p><img src="../images/2016.7/2.png" alt="2.png"></p>
+
+<p>图中的黑色线段即为\( \overline {AB} \)、\( \overline {CD} \)的重叠部分。</p>
+
+<p><img src="../images/2016.7/3.png" alt="3.png"></p>
+
+<p>对于直线y = x + 1来说，就不存在重叠部分了。</p>
+
+<h2>3维的情况</h2>
+
+<p>理解了2维的情况，3维（甚至更高维）的情况类推就可以了。完整的算法流程是：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c">
+<span class="n">bool</span> <span class="n">BBox</span><span class="o">::</span><span class="n">IsIntersectWithRay</span><span class="p">(</span><span class="k">const</span> <span class="n">Ray</span> <span class="o">&amp;</span><span class="n">ray</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="kt">float</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">ray</span><span class="p">.</span><span class="n">mint</span><span class="p">,</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">ray</span><span class="p">.</span><span class="n">maxt</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//x y z</span>
+        <span class="kt">float</span> <span class="n">invRayDir</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span> <span class="o">/</span> <span class="n">ray</span><span class="p">.</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+        <span class="kt">float</span> <span class="n">tNear</span> <span class="o">=</span> <span class="p">(</span><span class="n">pMin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">ray</span><span class="p">.</span><span class="n">o</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">invRayDir</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">tFar</span> <span class="o">=</span> <span class="p">(</span><span class="n">pMax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">ray</span><span class="p">.</span><span class="n">o</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">invRayDir</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">tNear</span> <span class="o">&gt;</span> <span class="n">tFar</span><span class="p">)</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">tNear</span><span class="p">,</span> <span class="n">tFar</span><span class="p">);</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">tNear</span><span class="p">,</span> <span class="n">t0</span><span class="p">);</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">tFar</span><span class="p">,</span> <span class="n">t1</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">t0</span> <span class="o">&gt;</span> <span class="n">t1</span><span class="p">)</span> 
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div>
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on July  1, 2016
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>线性代数之Cholesky分解 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="又到了矩阵分解时间。这次介绍的是Cholesky分解。这个方法只适用于符合厄米特矩阵、正定矩阵定义的矩阵。
+
+算法原理
+
+设A是一个n阶厄米特正定矩阵(Hermitian positive-definite matrix)。
+
+Cholesky分解的目标是把A变成:
+
+\[ A = LL^{T} \]
+
+L是下三角矩阵。
+" />
+    <meta property="og:description" content="又到了矩阵分解时间。这次介绍的是Cholesky分解。这个方法只适用于符合厄米特矩阵、正定矩阵定义的矩阵。
+
+算法原理
+
+设A是一个n阶厄米特正定矩阵(Hermitian positive-definite matrix)。
+
+Cholesky分解的目标是把A变成:
+
+\[ A = LL^{T} \]
+
+L是下三角矩阵。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="线性代数之Cholesky分解" />
+    <meta property="twitter:title" content="线性代数之Cholesky分解" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/linear-algebra-11/',
+		  'title': '线性代数之Cholesky分解'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>线性代数之Cholesky分解</h1>
+ <h3>Tags: <a href="/tag/matrix/" rel="tag">matrix</a>, <a href="/tag/linear-algebra/" rel="tag">linear algebra</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <p>又到了矩阵分解时间。这次介绍的是<strong>Cholesky分解</strong>。这个方法只适用于符合厄米特矩阵、正定矩阵定义的矩阵。</p>
+
+<h2>算法原理</h2>
+
+<p>设A是一个n阶厄米特正定矩阵(Hermitian positive-definite matrix)。</p>
+
+<p>Cholesky分解的目标是把A变成:</p>
+
+<p>\[ A = LL^{T} \]</p>
+
+<p>L是下三角矩阵。</p>
+
+<!--more-->
+
+<h2>推导过程</h2>
+
+<p>因为A是对称的矩阵，所以设A为：</p>
+
+<p>\[ A =  \left[ \begin{matrix} a_{11}&amp;A_{21}^{T}\\ A_{21}&amp;A_{22}\\ \end{matrix} \right] \]</p>
+
+<p>(注意：细心观察此式子可以发现\(A_{21}\)是一个列向量，\(A_{22}\)是一个n-1阶的方阵)</p>
+
+<p>设L：</p>
+
+<p>\[ L =  \left[ \begin{matrix} l_{11}&amp;0\\ L_{21}&amp;L_{22}\\ \end{matrix} \right] \]</p>
+
+<p>则有:</p>
+
+<p>\[ L^{T} =  \left[ \begin{matrix} l_{11}&amp;L_{21}^{T}\\ 0&amp;L_{22}^{T}\\ \end{matrix} \right] \]</p>
+
+<p>设\( A = LL^{T} \)，得到：</p>
+
+<p>\[  \left[ \begin{matrix} a_{11}&amp;A_{21}^{T}\\ A_{21}&amp;A_{22}\\ \end{matrix} \right] =  \left[ \begin{matrix} l_{11}&amp;0\\ L_{21}&amp;L_{22}\\ \end{matrix} \right] \left[ \begin{matrix} l_{11}&amp;L_{21}^{T}\\ 0&amp;L_{22}^{T}\\ \end{matrix} \right] \]</p>
+
+<p>\[ =  \left[ \begin{matrix} l_{11}^{2}&amp;l_{11}L_{21}^{T}\\ l_{11}L_{21}&amp;L_{21}L_{21}^{T}+L_{22}L_{22}^{T}\\ \end{matrix} \right] \]</p>
+
+<p>其中，未知量是\( l_{11},L_{21},L_{22} \)，这3个未知量的求解公式是：</p>
+
+<p>\[ l_{11} = \sqrt {a_{11}} \]</p>
+
+<p>\[ L_{21} = \frac {1}{l_{11}}A_{21} \]</p>
+
+<p>\[ L_{22}L_{22}^{T} =  A_{22} - L_{21}L_{21}^{T} \]</p>
+
+<p>显然，\( l_{11},L_{21} \)是易求的，而\( L_{22} \)的求解救有意思了。</p>
+
+<p>观察可以发现，\( A_{22} - L_{21}L_{21}^{T} \)也很好求，\( A_{22} \)已知，\( L_{21}L_{21}^{T} \)是一个对角线矩阵，对角线上的元素只是一个平方，好求。</p>
+
+<p>那么设\(A_{22}&#39; = A_{22} - L_{21}L_{21}^{T} \)，则剩下的问题就是求:</p>
+
+<p>\[ A_{22}&#39; = L_{22}L_{22}^{T} \]</p>
+
+<p>啊，这不也是Cholesky分解！被分解的矩阵是A的右下角的n-1阶子方阵！</p>
+
+<p>所以这个算法具有递归性质。</p>
+
+<p>附上一个实例：</p>
+
+<p>设:</p>
+
+<p>\[ A =  \left[ \begin{matrix} 25&amp;15&amp;-5\\ 15&amp;18&amp;0\\ -5&amp;0&amp;11\\ \end{matrix} \right] =  \left[ \begin{matrix} l_{11}&amp;0&amp;0\\ l_{21}&amp;l_{22}&amp;0\\ l_{31}&amp;l_{32}&amp;l_{33}\\ \end{matrix} \right] \left[ \begin{matrix} l_{11}&amp;l_{21}&amp;l_{31}\\ 0&amp;l_{22}&amp;l_{32}\\ 0&amp;0&amp;l_{33}\\ \end{matrix} \right] \]</p>
+
+<p>根据上文的公式，有：</p>
+
+<p>\[ l_{11} = \sqrt { a_{11} } = 5 \]
+\[ L_{21} = \frac {1}{l_{11}}A_{21} = \frac {1}{5} \left[ \begin{matrix} 15\\ -5\\ \end{matrix} \right] =  \left[ \begin{matrix} 3\\ -1\\ \end{matrix} \right] \]</p>
+
+<p>\[ A_{22} - L_{21}L_{21}^{T}  =  L_{22}L_{22}^{T} \]</p>
+
+<p>\[ A_{22} - L_{21}L_{21}^{T}  =  L_{22}L_{22}^{T} \]</p>
+
+<p>\[  \left[ \begin{matrix} 18&amp;0\\ 0&amp;11\\ \end{matrix} \right] -  \left[ \begin{matrix} 3\\ -1\\ \end{matrix} \right] \left[ \begin{matrix} 3&amp;-1\\ \end{matrix} \right] =   \left[ \begin{matrix} l_{22}&amp;0\\ l_{32}&amp;l_{33}\\ \end{matrix} \right]   \left[ \begin{matrix} l_{22}&amp;l_{32}\\ 0&amp;l_{33}\\ \end{matrix} \right] \]</p>
+
+<p>\[  \left[ \begin{matrix} 9&amp;3\\ 3&amp;10\\ \end{matrix} \right] =  \left[ \begin{matrix} l_{22}&amp;0\\ l_{32}&amp;l_{33}\\ \end{matrix} \right]   \left[ \begin{matrix} l_{22}&amp;l_{32}\\ 0&amp;l_{33}\\ \end{matrix} \right] \]</p>
+
+<p>(注意，这里已经是n-1阶的Cholesky分解)</p>
+
+<p>\[ l_{22} = \sqrt { 9 } = 3 \]
+\[ l_{32} = \frac {1}{3}3 = 1 \]
+\[ 10 = l_{32}^{2} + l_{33}^{2} = 1 + l_{33}^{2} \]
+\[ l_{33} = \sqrt {10 - 1} = 3 \]</p>
+
+<p>综上：</p>
+
+<p>\[ A =  \left[ \begin{matrix} 25&amp;15&amp;-5\\ 15&amp;18&amp;0\\ -5&amp;0&amp;11\\ \end{matrix} \right] =  \left[ \begin{matrix} 5&amp;0&amp;0\\ 3&amp;3&amp;0\\ -1&amp;1&amp;3\\ \end{matrix} \right] \left[ \begin{matrix} 5&amp;3&amp;-1\\ 0&amp;3&amp;1\\ 0&amp;0&amp;3\\ \end{matrix} \right] \]</p>
+
+<h2>参考资料</h2>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on December 19, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

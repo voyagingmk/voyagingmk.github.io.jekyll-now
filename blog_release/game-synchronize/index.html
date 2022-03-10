@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>实时对战游戏的同步——问题分析 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="实时对战游戏的同步——问题分析" />
+    <meta property="twitter:title" content="实时对战游戏的同步——问题分析" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/game-synchronize/',
+		  'title': '实时对战游戏的同步——问题分析'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>实时对战游戏的同步——问题分析</h1>
+ <h3>Tags: <a href="/tag/game/" rel="tag">game</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<h1>两种同步技术的对比：状态同步和帧同步</h1>
+
+<h2>========= 状态同步 =========</h2>
+
+<p>（下文只考虑C/S架构，不考虑p2p) </p>
+
+<p>状态同步原理：<strong>利用服务器接收玩家操作包和广播状态信息包，更新所有客户端需要同步的实体的必要状态信息</strong>。</p>
+
+<p>以球球大作战这个游戏为例：每个玩家的每个球都是一个游戏实体(按了分裂键后会一变多)，每个实体有自己的坐标、速度、加速度、图标等<strong>状态信息</strong>，每个客户端都有了这些信息，就算是<strong>基本同步</strong>；当所有客户端在任意某个时刻，这些信息能保持完全一致的话，那么就是<strong>完美同步</strong>。</p>
+
+<p>状态同步算法的目标就是通过各种手段，使得各个实体的状态信息在各个客户端一直保持<strong>一致</strong>或者<strong>近似</strong>。</p>
+
+<p>具体去实现这种<strong>状态同步</strong>技术，会遇到四大问题：<strong>网络延迟对状态信息同步的干扰问题、玩家操作体验问题、同步实体过多问题、同步逻辑过于复杂问题</strong>。</p>
+
+<h3>网络延迟对状态信息同步的干扰问题</h3>
+
+<p>假设网络环境是完美，例如延迟1～5ms（局域网游戏就做得到），玩家的任意操作对游戏实体的影响，都可以瞬时同步到其他客户端，那么对于游戏过程就没什么影响。</p>
+
+<p>反之，如果网络环境差(延迟大于1000ms)，那么所有客户端的同步9成9不会一致，如果是服务器本身的问题导致延迟高，那么所有客户端都会卡，如果是单个客户端的延迟高，那么这个客户端会卡，而其他客户端一般不受影响。</p>
+
+<h3>玩家操作体验问题</h3>
+
+<p>玩家操作体验问题，是一个可以巧妙解决的问题。这个问题要处理好，关键点在于操作响应速度。譬如，玩家点了前进键，过了0.5秒后才开始动，和瞬间就开始动，感受完全不同的。（就像打开一个网站主页，花了0.5秒还是1秒、2秒、5秒，有很大的用户体验差距）。这个问题可以细分成各种各样的小问题，对于MMORPG，最主要的问题是位置同步，必须让玩家点了前进键，就立即开始移动，同时又要保证其他客户端的‘我’和自己客户端的‘我’是一致的位置。这个问题的解决方案就是著名的<strong>位置预测和位置拉扯技术</strong>。这里就不详述了。除了控制移动之外，玩家一般还会有很多操作，但这些操作一般对延迟的忍受都比较高，例如换装、购物，1秒左右的延迟都是可以忍受的。</p>
+
+<h3>同步实体过多问题</h3>
+
+<p>状态同步还有一大问题是同步对象数量过多的问题。这个问题的产生是因为，状态同步为了同步各个客户端里各个游戏对象的状态，需要不断发送游戏对象的状态信息。先不考虑发送频率的问题，单单考虑游戏对象数量，问题就很可怕了。假设现在游戏关卡里面有10个玩家，但是每个玩家有100只宠物辅助战斗，每个宠物根据自己的AI作战，那么就是说1000个游戏实体需要同步。假设每个实体平均1秒就会发一个状态包，1000个实体的话，平均每毫秒就得发一个包（这里假设了发包nodelay且刚好同步时刻错开）。简直不可能做到。</p>
+
+<p>对象数量问题，比前两个问题更难搞。</p>
+
+<p>解决方法一：在游戏设计上设限制，保持同屏的同步对象不会过多。</p>
+
+<p>解决方法二：在技术上降低同步开销。例如不按实体数量而按心跳统一同步，假设1秒心跳一次，每次广播100个实体的状态信息，也是有可能。这样就能提高同步实体数量上限。</p>
+
+<h3>同步逻辑过于复杂问题</h3>
+
+<p>当战斗设计非常复杂时，怎么做好同步？能否脱离游戏设计去做同步？对于状态同步算法，这个问题一般很难彻底解决。</p>
+
+<h2>========= 帧同步 =========</h2>
+
+<p>帧同步技术的第一个要点就是，游戏的战斗必须变成一个<strong>确定性函数系统</strong>。</p>
+
+<h3>确定性函数系统</h3>
+
+<p>确定性函数系统的特征是，给定固定的输入参数，这个系统就会有固定的输出（类似数学公式）。为了做到这一点，就必须想办法剔除掉战斗系统的<strong>各种不确定性因素</strong>。下面列举一些常见的关键点：</p>
+
+<ul>
+<li>使用同一个版本的编程语言、编译器、编译参数、虚拟机等等</li>
+<li>战斗系统版本一致（不同客户端之间必须用版本号校对，保证是同一套战斗系统）</li>
+<li>随机数生成器最好内置，保证计算一致</li>
+<li>浮点数计算在不同机器上计算结果需要一致（实际上即使浮点数都符合IEEE754标准，也仍然可能会不一致）</li>
+<li>考虑禁止浮点数，而只用整数或定点数（如果游戏用了PhysX之类的第三方物理引擎，就非常苛刻了）</li>
+<li>不使用版本不可控的第三方库</li>
+</ul>
+
+<p>这个确定性函数战斗系统，必然是支持<strong>逐逻辑帧更新</strong>的，这个机制就好比实时渲染系统，每秒渲染60个画面（离散），当FPS足够高时，画面看起来就是<strong>连续</strong>的。在支持了逐逻辑帧更新后，这个战斗系统就是<strong>帧逻辑系统</strong>。</p>
+
+<h3>优点</h3>
+
+<p>为什么大费周章地把战斗系统做成这样子呢？这是因为帧同步可以解决状态同步所不能解决的第三、四个问题：<strong>游戏实体过多问题</strong>和<strong>同步逻辑过于复杂问题</strong>。</p>
+
+<p>原因在于，同步算法是“游戏逻辑无关”的，即无论游戏多复杂，理论上都可以用帧同步。</p>
+
+<p>基于帧同步的游戏战斗系统，需要多客户端同步的信息，并不是各个实体的状态信息，而是<strong>玩家的操作输入</strong>。</p>
+
+<p>因为一个确定性函数系统，给定固定输入后，就必然会有固定的输出，那么只要保证各个客户端的战斗系统是同一个确定性函数系统，并且保证各个客户端的玩家操作（函数输入）都是一致的，那么所得到的每一逻辑帧的战斗状态就是一致的。理论上如此。</p>
+
+<p>但可惜的是，帧同步技术依然要面临<strong>网络延迟问题</strong>和<strong>玩家操作体验问题</strong>。</p>
+
+<h3>小缺点1：延迟问题</h3>
+
+<p>假如某个客户端突然网络异常，有3秒钟收不到包，这3秒内游戏状态是停滞的；过了3秒后，突然收到这3秒内的包，客户端需要从暂停帧开始，顺序输入这些包，才能到达3秒后的实时状态。</p>
+
+<p>假设3秒后网络立刻稳定，那么在第3秒开始，就可以调节战斗频率，快速地播放这3秒的战斗状态（状态同步也会出现类似这样子的情况），使得该客户端跟上其他人的状态。</p>
+
+<p>但假如网络缓慢是长期的（例如玩家的家里人突然开始下载电影，耗尽了带宽），那么并不能快速播放这3秒的战斗，然后又开始新一轮的卡顿吧。</p>
+
+<p>所以正确的做法是，如果出现收包延迟，只能以一个稍快的时钟频率去播放战斗，不然客户端会表现的“很卡”，玩家就会不爽。当然这个做法这是有代价的，因为玩家当前帧已经滞后了很多，这时候<strong>玩家被禁止操作</strong>，因为玩家都还没到达最新战斗时刻，他还在“过去”，他还处在回放状态，肯定是不能移动或者施法的。所有操作只能被reject忽略掉，直到跟上同步网络。所以玩王者荣耀会见到有时候，明明别人都很正常，自己却动不了的情况。</p>
+
+<h3>小缺点2: 反作弊</h3>
+
+<p>显而易见，每个客户端都有完整的游戏状态信息，太容易开发外挂了。首先第一个，玩家视野限制可以轻易打破。这里不探讨反作弊问题。</p>
+
+<h3>设计要点</h3>
+
+<p>基于帧逻辑系统的游戏战斗系统的设计要点：</p>
+
+<p>1  客户端战斗系统需同版本，但服务端不需要跑战斗代码，除非要做战斗验证（验证也可以defer去做）。</p>
+
+<ol>
+<li><p>各个客户端和服务端星状连接，服务端驱动各个客户端进行游戏</p></li>
+<li><p>客户端之间不会互相等待，避免1个客户端卡，导致所有其他客户端也卡</p></li>
+<li><p>因为第3点的存在，服务端帧逻辑系统是不等待客户端的，不管客户端状态如何，服务端一直按照固定的时间间隔迭代更新</p></li>
+<li><p>玩家的操作包不能直接输入战斗系统进行处理（守望先锋倒是做到了，但是它是实现了很牛逼的全盘回滚机制），而是需要先发给服务端，服务端会汇集该关键帧的所有客户端操作包。到timeout时，服务端把该帧的所有操作包广播给所有客户端，客户端收到关键帧操作包后，才能继续更新帧逻辑系统，没有收到前，客户端到达关键帧时需要暂停逻辑更新(或者做一点位置预测？）。</p></li>
+<li><p>因为第5点，玩家的各种操作会有延迟，延迟间隔为( 收到服务端关键帧信息包t1 - 发送操作包时刻t0)，因此理论上最大延迟值为关键帧间隔时间，这个时间越小，操作延迟越低，但关键帧发包频率就越高，网络负担就越重。反过来说，这个时间越大，操作延迟越高，而关键帧发包频率变低。一般实时战斗游戏，延迟超过200ms就会造成对游戏体验的不良影响了，那么上关键帧最大间隔必须小于200ms，实际上，需要实现1秒发15次包的性能，才能做到流畅游戏。</p></li>
+</ol>
+
+<p>从玩家体验角度看，帧逻辑系统需要做到：</p>
+
+<ol>
+<li><p>玩家对自己的角色的操作，必须实时响应</p></li>
+<li><p>其他玩家的角色的操作包，需要尽可能快地收到</p></li>
+<li><p>玩家角色的关键判定，必须以帧逻辑系统为主，比如玩家的扣血数字、死亡、技能施法等，而其他表现可变通处理</p></li>
+</ol>
+
+<h1>综合总结</h1>
+
+<ol>
+<li><p>两种同步方案都会面临<strong>玩家操作体验问题</strong>，都得考虑用位置预测。</p></li>
+<li><p>帧同步方案，对于复杂的游戏逻辑都可以轻松应对，反之，状态同步的游戏逻辑一般不能太复杂。</p></li>
+<li><p>在帧同步中，因为操作包要以关键帧为主，所以必须忍受一定时间的延迟，最大延迟时间一般在一个关键帧周期(200ms)；而在状态同步中，玩家操作只要服务端确认OK，就可以直接执行了，而不需要等到下个关键帧才执行。</p></li>
+<li><p>帧同步方案可以为游戏带来一个额外加分：<strong>回放系统</strong>。一个高效的游戏回放系统必然是基于帧同步的，例如war3的replay文件，一场一个小时的多人游戏，replay文件仅仅只有不到1MB，这里面必然只是存储了战斗初始化数据以及最重要的<strong>所有玩家的操作输入数据</strong>。除了war3，dota、王者荣耀、lol，守望先锋、coc、东方project系列游戏（注意，coc和东方project比较特殊，战斗是单机战斗，不需要多端同步），都有这种帧回放系统。假如没有帧回放系统，游戏战斗过程的记录方案只有录屏、录实体状态这2个方案，随便就是几百MB大小。</p></li>
+<li><p>要应用帧同步技术，前提是这个游戏的战斗是<strong>有始有终</strong>的。就是说，游戏要有<strong>场次</strong>的概念，不能像MMORPG大地图模式、minecraft那样，游戏战斗没有明确的开始和结束时间点。这样的游戏机制，也就不需要回放系统了。同时也很难看到这类游戏同屏出现大量的游戏实体————不只是人物怪物，子弹这些小实体也要算进去。</p></li>
+<li><p>帧同步虽然做出来后方便，但要维护各个客户端的一致性，代价也不小，需要建立完善的监控机制。王者荣耀的不一致率在万分之几左右。而且对于手游环境，手机操作系统分裂这么严重，想必会出幺蛾子。反观状态同步，客户端要做的事情简单得多，出状态的可能性也低。</p></li>
+<li><p>反作弊问题，对于状态同步游戏，比较轻松，不要把多余的信息告诉玩家，就安全了不少。而帧同步，考虑的点就不一样了。</p></li>
+</ol>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on March 31, 2017
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

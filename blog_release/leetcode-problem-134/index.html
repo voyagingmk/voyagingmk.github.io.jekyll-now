@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>leetcode题解 problem 134 Gas Station – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="
+There are N gas stations along a circular route, where the amount of gas at station i is gas[i].
+
+You have a car with an unlimited gas tank and it costs cost[i] of gas to travel from station i to its next station (i+1). You begin the journey with an empty tank at one of the gas stations.
+
+Return the starting gas station&#39;s index if you can travel around the circuit once, otherwise return -1.
+
+Note:
+The solution is guaranteed to be unique.
+
+
+题意：
+
+有N个加油站，连成环形，每个加油站有gas[i]的油，从第i个加油站到第i+1个加油站需要消耗cost[i]的油。现在有一辆车，它有无限大的油箱，但是是空的。求问这辆车应该从哪个加油站出发，才可以跑一遍所有的加油站，返回该加油站的序号，如果不存在这样的起点，返回-1。
+" />
+    <meta property="og:description" content="
+There are N gas stations along a circular route, where the amount of gas at station i is gas[i].
+
+You have a car with an unlimited gas tank and it costs cost[i] of gas to travel from station i to its next station (i+1). You begin the journey with an empty tank at one of the gas stations.
+
+Return the starting gas station&#39;s index if you can travel around the circuit once, otherwise return -1.
+
+Note:
+The solution is guaranteed to be unique.
+
+
+题意：
+
+有N个加油站，连成环形，每个加油站有gas[i]的油，从第i个加油站到第i+1个加油站需要消耗cost[i]的油。现在有一辆车，它有无限大的油箱，但是是空的。求问这辆车应该从哪个加油站出发，才可以跑一遍所有的加油站，返回该加油站的序号，如果不存在这样的起点，返回-1。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="leetcode题解 problem 134 Gas Station" />
+    <meta property="twitter:title" content="leetcode题解 problem 134 Gas Station" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/leetcode-problem-134/',
+		  'title': 'leetcode题解 problem 134 Gas Station'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+
+<h1>leetcode题解 problem 134 Gas Station</h1>
+<h3>Tags: <a href="/tag/leetcode/" rel="tag">leetcode</a></h3>
+<article class="post">
+  <div class="entry">
+    <blockquote>
+<p>There are N gas stations along a circular route, where the amount of gas at station i is gas[i].</p>
+
+<p>You have a car with an unlimited gas tank and it costs cost[i] of gas to travel from station i to its next station (i+1). You begin the journey with an empty tank at one of the gas stations.</p>
+
+<p>Return the starting gas station&#39;s index if you can travel around the circuit once, otherwise return -1.</p>
+
+<p>Note:
+The solution is guaranteed to be unique.</p>
+</blockquote>
+
+<h3>题意：</h3>
+
+<p>有N个加油站，连成环形，每个加油站有gas[i]的油，从第i个加油站到第i+1个加油站需要消耗cost[i]的油。现在有一辆车，它有无限大的油箱，但是是空的。求问这辆车应该从哪个加油站出发，才可以跑一遍所有的加油站，返回该加油站的序号，如果不存在这样的起点，返回-1。</p>
+
+<!--more-->
+
+<h3>题解：</h3>
+
+<p>设sum-gas是所有加油站的油的总和，sum-cost是汽车走一圈消耗的油的总和，容易知道，当sum-gas&lt;sum-cost时，汽车是不可能遍历所有加油站的，因为油不够。</p>
+
+<p>反过来说，当sum-gas&gt;=sum-cost时，是不是一定有一个起点，可以让汽车顺序跑一圈加油站呢？</p>
+
+<p>证明：
+1）当N=1，g1 &gt;= c1，那么预言正确；</p>
+
+<p>2）当N=2，g1 + g2 &gt;= c1 + c2，若g1 &gt; c1且g2 &gt; c2，则怎么走都可以，所以只要考虑 (g1 &lt; c1 &amp;&amp; g2 &gt; c2) 或者 (g1 &gt; c1 &amp;&amp; g2 &lt; c2) 的情况（实际上2个情况是等同的，只要证明其一即可）。设g1 &lt; c1，因为g1 + g2 &gt; c1 + c2，所以g2 &gt; c2。那么只要从g &gt; c的点出发，必然可以到另一个点。</p>
+
+<p>3）当N=3，g1 + g2 + g3 &gt;= c1 + c2 + c3，若g1 &gt; c1且g2 &gt; c2且g3 &gt; c3，则怎么走都可以。所以只需要考虑g1 &lt; c1 &amp;&amp; g2 + g3 &gt; c2 + c3 的情况（g1可以换成g2或g3，因为是加油站是环形的)。设g1 &lt; c1，那么不能以1作为起点，分情况考虑：a)当g2 &gt; c2，那么可以从2出发，而因为g2 + g3 &gt; c2 + c3,所以2-&gt;3-&gt;1成立；b)当g2 &lt; c2时，g3 &gt; c3，又可得g3 + g1 &gt; c3 + c1，所以3-&gt;1-&gt;2成立。 所以3个加油站也必然存在一个可走的路径。</p>
+
+<p>4）当N=4时，g1 + g2 + g3 + g4 &gt;= c1 + c2 + c3 + c4，因为在3)中已经证明3个加油站必然存在一条路径，那么对于4个加油站，可以设 g1 + g2 + g3 &gt;= c1 + c2 + c3（也可以是234、341、412)，那么对于这3个加油站，肯定是有一条路的，那么久可以把这3个加油站合并，变成 g0 &gt;= c0 且 g0 + g4 &gt;= c0 +c4，问题就转化为2)的情况，而2）已经证明是有解的，所以综上可得，N=4也必然有解。</p>
+
+<p>5) 当N&gt;4时，通过上面的合并法，归纳得证。</p>
+
+<p>所以，<strong>当sum-gas&gt;=sum-cost时，一定有一个起点，可以让汽车顺序跑一圈加油站。</strong></p>
+
+<p>知道起点必然存在后，再利用上面的合并法，可以设起点为i，g(left)是从1到i-1所有加油站的油的总和，c(left)是从1到i-1所有加油站的开销的总和，同理g(right)是i+1到n所有加油站的油的总和，c(right)是从1+1到n所有加油站的开销的总和。那么问题就降级为3个加油站left、i、right的路径问题。因为i是起点，路径必然是i-&gt;right-&gt;left，i就可以合并到right区域里，那么路径进一步简化，变成right-&gt;left。即我们需要的i的值，同时也是right区间的起始点位置。</p>
+
+<p>right和left的关系为：</p>
+
+<ul>
+<li><p>g(right) &gt;= c(right)</p></li>
+<li><p><strong>g(left) + g(right) &gt;= c(left) + c(right)</strong></p></li>
+<li><p>区间left = [1, i - 1]</p></li>
+<li><p>区间right = [i, n]</p></li>
+</ul>
+
+<p>具体代码实现是，从1和n向中间扫，计算left和right的gas和cost，当2个指针相遇，且满足上面的关系式，则高位指针的位置就是我们的起点。</p>
+
+<p>这里可以做一个优化，因为<strong>g(left) + g(right) &gt;= c(left) + c(right)</strong>，可得<strong>sum = g(left) + g(right) - ( c(left) + c(right) ) &gt;= 0</strong>那么即是说，在扫的过程中，可以把left和right视作一个合并中加油站集群，只要保证sum&gt;=0成立，left和right就可以不断向中间逼近，直到相遇。</p>
+
+<p>&quot;伪&quot;代码如下：</p>
+
+<ol>
+<li><p>设start = n, end = 1，sum = gas(start-&gt;end) - cost(start-&gt;end)</p></li>
+<li><p>初始sum = gas(start) - cost(start)</p></li>
+<li><p>while(start &gt; end):</p>
+
+<p>sum &gt;= 0:
+    当sum &gt;= 0时，因为start的gas比cost大，必然可以走到end，所以可以把把gas(end)-cost(end)加到sum里，sum += gas(end)-cost(end)（也就是把start-&gt;end的所有加油站合并，变成一个start），合并后end加1；</p>
+
+<p>sum &lt; 0:
+    当sum &lt; 0时，说明start的gas已经少到不能走到end了，但又因为start必然是路径的起点，于是start还可以尝试往左挪，start减一，并执行 sum += gas(start) - cost(start)。（也就是把start的左边的加油站合并到start）</p></li>
+</ol>
+
+<figure class="highlight"><pre><code class="language-cpp" data-lang="cpp"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="code"><pre>   <span class="kt">int</span> <span class="nf">canCompleteCircuit</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">gas</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">cost</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">start</span> <span class="o">=</span> <span class="n">gas</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="n">gas</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">cost</span><span class="p">[</span><span class="n">start</span><span class="p">];</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">start</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sum</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">sum</span> <span class="o">+=</span> <span class="n">gas</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">-</span> <span class="n">cost</span><span class="p">[</span><span class="n">end</span><span class="p">];</span>
+                <span class="o">++</span><span class="n">end</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="o">--</span><span class="n">start</span><span class="p">;</span>
+                <span class="n">sum</span> <span class="o">+=</span> <span class="n">gas</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">cost</span><span class="p">[</span><span class="n">start</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sum</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">start</span><span class="p">;</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+  </div>
+  <div class="entry">
+  (未经授权禁止转载)
+  </div>
+  <div class="date">
+    Written on July 15, 2015
+  </div>
+  <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+  <img src="../images/dashang1.jpeg" />
+  <img src="../images/dashang2.jpeg" />
+    
+    
+  
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

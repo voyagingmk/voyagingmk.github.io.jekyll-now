@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>理解卷积 Convolution – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="数学中的卷积
+
+卷积的wiki：Convolution。
+
+卷积和(convolution sum)的公式是:
+
+\[ y(t) = x(t)*h(t) = \sum _{\tau =-\infty }^{\infty }x(\tau )h(t-\tau )\]
+
+写成积分形式是:
+" />
+    <meta property="og:description" content="数学中的卷积
+
+卷积的wiki：Convolution。
+
+卷积和(convolution sum)的公式是:
+
+\[ y(t) = x(t)*h(t) = \sum _{\tau =-\infty }^{\infty }x(\tau )h(t-\tau )\]
+
+写成积分形式是:
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="理解卷积 Convolution" />
+    <meta property="twitter:title" content="理解卷积 Convolution" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/convolution/',
+		  'title': '理解卷积 Convolution'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>理解卷积 Convolution</h1>
+ <h3>Tags: <a href="/tag/math/" rel="tag">math</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h2>数学中的卷积</h2>
+
+<p>卷积的wiki：<a href="https://en.wikipedia.org/wiki/Convolution#Derivations">Convolution</a>。</p>
+
+<p>卷积和(convolution sum)的公式是:</p>
+
+<p>\[ y(t) = x(t)*h(t) = \sum _{\tau =-\infty }^{\infty }x(\tau )h(t-\tau )\]</p>
+
+<p>写成积分形式是:</p>
+
+<!--more-->
+
+<p>\[ x(t)*h(t) = \int _{-\infty }^{\infty }x(\tau )h(t-\tau )d\tau = \int _{-\infty }^{\infty }x(t-\tau )h(\tau )d\tau \]</p>
+
+<p>要理解这个东西，比较难，一种是公式推导，不过是从傅里叶变换得到的；一种是用狄拉克δ函数来辅助理解（我自认为的）；最后一种是通过线性时不变系统理论<a href="https://en.wikipedia.org/wiki/LTI_system_theory#Overview">LTI system theory</a>。</p>
+
+<p>先讲第一种吧。</p>
+
+<h2>第一种思路：傅里叶变换与卷积</h2>
+
+<p>首先要搬出<a href="http://www.qiujiawei.com/fourier-equation/">傅里叶变换</a>的一个推论：</p>
+
+<p>\[ \mathcal {F}[\alpha f(t) + \beta g(t)] = \alpha F(s) + \beta G(s) \]</p>
+
+<p>这个公式意思是，一个时域下的复杂信号函数可以分解成多个简单信号函数的和，然后对各个子信号函数做傅里叶变换并再次求和，就求出了原信号的傅里叶变换。这个事实显然很有用处。</p>
+
+<p>但除了加法之外，还有乘法。这时候有一个问题：<strong>是否存在某种新的f(t)和g(t)的结合方式，使得f(t)和g(t)结合后的函数的傅里叶变换结果是F(s)G(s)？</strong></p>
+
+<p>要求这个问题的解，要用倒推法。</p>
+
+<p>首先，设有信号函数f(x)和g(t)（注意，x、t都是指横轴变量，只是用来区分开f和g），G(s)、F(s)分别是f(x)和g(t)的傅里叶变换，于是有:</p>
+
+<p>\[ G(s)F(s) = \int _{-\infty }^{\infty }e^{-2\pi ist}g(t)dt\int _{-\infty }^{\infty }e^{-2\pi isx}f(x)dx \]</p>
+
+<p>接着做一些变换:</p>
+
+<p>\[ \int _{-\infty }^{\infty }e^{-2\pi ist}g(t)dt\int _{-\infty }^{\infty }e^{-2\pi isx}f(x)dx = \int _{-\infty }^{\infty }\int _{-\infty }^{\infty }e^{-2\pi ist}e^{-2\pi isx}g(t)f(x)dtdx \]
+\[ = \int _{-\infty }^{\infty }\int _{-\infty }^{\infty }e^{-2\pi is(t+x)}g(t)f(x)dtdx \]
+\[ = \int _{-\infty }^{\infty }\left (\int _{-\infty }^{\infty }e^{-2\pi is(t+x)}g(t)dt\right )f(x)dx \]</p>
+
+<p>现在设u = t + x，所以t = u - x，du = dt（这是把x看做常数项了）。则有：</p>
+
+<p>\[ \int _{-\infty }^{\infty }\left (\int _{-\infty }^{\infty }e^{-2\pi is(t+x)}g(t)dt\right )f(x)dx =  \int _{-\infty }^{\infty }\left (\int _{-\infty }^{\infty }e^{-2\pi isu}g(u - x)du\right )f(x)dx \]</p>
+
+<p>接着调整下积分顺序：
+\[ \int _{-\infty }^{\infty }\left (\int _{-\infty }^{\infty }e^{-2\pi isu}g(u - x)du\right )f(x)dx = \int _{-\infty }^{\infty }\int _{-\infty }^{\infty }e^{-2\pi isu}g(u - x)f(x)dudx \]
+\[ = \int _{-\infty }^{\infty }\int _{-\infty }^{\infty }e^{-2\pi isu}g(u - x)f(x)dxdu \]
+\[ = \int _{-\infty }^{\infty }e^{-2\pi isu}\left (\int _{-\infty }^{\infty }g(u - x)f(x)dx\right )du \]</p>
+
+<p>括号内那个积分是一个关于u的函数，所以可以设成h(u)：</p>
+
+<p>\[ h(u) = \int _{-\infty }^{\infty }g(u - x)f(x)dx \]</p>
+
+<p>于是上面的式子就变成:</p>
+
+<p>\[ \int _{-\infty }^{\infty }e^{-2\pi isu}\left (\int _{-\infty }^{\infty }g(u - x)f(x)dx\right )du = \int _{-\infty }^{\infty }e^{-2\pi isu}h(u)du =  \mathcal {F}[h(s)] = H(s)  \]</p>
+
+<p>这个结论，可以简化成：</p>
+
+<p>\[  H(s) = G(s)F(s) \]</p>
+
+<p>再来看下h(u)。如果把h(u)的u换成t（这是可以的，只是一个符号而已），就有:</p>
+
+<p>\[ h(t) = \int _{-\infty }^{\infty }g(t - x)f(x)dx \]</p>
+
+<p>2个终极公式都出来了。</p>
+
+<p>最后，我们还要定义一个特殊的二元运算符号\(*\)来替代h(t)（也叫卷积运算符，注意，这个不是乘法的乘号哦）：</p>
+
+<p>\[ h(t) = (g*f)(t) = \int _{-\infty }^{\infty }g(t - x)f(x)dx \]</p>
+
+<p>于是有：</p>
+
+<p>\[ H(s) = G(s)F(s) \]
+\[ \mathcal {F}[h(t)] = \mathcal {F}[g(s)] \mathcal {F}[f(s)] \]
+\[ \mathcal {F}[(g*f)(s)] = \mathcal {F}[g(s)] \mathcal {F}[f(s)] \]</p>
+
+<p>最后的公式，也被叫做<strong>卷积定理</strong>(Convolution Theorem)。</p>
+
+<p>这个定理说明，信号f和信号g的卷积的傅里叶变换，等于f、g各自的傅里叶变换的积。</p>
+
+<h2>第二种思路：狄拉克δ函数与卷积</h2>
+
+<p>第二种思路的关键在于<strong>狄拉克δ函数</strong>。</p>
+
+<h3>狄拉克δ函数 dirac delta function</h3>
+
+<p>狄拉克δ函数的wiki：<a href="https://en.wikipedia.org/wiki/Dirac_delta_function">dirac delta function</a>。</p>
+
+<p>狄拉克δ函数在坐标系上的长相:</p>
+
+<p><img src="../images/2015.10/8.png" alt="8.png"></p>
+
+<p><img src="../images/2015.10/Dirac_function_approximation.gif" alt="Dirac_function_approximation.gif"></p>
+
+<p>（图片来自wiki）</p>
+
+<p>在<strong>信号处理科学</strong>中狄拉克δ函数被称为单位脉冲信号(unit impulse symbol）。上面这个图也很形象地说明了这一点。</p>
+
+<p>狄拉克δ函数有这样的性质:</p>
+
+<p>\[ delta (t) =  \begin {cases} +\infty , t=0 \\  0, t\neq 0 \end {cases} \]</p>
+
+<p>\[ \int _{-\infty }^{\infty }\delta (t)dt = 1 \]</p>
+
+<p>狄拉克δ函数在t等于0时值为正无穷，t不等于0时则为0，且在整个定义域的积分等于1。</p>
+
+<h3>狄拉克δ函数与卷积</h3>
+
+<p>考虑卷积公式的一个特殊情况：<strong>当h(t)是狄拉克δ函数时</strong>。现在试一下把h(t)代入卷积公式，得到:</p>
+
+<p>\[ x(t) * h(t) = x(t) * \delta (t) = \int _{-\infty }^{\infty }x(\tau )\delta (t-\tau )d\tau = x(t) \]</p>
+
+<p>(最后一步跳跃得比较厉害，后文会有说明）</p>
+
+<p>这个结果说明，x(t)和狄拉克δ函数卷积的结果还是x(t)，为什么会这样呢？</p>
+
+<p>再看下前面给出的卷积和标准公式：</p>
+
+<p>\[ y(t) = x(t)*h(t) = \sum _{\tau =-\infty }^{\infty }x(\tau )h(t-\tau )\]</p>
+
+<p>把其中的\( h(t - \tau ) \)换成\( \delta (t - \tau ) \)，那么里面的\( t - \tau \)，其实就是让那个脉冲信号在横轴上移动(偏移)\( \tau \)距离。根据狄拉克δ函数的定义，可以知道，当\( t = \tau \)时，\( x(\tau )h(t-\tau ) \)才非0，且等于\( x(\tau ) \)。所以卷积和也就等于\( x(\tau ) \)。（这也算是上面的公式的证明吧）</p>
+
+<p>将这个特殊情况一般化，即不限制h = δ时，就是所谓的卷积公式了。</p>
+
+<h2>第三种思路：线性时不变系统·理论 LTI system theory</h2>
+
+<p>这个还没搞懂，搞懂了再来填坑</p>
+
+<h2>二维卷积以及图像中的卷积</h2>
+
+<p>上面讨论的仅仅是一维的卷积。幸运的是，高维卷积可以简单地根据一维卷积得到，比如说二维的卷积：</p>
+
+<p>\[ f(x,y)*g(x,y) = \sum _{x&#39; }^{}\sum _{y&#39; }^{}f(x&#39;,y&#39;)g(x - x&#39;, y - y&#39;)  \]</p>
+
+<p>积分形式是：</p>
+
+<p>\[ (f*g)(x,y) = \int \int f(x&#39;,y&#39;)g(x - x&#39;, y - y&#39;)dx&#39;dy&#39;  \]</p>
+
+<p>如果给定一个范围r，则有：</p>
+
+<p>\[ f(x,y)*g(x,y) = \sum _{x&#39; = -r }^{x&#39; = r}\sum _{y&#39; = -r }^{y&#39; = r }f(x&#39;,y&#39;)g(x - x&#39;, y - y&#39;)  \]</p>
+
+<p>现在想象一下，把一幅图片(位图)当做是一个函数：</p>
+
+<p>\[ f(x,y) = RGB\ value \]</p>
+
+<p>先让自己对这个式子有一个几何空间上的想象：带有2个变量的函数，它的几何表示是三维的，三个坐标轴分别是：x、y、f(x,y)，所以f(x,y)表示的是三维空间里的一个连续表面(surface)。</p>
+
+<p>然后，我们再来回顾下线性代数——矩阵。假设我们有一个128X128的bmp图像，可以用一个矩阵A(应该说是方阵)来表示它，A的每一个元素是一个rgb值。
+有了这个图像-&gt;矩阵的转换关系后，我们就可以用线性代数的知识对这个图像做处理。</p>
+
+<p>比如说，我们用矩阵乘法吧。假设有另一个和A同阶的方阵S，很显然，下面的等式成立：</p>
+
+<p>\[ AS = A&#39; \]</p>
+
+<p>这个式子意味着，图像处理可以抽象成矩阵的线性运算。比如当S是单位矩阵I时，显然有\( AI = A \)，即A保持不变，什么都没做。</p>
+
+<p>好了，明确了图像可以用线性代数的方法来加工处理后，要理解图像卷积就简单了。</p>
+
+<p>上面说的‘转换’方阵S，是和A同阶的方阵。这个‘同阶’性质，是不是必要的？其实不是。只要你有办法使得A变成A&#39;，就可以了。中间的S，代表的是一个转换过程。</p>
+
+<p>卷积转换，是一个特殊的转换，首先，它有一个叫做<strong>窗口</strong>的东西（或者叫卷积子），一般情况下这个窗口是一个比A的阶数小得多的方阵。</p>
+
+<p>如果拿这个小方阵R去和A的<strong>局部区域</strong>做线性变换(更具体地说，是<strong>点积运算</strong>)，则有：</p>
+
+<p>\[ A_{x,y,w,h}\cdot R_{w,h} = \sum _{x&#39; = x - w/2}^{x&#39; = x + w/2}\sum _{y&#39; = y - h/2}^{y&#39; = y + h/2}A[x&#39;,y&#39;]R[x&#39; - x, y&#39; - y] = new\ RGB\ value \]</p>
+
+<p>把得到的这个RGB值赋给A[x,y]，就有：</p>
+
+<p>\[ A[x,y]R = A&#39;[x,y]  \]</p>
+
+<p>简单地说就是，A[x,y]的值被R刷新了。如果对整幅图像的每一个像素都和R做一次点积运算，整幅图像就被刷新了。</p>
+
+<p>这就是图像的卷积变换的本质。</p>
+
+<h2>找到的相关资料</h2>
+
+<p><a href="http://www.eecg.toronto.edu/%7Eahouse/mirror/engi7824/course_notes_7824_part6.pdf">The Convolution Sum for Discrete-Time LTI Systems. Andrew W. H. House</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on October 18, 2015
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>矩阵微分（一） – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="基本认识
+
+3种标准导数(梯度)公式
+
+1) 自变量是一个标量(Scalar)时：
+
+\[ Df(x) = \lim _{t\to 0} \frac {f(x+t)-f(x)}{t} \]
+
+2) 自变量是一个向量(Vector)时：
+
+\[ D_{\textbf {w}}f(\textbf {x}) = \lim _{t\to 0} \frac {f(\textbf {x} + t\textbf {w}) - f(\textbf {x})}{t} \]
+" />
+    <meta property="og:description" content="基本认识
+
+3种标准导数(梯度)公式
+
+1) 自变量是一个标量(Scalar)时：
+
+\[ Df(x) = \lim _{t\to 0} \frac {f(x+t)-f(x)}{t} \]
+
+2) 自变量是一个向量(Vector)时：
+
+\[ D_{\textbf {w}}f(\textbf {x}) = \lim _{t\to 0} \frac {f(\textbf {x} + t\textbf {w}) - f(\textbf {x})}{t} \]
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="矩阵微分（一）" />
+    <meta property="twitter:title" content="矩阵微分（一）" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/matrix-calculus-1/',
+		  'title': '矩阵微分（一）'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>矩阵微分（一）</h1>
+ <h3>Tags: <a href="/tag/math/" rel="tag">math</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h1>基本认识</h1>
+
+<h2>3种标准导数(梯度)公式</h2>
+
+<p>1) 自变量是一个标量(Scalar)时：</p>
+
+<p>\[ Df(x) = \lim _{t\to 0} \frac {f(x+t)-f(x)}{t} \]</p>
+
+<p>2) 自变量是一个向量(Vector)时：</p>
+
+<p>\[ D_{\textbf {w}}f(\textbf {x}) = \lim _{t\to 0} \frac {f(\textbf {x} + t\textbf {w}) - f(\textbf {x})}{t} \]</p>
+
+<!--more-->
+
+<p>(w的维数和x一致)</p>
+
+<p>这个导数的含义是，在n维空间中f(x)所定义的(超)平面上的某个坐标点x相对于w的斜率。</p>
+
+<p>3) 自变量是一个矩阵(Matrix)时：</p>
+
+<p>\[ D_{\textbf {W}}f(\textbf {X}) = \lim _{t\to 0} \frac {f(\textbf {X}+t\textbf {W})-f(\textbf {X})}{t} \]</p>
+
+<p>含义和2)类似。（已经无法想象了）</p>
+
+<h3>实例</h3>
+
+<p>已知一个三维空间曲面：\( x^{2} + y^{2} + z^{2} = 30 \)，和曲面上的一点P(1,-2,5)。如何求出曲线在P点处的切平面、法线?</p>
+
+<p>切平面求法：</p>
+
+<p>设\(f(x,y,z) = x^{2} + y^{2} + z^{2} - 30 \)</p>
+
+<p><strong>梯度</strong>公式为：</p>
+
+<p>\( \nabla f = &lt; f_{x}, f_{y}, f_{z} &gt; \) </p>
+
+<p>即曲线方程分别对x、y、z求导数得到一个三维向量，就是曲线的梯度公式了。</p>
+
+<p>因此可以得到这条曲线的梯度公式：</p>
+
+<p>\( \nabla f = (2x, 2y, 2z)  \)</p>
+
+<p>（再次注意，\(f(x_{0},y_{0},z_{0})\)是标量，而 \( \nabla F(x_{0},y_{0},z_{0}) \)则是三维向量。）</p>
+
+<p>把P(1,-2,5)代入梯度公式得到：</p>
+
+<p>\( \nabla f(1,-2,5) = (2, -4, 10)  \)</p>
+
+<p>含义是，曲面上P处的梯度方向为(2,-4,10)。</p>
+
+<p>有了梯度方向，就可以求切平面了，先给出切平面公式：</p>
+
+<p>\[ f_{x}(x_{0}, y_{0}, z_{0})(x - x_{0}) + f_{y}(x_{0}, y_{0}, z_{0})(y - y_{0}) + f_{z}(x_{0}, y_{0}, z_{0})(z - z_{0}) = 0\]</p>
+
+<p>其实就是<strong>切平面上的任一点(x,y,z)，与定点\( x_{0},y_{0},z_{0} \)构成的向量，这个向量和关于该定点的导数向量的点积必然为0</strong>。显然这是因为切平面和导数向量是正交关系。</p>
+
+<p>代入P点和导数向量，得：</p>
+
+<p>\( 2(x - 1) + (-4)(y - (-2)) + 10(z - 5) = 0\)</p>
+
+<p>化简：</p>
+
+<p>\( 2(x - 1) -4(y + 2) + 10(z - 5) = 0\)</p>
+
+<p>这就是P点的切平面公式了。从方程也可以看出x、y、z都为1次，这条方程必然代表三维空间的一个平面。</p>
+
+<p>最后求法线方程。注意了，梯度方向和法线方向是一样的，但法线是空间里的线，不只是方向，所以可以用<strong>平行线定理</strong>来求：</p>
+
+<p>\( 法线 = 梯度向量 * t + 法线必须经过的点 \)</p>
+
+<p>\( \vec n(t) = t(2, -4, 10) + (1, -2, 5)  = (2t + 1,  -4t - 2, 10t + 5)  \) </p>
+
+<h3>要注意的点</h3>
+
+<p>梯度需要转置！</p>
+
+<h2>矩阵迹(trace)的各种性质</h2>
+
+<h3>性质1</h3>
+
+<p>\[ tr(A) = tr(A^{T}) \]</p>
+
+<h3>性质2</h3>
+
+<p>\[ tr(AB) = tr(BA) \]</p>
+
+<p>\[ tr(ABC) = tr(CAB) = tr(BCA) \]</p>
+
+<p>\[ tr(ABCD) = tr(DABC) = tr(CDAB) = tr(BCDA) \]</p>
+
+<p>(看出规律了吧)</p>
+
+<h3>性质3</h3>
+
+<p>\[ tr(A+B) = tr(A) + tr(B) \]</p>
+
+<h3>性质4</h3>
+
+<p>\[ tr(\alpha A) = \alpha tr(A) \]</p>
+
+<h3>性质5</h3>
+
+<p>设有矩阵H、U，H和U都是n x m的矩阵，则有：</p>
+
+<p>\[ \sum _{j=1}^{m} \sum _{i=1}^{n}(h_{ij}u_{ij}) = \sum _{j=1}^{m} \sum _{i=1}^{n}((h^{T})_{ji}u_{ij}) = tr(H^{T}U) \]</p>
+
+<h1>矩阵微分的各种性质</h1>
+
+<p>设有关于矩阵A的一个函数f，记为\( f(A) \)，\( f(A) \)关于A的导数为：</p>
+
+<p>\[  \nabla _{A}f(A) = \frac { \partial f(A) }{ \partial A } \]</p>
+
+<p>\[  =  \left[ \begin{matrix} \frac {\partial f }{\partial A_{11}}&amp;\frac {\partial f }{\partial A_{12}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{1n}}\\ \frac {\partial f }{\partial A_{21}}&amp;\frac {\partial f }{\partial A_{22}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{2n}}\\ \vdots &amp;\vdots &amp;\ddots &amp;\vdots \\ \frac {\partial f }{\partial A_{m1}}&amp;\frac {\partial f }{\partial A_{m2}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{mn}}\\ \end{matrix} \right] \]</p>
+
+<h2>性质1</h2>
+
+<p>\[ \nabla _{ A^{T} }f(A) = (\nabla _{A}f(A))^{T} \]</p>
+
+<p>证明：</p>
+
+<p>\[ \nabla _{ A^{T} }f(A) = \]</p>
+
+<p>\[  =  \left[ \begin{matrix} \frac {\partial f }{\partial A_{11}}&amp;\frac {\partial f }{\partial A_{21}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{m1}}\\ \frac {\partial f }{\partial A_{12}}&amp;\frac {\partial f }{\partial A_{22}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{m2}}\\ \vdots &amp;\vdots &amp;\ddots &amp;\vdots \\ \frac {\partial f }{\partial A_{1n}}&amp;\frac {\partial f }{\partial A_{2n}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{mn}}\\ \end{matrix} \right] \]</p>
+
+<p>\[  =  \left[ \begin{matrix} \frac {\partial f }{\partial A_{11}}&amp;\frac {\partial f }{\partial A_{12}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{1n}}\\ \frac {\partial f }{\partial A_{21}}&amp;\frac {\partial f }{\partial A_{22}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{2n}}\\ \vdots &amp;\vdots &amp;\ddots &amp;\vdots \\ \frac {\partial f }{\partial A_{m1}}&amp;\frac {\partial f }{\partial A_{m2}}&amp;\cdots &amp;\frac {\partial f }{\partial A_{mn}}\\ \end{matrix} \right]^{T} \]</p>
+
+<p>\[  = (\frac { \partial f(A) }{ \partial A })^{T}  = (\nabla _{A}f(A))^{T} \]</p>
+
+<h2>性质2</h2>
+
+<p>假设存在矩阵U，使得下面的等式成立：</p>
+
+<p>\[ D_{\textbf {W}}f(\textbf {X}) = \lim _{t\to 0} \frac {f(\textbf {X}+t\textbf {W})-f(\textbf {X})}{t} = tr(W^{T}U) \]</p>
+
+<p>（这里要注意一下：中间的式子的分子包含矩阵，而分母只是一个t，那么这个极限的结果应仍然仍是一个矩阵，然而等式右边却是一个trace，trace是一个数。矩阵等于数？其实是可以的，譬如当f(X)是一个tr运算的时候。）</p>
+
+<p>那么，对\( \textbf {W} \)中任意一个\(W_{ij} \)求导，则有：</p>
+
+<p>\[ D_{W_{ij}}f(\textbf {X}) = tr(W_{ij}^{T}U) = \sum _{j=1}^{} \sum _{i=1}^{}(w_{ij}u_{ij}) = u_{ij}  \]</p>
+
+<p>这个结果可能有点费解。首先要明白\( W_{ij} \)是W矩阵的一个元素，是一个标量(Scalar)，那么就可以确定这个导数也是一个值(Scalar)；对W矩阵的局部单个元素求导，其实按偏导数的概念理解即可，既然是偏导数，这就意味着除了存在\( w_{ij} \)的那一项之外的其他元素都被当做常数，而对常数求导必然等于0，所以最后会得到唯一的\( u_{ij}\)。(中间那一步用到了trace的性质5)</p>
+
+<p>既然已经知道，对局部的\( W_{ij} \)求导会得到\( U_{ij}\)，那么分别对所有\( W_{ij} \)求导，并把各个求导结果再组成一个矩阵，就是U矩阵了。又因为W代表任意矩阵，所以f(X)关于X的导数等于U：</p>
+
+<p>\[  \frac { \partial f(\textbf {X}) }{ \partial X } = \textbf {U} \]</p>
+
+<p>这个式子的意义在于，当题目是“给你一个自变量是矩阵X的函数f(X),求它关于X的导数”时，可以把问题立即转变成求U，而U的求解，可以通过上面的标准导数公式来求。小结一下步骤：</p>
+
+<ol>
+<li><p>计算\( \lim _{t\to 0} \frac {f(\textbf {X}+t\textbf {W})-f(\textbf {X})}{t} \)，并化简，直到得到一个形如\(tr(W^{T}Q) \)的式子；</p></li>
+<li><p>根据\( \frac { \partial f(\textbf {X}) }{ \partial X } = \textbf {U} \)，可以知道\(tr(W^{T}Q) \) = \(tr(W^{T}U) \)， 于是就得到了\(\frac { \partial f(\textbf {X}) }{ \partial X } = U = Q \) 。</p></li>
+</ol>
+
+<h2>性质3</h2>
+
+<p>\[ \frac { \partial tr(AX) }{ \partial X } = A^{T} \]</p>
+
+<p>证明过程需要用到上面的性质2，刚好作为一个应用举例。</p>
+
+<p>证明，设：</p>
+
+<p>\[ f(X) = tr(AX)   \]</p>
+
+<p>根据上面的结论，只需要把下面这个极限简化，理论上就可以求出 \( \frac { \partial tr(AX) }{ \partial X } \) 了：</p>
+
+<p>\[ D_{\textbf {W}}f(\textbf {X}) = \lim _{t\to 0} \frac {f(\textbf {X}+t\textbf {W})-f(\textbf {X})}{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr(A(X + tW)) -  tr(AX) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr(AX + AtW) -  tr(AX) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr(AX) + tr(AtW) -  tr(AX) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr(AtW) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr(AW)t }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} tr(AW) \]</p>
+
+<p>\[  = tr(AW) \]</p>
+
+<p>\[  = tr((AW)^{T}) \]</p>
+
+<p>\[  = tr(W^{T}A^{T}) \]</p>
+
+<p>所以有：</p>
+
+<p>\[ D_{W}f(X) = tr(W^{T}A^{T}) = tr(W^{T}U)  \]</p>
+
+<p>\[ U = A^{T} \]</p>
+
+<p>得证：</p>
+
+<p>\[ \frac { \partial tr(AX) }{ \partial X } = U =  A^{T}  \] </p>
+
+<h2>性质4</h2>
+
+<p>\[ \frac { \partial tr(X^{T}A^{T}) }{ \partial X } = A^{T} \]</p>
+
+<p>有了性质3，就可以推导出这个：</p>
+
+<p>\[ \frac { \partial tr(AX) }{ \partial X } =  A^{T}  \] </p>
+
+<p>\[ \frac { \partial tr((AX)^{T}) }{ \partial X } =  A^{T}  \] </p>
+
+<p>\[ \frac { \partial tr(X^{T}A^{T}) }{ \partial X } =  A^{T}  \] </p>
+
+<h2>性质5</h2>
+
+<p>\[ \nabla _{ X}tr(X) = tr(\nabla _{ X}X) \]</p>
+
+<p>待证。</p>
+
+<h2>性质6</h2>
+
+<p>\[ \nabla _{ X}tr(AXBX^{T}C) = A^{T}C^{T}XB^{T} + CAXB \]</p>
+
+<p>类似性质3的证明过程，只是复杂一些。设:</p>
+
+<p>\[ f(X) = tr(AXBX^{T}C)  \]</p>
+
+<p>\[ D_{\textbf {W}}f(\textbf {X}) = \lim _{t\to 0} \frac {f(\textbf {X}+t\textbf {W})-f(\textbf {X})}{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr(A(X + tW)B(X + tW)^{T}C) -  tr(AXBX^{T}C) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr( A(X + tW)B(X + tW)^{T}C - AXBX^{T}C ) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr( (AXB + tAWB)(X^{T}C + tW^{T}C) - AXBX^{T}C ) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr( AXBX^{T}C + tAWBX^{T}C + tAXBW^{T}C + t^{2}AWBW^{T}C - AXBX^{T}C ) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr( tAWBX^{T}C + tAXBW^{T}C + t^{2}AWBW^{T}C ) }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} \frac {  tr( AWBX^{T}C + AXBW^{T}C + tAWBW^{T}C )t }{t} \]</p>
+
+<p>\[  = \lim _{t\to 0} [tr( AWBX^{T}C + AXBW^{T}C + tAWBW^{T}C )] \]</p>
+
+<p>\[  = \lim _{t\to 0} [tr( AWBX^{T}C + AXBW^{T}C)] + \lim _{t\to 0} [tr( tAWBW^{T}C )] \]</p>
+
+<p>\[  = \lim _{t\to 0} [tr( AWBX^{T}C + AXBW^{T}C)] \]</p>
+
+<p>\[  = tr( AWBX^{T}C ) + tr( AXBW^{T}C ) \]</p>
+
+<p>\[  = tr( (AWBX^{T}C)^{T} ) + tr( AXBW^{T}C ) \]</p>
+
+<p>\[  = tr( C^{T}XB^{T}W^{T}A^{T} ) + tr( AXBW^{T}C ) \]</p>
+
+<p>\[  = tr( W^{T}A^{T}C^{T}XB^{T} ) + tr( W^{T}CAXB ) 【用了trace的性质2】 \]</p>
+
+<p>\[  = tr( W^{T}A^{T}C^{T}XB^{T} + W^{T}CAXB ) \]</p>
+
+<p>\[  = tr( W^{T}  (A^{T}C^{T}XB^{T} + CAXB) ) \]</p>
+
+<p>所以有：</p>
+
+<p>\[ D_{W}f(X) = tr( W^{T}  (A^{T}C^{T}XB^{T} + CAXB) ) = tr(W^{T}U)  \]</p>
+
+<p>得证：</p>
+
+<p>\[ \frac { \partial tr(AXBX^{T}C) }{ \partial X } = U = A^{T}C^{T}XB^{T} + CAXB \]</p>
+
+<p>在wiki<a href="https://en.wikipedia.org/wiki/Matrix_calculus">Matrix Calculus</a>还给出了用性质5公式：\( \nabla _{ X}tr(X) = tr(\nabla _{ X}X) \)推导性质6。为了方便，把图也贴进来吧：</p>
+
+<p><img src="https://upload.wikimedia.org/math/c/6/1/c61612bff41e8572a97d977871ce2be2.png" alt="https://upload.wikimedia.org/math/c/6/1/c61612bff41e8572a97d977871ce2be2.png"></p>
+
+<p><img src="https://upload.wikimedia.org/math/1/e/7/1e761891d19891ff75670424341b8425.png" alt="https://upload.wikimedia.org/math/1/e/7/1e761891d19891ff75670424341b8425.png"></p>
+
+<p>它最后得到的式子和我的推导似乎不一样，但其实是一样的，用trace的性质1\( tr(A) = tr(A^{T}) \)可以转换得到。（误)</p>
+
+<p>上面这个最终等式是错的，要得到梯度得转置一下。zhangyifeng童鞋已更正wiki，可以自己看下wiki的修改历史。</p>
+
+<p>正确的等式为：</p>
+
+<p><img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/62d25cb1609fc051df7d17cf84eabecc194404aa" alt="a.png"></p>
+
+<p>这样就和我的推导完全一致了。</p>
+
+<h2>性质7</h2>
+
+<p>\[ \nabla _{ X}tr(XBX^{T}C) = C^{T}XB^{T} + CXB \]</p>
+
+<p>证明：把性质6的A设为单位矩阵E，得到：</p>
+
+<p>\[ \nabla _{ X}tr(EXBX^{T}C) = E^{T}C^{T}XB^{T} + CEXB \]</p>
+
+<p>化简得到：</p>
+
+<p>\[ \nabla _{ X}tr(XBX^{T}C) = C^{T}XB^{T} + CXB \]</p>
+
+<h2>参考资料</h2>
+
+<p><a href="http://www.tc.umn.edu/%7Enydic001/docs/unpubs/Schonemann_Trace_Derivatives_Presentation.pdf">http://www.tc.umn.edu/~nydic001/docs/unpubs/Schonemann_Trace_Derivatives_Presentation.pdf</a></p>
+
+<p><a href="https://zhuanlan.zhihu.com/p/24709748">https://zhuanlan.zhihu.com/p/24709748</a></p>
+
+<p><a href="http://cherishlc.iteye.com/blog/1765932">http://cherishlc.iteye.com/blog/1765932</a></p>
+
+<p><a href="http://tutorial.math.lamar.edu/Classes/CalcIII/GradientVectorTangentPlane.aspx">http://tutorial.math.lamar.edu/Classes/CalcIII/GradientVectorTangentPlane.aspx</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on May  8, 2016
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

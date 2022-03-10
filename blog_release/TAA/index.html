@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TAA笔记 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="TAA笔记" />
+    <meta property="twitter:title" content="TAA笔记" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/TAA/',
+		  'title': 'TAA笔记'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>TAA笔记</h1>
+ <h3>Tags: <a href="/tag/taa/" rel="tag">TAA</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<h1>TAA基础步骤</h1>
+
+<ol>
+<li>每帧绘制前jitter一下主相机的投影矩阵</li>
+<li>每帧做一个TAA后处理：将历史帧和当前帧混合</li>
+</ol>
+
+<h2>jitter</h2>
+
+<p>所谓jitter就是说抖动一下相机视椎体位置（整体平移，但长宽不变），实现每帧绘制不同的子像素，实现多重采样。</p>
+
+<p>每帧x、y方向抖动多少距离，不是完全随机的，而是要弄一个低差异序列。算出offset后，需要应用到投影矩阵，具体的数学原理看下面的文章：</p>
+
+<p><a href="https://www.qiujiawei.com/linear-algebra-12/">线性代数之透视矩阵Perspective Matrix</a></p>
+
+<p>jitter后，如果什么都不做，只是显示当前帧到screen，会发现什么变化都没有，该锯齿还是锯齿（但这种子像素抖动不会导致整个屏幕抖动，如果是静态场景渲染，画面还是静止的）。</p>
+
+<p>在Unity中做jitter，只需要<strong>在OnPreCull里修改Camera.main.projectionMatrix</strong>，以下算法来自UE4：</p>
+<div class="highlight"><pre><code class="language-c#" data-lang="c#">
+<span class="k">public</span> <span class="k">class</span> <span class="nc">CustomTAA</span> <span class="p">:</span> <span class="n">MonoBehaviour</span>
+<span class="p">{</span>
+    <span class="kt">float</span> <span class="nf">Halton</span><span class="p">(</span><span class="kt">uint</span> <span class="n">Index</span><span class="p">,</span> <span class="kt">uint</span> <span class="n">Base</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">float</span> <span class="n">Result</span> <span class="p">=</span> <span class="m">0.0f</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">InvBase</span> <span class="p">=</span> <span class="m">1.0f</span> <span class="p">/</span> <span class="n">Base</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">Fraction</span> <span class="p">=</span> <span class="n">InvBase</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">Index</span> <span class="p">&gt;</span> <span class="m">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">Result</span> <span class="p">+=</span> <span class="p">(</span><span class="n">Index</span> <span class="p">%</span> <span class="n">Base</span><span class="p">)</span> <span class="p">*</span> <span class="n">Fraction</span><span class="p">;</span>
+            <span class="n">Index</span> <span class="p">/=</span> <span class="n">Base</span><span class="p">;</span>
+            <span class="n">Fraction</span> <span class="p">*=</span> <span class="n">InvBase</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">Result</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">void</span> <span class="nf">OnPreCull</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="kt">float</span> <span class="n">u1</span> <span class="p">=</span> <span class="nf">Halton</span><span class="p">(</span><span class="n">frame_index</span> <span class="p">+</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">);</span>
+        <span class="kt">float</span> <span class="n">u2</span> <span class="p">=</span> <span class="nf">Halton</span><span class="p">(</span><span class="n">frame_index</span> <span class="p">+</span> <span class="m">1</span><span class="p">,</span> <span class="m">3</span><span class="p">);</span>
+        <span class="n">frame_index</span> <span class="p">+=</span> <span class="m">1</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">Sigma</span> <span class="p">=</span> <span class="m">0.47f</span><span class="p">;</span>
+
+        <span class="kt">float</span> <span class="n">OutWindow</span> <span class="p">=</span> <span class="m">0.5f</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">InWindow</span> <span class="p">=</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="nf">Exp</span><span class="p">(-</span><span class="m">0.5</span> <span class="p">*</span> <span class="n">Math</span><span class="p">.</span><span class="nf">Pow</span><span class="p">(</span><span class="n">OutWindow</span> <span class="p">/</span> <span class="n">Sigma</span><span class="p">,</span> <span class="m">2</span><span class="p">));</span>
+
+        <span class="kt">float</span> <span class="n">Theta</span> <span class="p">=</span> <span class="m">2.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="n">PI</span> <span class="p">*</span> <span class="n">u2</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">r</span> <span class="p">=</span> <span class="n">Sigma</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="nf">Sqrt</span><span class="p">((</span><span class="kt">float</span><span class="p">)(-</span><span class="m">2.0f</span> <span class="p">*</span> <span class="n">Math</span><span class="p">.</span><span class="nf">Log</span><span class="p">((</span><span class="kt">float</span><span class="p">)((</span><span class="m">1.0f</span> <span class="p">-</span> <span class="n">u1</span><span class="p">)</span> <span class="p">*</span> <span class="n">InWindow</span> <span class="p">+</span> <span class="n">u1</span><span class="p">))));</span>  <span class="c1">// r &lt; 0.5</span>
+
+        <span class="kt">float</span> <span class="n">SampleX</span> <span class="p">=</span> <span class="n">r</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="nf">Cos</span><span class="p">((</span><span class="kt">double</span><span class="p">)</span><span class="n">Theta</span><span class="p">);</span>
+        <span class="kt">float</span> <span class="n">SampleY</span> <span class="p">=</span> <span class="n">r</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="nf">Sin</span><span class="p">((</span><span class="kt">double</span><span class="p">)</span><span class="n">Theta</span><span class="p">);</span>
+
+        <span class="kt">float</span> <span class="n">x</span> <span class="p">=</span> <span class="n">SampleX</span> <span class="p">*</span> <span class="m">2.0f</span> <span class="p">/</span> <span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="n">pixelWidth</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">y</span> <span class="p">=</span> <span class="n">SampleY</span> <span class="p">*</span> <span class="m">2.0f</span> <span class="p">/</span> <span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="n">pixelHeight</span><span class="p">;</span>
+
+
+        <span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="nf">ResetProjectionMatrix</span><span class="p">();</span>
+        <span class="kt">var</span> <span class="n">m</span> <span class="p">=</span> <span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="n">projectionMatrix</span><span class="p">;</span>
+        <span class="n">m</span><span class="p">.</span><span class="n">m02</span> <span class="p">+=</span> <span class="n">x</span><span class="p">;</span>
+        <span class="n">m</span><span class="p">.</span><span class="n">m12</span> <span class="p">+=</span> <span class="n">y</span><span class="p">;</span>
+        <span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="n">projectionMatrix</span> <span class="p">=</span> <span class="n">m</span><span class="p">;</span>
+    <span class="p">}</span>  
+<span class="p">}</span>
+</code></pre></div>
+<p>其中的SampleX和SampleY下文还会用到，它们的单位是像素。</p>
+
+<p>将这个CustomTAA脚本挂到Camera对象即可。</p>
+
+<h2>历史帧混合</h2>
+
+<p>上面jitter步骤只是影响了投影矩阵。但如果将当前帧图像缓存起来，变成历史帧纹理，那么下一帧就可以读取这个历史帧进行混合渲染。</p>
+
+<p>这个步骤也很简单，先在脚本里添加OnRenderImage函数：</p>
+<div class="highlight"><pre><code class="language-c#" data-lang="c#"><span class="k">public</span> <span class="k">class</span> <span class="nc">CustomTAA</span> <span class="p">:</span> <span class="n">MonoBehaviour</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0.0001f</span><span class="p">,</span> <span class="m">0.9999f</span><span class="p">)]</span>
+    <span class="k">public</span> <span class="kt">float</span> <span class="n">blendAlpha</span> <span class="p">=</span> <span class="m">0.9f</span><span class="p">;</span>
+    <span class="n">RenderTexture</span> <span class="n">history_rt</span><span class="p">,</span> <span class="n">temp_rt</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">firstFrame</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+    <span class="kt">uint</span> <span class="n">frame_index</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">SerializeField</span><span class="p">]</span>
+    <span class="n">Material</span> <span class="n">mat</span><span class="p">;</span>
+
+    <span class="k">private</span> <span class="k">void</span> <span class="nf">OnRenderImage</span><span class="p">(</span><span class="n">RenderTexture</span> <span class="n">source</span><span class="p">,</span> <span class="n">RenderTexture</span> <span class="n">destination</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">firstFrame</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">history_rt</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RenderTexture</span><span class="p">(</span><span class="n">Screen</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">Screen</span><span class="p">.</span><span class="n">height</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="n">RenderTextureFormat</span><span class="p">.</span><span class="n">ARGBHalf</span><span class="p">);</span>
+            <span class="n">history_rt</span><span class="p">.</span><span class="n">dimension</span> <span class="p">=</span> <span class="n">UnityEngine</span><span class="p">.</span><span class="n">Rendering</span><span class="p">.</span><span class="n">TextureDimension</span><span class="p">.</span><span class="n">Tex2D</span><span class="p">;</span>
+            <span class="n">history_rt</span><span class="p">.</span><span class="nf">Create</span><span class="p">();</span>
+            <span class="n">temp_rt</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RenderTexture</span><span class="p">(</span><span class="n">history_rt</span><span class="p">);</span>
+            <span class="n">temp_rt</span><span class="p">.</span><span class="nf">Create</span><span class="p">();</span>
+            <span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">history_rt</span><span class="p">);</span>
+            <span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">);</span>
+            <span class="n">firstFrame</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">mat</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+                <span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">);</span>
+            <span class="k">else</span>
+            <span class="p">{</span>
+                <span class="n">mat</span><span class="p">.</span><span class="nf">SetTexture</span><span class="p">(</span><span class="s">"_HistoryTex"</span><span class="p">,</span> <span class="n">history_rt</span><span class="p">);</span>
+                <span class="n">mat</span><span class="p">.</span><span class="nf">SetTexture</span><span class="p">(</span><span class="s">"_CurrentTex"</span><span class="p">,</span> <span class="n">source</span><span class="p">);</span>
+                <span class="n">mat</span><span class="p">.</span><span class="nf">SetFloat</span><span class="p">(</span><span class="s">"_BlendAlpha"</span><span class="p">,</span> <span class="n">blendAlpha</span><span class="p">);</span>
+                <span class="c1">// 这里需要一个temp_rt是因为，如果只有一个history_rt</span>
+                <span class="c1">// 那么就无法实现采样history_rt的同时，写入history_rt Blit会异常</span>
+                <span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">temp_rt</span><span class="p">,</span> <span class="n">mat</span><span class="p">);</span>
+                <span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">temp_rt</span><span class="p">,</span> <span class="n">history_rt</span><span class="p">);</span>
+                <span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">temp_rt</span><span class="p">,</span> <span class="n">destination</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>完整的shader代码：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="n">Shader</span> <span class="s">"Custom/CustomTAA"</span>
+<span class="p">{</span>
+    <span class="n">Properties</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+
+    <span class="n">CGINCLUDE</span>
+    <span class="cp">#pragma only_renderers ps4 xboxone d3d11 d3d9 xbox360 opengl glcore gles3 metal vulkan
+</span>    <span class="cp">#pragma target 3.0
+</span>
+
+    <span class="cp">#include "UnityCG.cginc"
+</span>
+    <span class="n">sampler2D</span> <span class="n">_HistoryTex</span><span class="p">;</span>
+    <span class="n">sampler2D</span> <span class="n">_CurrentTex</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">_BlendAlpha</span><span class="p">;</span>
+
+    <span class="k">struct</span> <span class="n">v2f</span>
+    <span class="p">{</span>
+        <span class="n">float4</span> <span class="n">cs_pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+        <span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="n">v2f</span> <span class="n">vert</span><span class="p">(</span><span class="n">appdata_img</span> <span class="n">IN</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">v2f</span> <span class="n">OUT</span><span class="p">;</span>
+        <span class="n">OUT</span><span class="p">.</span><span class="n">cs_pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">IN</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+        <span class="n">OUT</span><span class="p">.</span><span class="n">uv</span> <span class="o">=</span> <span class="n">IN</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">xy</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">OUT</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">fixed4</span> <span class="n">frag</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span>
+    <span class="p">{</span>
+        <span class="n">fixed4</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>
+        <span class="n">fixed4</span> <span class="n">h</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_HistoryTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">lerp</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">_BlendAlpha</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">ENDCG</span>
+
+    <span class="n">SubShader</span>
+    <span class="p">{</span>
+        <span class="n">ZTest</span> <span class="n">Always</span> <span class="n">Cull</span> <span class="n">Off</span> <span class="n">ZWrite</span> <span class="n">Off</span>
+        <span class="n">Fog</span><span class="p">{</span> <span class="n">Mode</span> <span class="n">off</span> <span class="p">}</span>
+
+        <span class="n">Pass</span>
+        <span class="p">{</span>
+            <span class="n">CGPROGRAM</span>
+
+            <span class="cp">#pragma vertex vert
+</span>            <span class="cp">#pragma fragment frag
+</span>
+            <span class="n">ENDCG</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">Fallback</span> <span class="n">off</span>
+<span class="p">}</span>
+
+</code></pre></div>
+<p>创建对应的材质并绑定：</p>
+
+<p><img src="../images/2021.12/camera.png" alt="smaa1.png"></p>
+
+<p>结果如下：</p>
+
+<p><img src="../images/2021.12/before_taa.png" alt="smaa1.png"></p>
+
+<p>（no TAA）</p>
+
+<p><img src="../images/2021.12/after_taa.png" alt="smaa1.png"></p>
+
+<p>（after TAA）</p>
+
+<p>其实这就是后处理了，都是Blit操作。</p>
+
+<p>其中要注意的是，混合alpha太低的话，即使是静态场景+固定相机，画面也会剧烈抖动。</p>
+
+<h1>TAA的第一个问题-ghosting</h1>
+
+<p>拖动场景中的方块，会出现这样的效果（为了让ghosting更明显，blend alpha设到0.9，即历史帧占比90%）：</p>
+
+<p><img src="../images/2021.12/ghosting.png" alt="ghosting.png"></p>
+
+<p>不移动方块，只移动相机，会出现全屏ghosting：</p>
+
+<p><img src="../images/2021.12/ghosting2.png" alt="ghosting.png"></p>
+
+<h1>ghosting的应对方法-Reprojection</h1>
+
+<p>ghosting是因为物体运动或者相机运动产生的。运动导致采样错了历史帧的像素。那么如何知道当前像素在历史帧里的坐标（对应像素）呢？</p>
+
+<p>假设一种简单的情况：<strong>场景里只有相机运动，且当前帧的模型的所有像素，都能在历史帧里找到对应的像素</strong>。</p>
+
+<p>找对应像素的思路如下（用倒推的方式表达）：</p>
+
+<ol>
+<li>假设物体上的一点P在当前帧的光栅化uv坐标是p，在上一帧的uv坐标是q</li>
+<li>那么用q去采样历史帧，就能拿到正确的采样值</li>
+<li>为了算q，需要在CPU端记录上一帧的VP矩阵：previousViewProjectionMatrix</li>
+<li>有了PreVP还不行，还需要P点的世界坐标worldPos（注意，worldPos是不变的，因为我们假设了只有相机运动），可以用当前帧的深度buffer（TAA是一个后处理，必然有深度buffer），还原P点的世界坐标</li>
+</ol>
+
+<p>示意图：</p>
+
+<p><img src="../images/2021.12/reprojection.png" alt="reprojection.png"></p>
+
+<p>（INSIDE TAA)</p>
+
+<p>第4步用depth计算worldPos，在defer渲染框架下是非必须的，因为GBuffer一般会输出worldPos。</p>
+
+<p>unity中根据深度buffer算world pos的shader代码：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="kt">float</span> <span class="n">rawDepth</span> <span class="o">=</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span> <span class="c1">// current frame depth</span>
+<span class="n">float4</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mf">2.0</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">rawDepth</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span> <span class="c1">// current frame clip space</span>
+<span class="n">float4</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">_InvViewProjMatrix</span><span class="p">,</span> <span class="n">cs</span><span class="p">);</span>
+<span class="n">ws</span> <span class="o">/=</span> <span class="n">ws</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</code></pre></div>
+<p>非unity环境，上面的代码可能是不一样的，可以用一个pass输出world pos贴图（RGBFloat格式），即GBuffer，然后和上面的从深度重建的world pos算一个距离distance，如果全屏都是黑色的，那就没错了。</p>
+
+<p>然后就是用world pos和上一帧的VP矩阵，手动算出UV坐标（即光栅化阶段的输出）：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="c1">// shader code</span>
+<span class="n">float4</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">_PreviousViewProjection</span><span class="p">,</span> <span class="n">float4</span><span class="p">(</span><span class="n">ws</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span> <span class="c1">// prev frame clip space</span>
+<span class="n">float4</span> <span class="n">ndc</span> <span class="o">=</span> <span class="n">cs</span> <span class="o">/</span> <span class="n">cs</span><span class="p">.</span><span class="n">w</span><span class="p">;</span> <span class="c1">// prev frame ndc</span>
+<span class="n">float2</span> <span class="n">uv</span> <span class="o">=</span> <span class="n">ndc</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">;</span> <span class="c1">// prev frame uv</span>
+</code></pre></div><div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="c1">// script code</span>
+<span class="c1">// _PreviousViewProjection uniform</span>
+<span class="n">previousViewProjectionMatrix</span> <span class="o">=</span> <span class="n">GL</span><span class="p">.</span><span class="n">GetGPUProjectionMatrix</span><span class="p">(</span><span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="n">projectionMatrix</span><span class="p">,</span> <span class="nb">false</span><span class="p">)</span> <span class="o">*</span> <span class="n">Camera</span><span class="p">.</span><span class="n">main</span><span class="p">.</span><span class="n">worldToCameraMatrix</span><span class="p">;</span>
+</code></pre></div>
+<p>到了这里有个大坑是，这个算出来的uv是用当前帧有jitter的uv的算的，需要先减去当前帧的jitter，然后补回上一帧的jitter，才是上一帧对应的uv。然后就可以采样上一帧的画面，做混合了：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="c1">// shader code</span>
+<span class="n">float4</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">h</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_HistoryTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_JitterUV</span><span class="p">.</span><span class="n">zw</span> <span class="o">-</span> <span class="n">_JitterUV</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">to_screen</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">_BlendAlpha</span><span class="p">);</span>
+</code></pre></div>
+<p>float4 _JitterUV里存了当前帧和上一帧的uv jitter距离，_JitterUV需要在TAA Pass前更新：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="c1">// script code</span>
+<span class="k">public</span> <span class="n">Vector4</span> <span class="n">activeSample</span> <span class="o">=</span> <span class="n">Vector4</span><span class="p">.</span><span class="n">zero</span><span class="p">;</span>
+
+<span class="c1">// update before frame draw：</span>
+<span class="n">activeSample</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">activeSample</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+<span class="n">activeSample</span><span class="p">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">activeSample</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+<span class="n">activeSample</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">SampleX</span><span class="p">;</span>
+<span class="n">activeSample</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">SampleY</span><span class="p">;</span>
+
+<span class="c1">// convert activeSample to uv space</span>
+<span class="n">Vector4</span> <span class="n">jitterUV</span> <span class="o">=</span> <span class="n">activeSample</span><span class="p">;</span>
+<span class="n">jitterUV</span><span class="p">.</span><span class="n">x</span> <span class="o">/=</span> <span class="n">source</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+<span class="n">jitterUV</span><span class="p">.</span><span class="n">y</span> <span class="o">/=</span> <span class="n">source</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+<span class="n">jitterUV</span><span class="p">.</span><span class="n">z</span> <span class="o">/=</span> <span class="n">source</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+<span class="n">jitterUV</span><span class="p">.</span><span class="n">w</span> <span class="o">/=</span> <span class="n">source</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+<span class="n">mat</span><span class="p">.</span><span class="n">SetVector</span><span class="p">(</span><span class="s">"_JitterUV"</span><span class="p">,</span> <span class="n">jitterUV</span><span class="p">);</span>
+</code></pre></div>
+<p>静态场景，关闭和开启TAA效果如下：</p>
+
+<p><img src="../images/2021.12/TAA1.png" alt="TAA1.png"></p>
+
+<p>(No AA)</p>
+
+<p><img src="../images/2021.12/TAA2.png" alt="TAA1.png"></p>
+
+<p>(Simple TAA)</p>
+
+<p>静态场景+动态相机+jitter，关闭和开启Reprojection的效果如下：</p>
+
+<p><img src="../images/2021.12/dynamic_no_aa.gif" alt="TAA.gif"></p>
+
+<p>(No Reprojection)</p>
+
+<p><img src="../images/2021.12/dynamic_taa.gif" alt="TAA.gif"></p>
+
+<p>(With Reprojection)</p>
+
+<p>可以看出Reprojection后仍存在ghosting现象。在物体内部区域ghosting大大减少了，但是在边界附近还是出现了。</p>
+
+<h1>reprojection更好的做法-速度图</h1>
+
+<p>上面的简单情况只能解决仅有摄像机移动的情况，当物体和相机都运动时，上面的算法是行不通的。</p>
+
+<p>于是就有了VelocityBuffer RT，用单独的一张RT，记录uv变化关系，设A点在N-1帧的uv坐标为\( P_{uv} \)，A点在N帧的uv坐标为\( Q_{uv} \)，那么速度图里保存的就是\( Q_{uv} - P_{uv} \)，也叫motion vector。</p>
+
+<p>注意这是屏幕空间的算法，速度图里的motion vector指的都是当前帧深度最近点的uv变化。被遮挡的像素就不用管了。</p>
+
+<p>INSIDE的temporal demo的速度图绘制步骤大概如下：</p>
+
+<ol>
+<li>后处理pre pass，仅用当前帧深度图和PreVP矩阵，重建上一帧的world pos并算出uv，输出motion vector（和上一节的算法一样，只是输出不同）。这个步骤应该是为了计算天空背景在不同相机视角下的uv变化。这一步不做深度测试也不写深度。</li>
+<li>场景对象各自记录CurrM、PrevM 2个矩阵，并在pre passs后绘制一遍场景对象（开销极大，应该在GBuffer里同时做），算出相邻两帧的uv坐标，得到各个对象的motion vector，并输出到同一个RT。这一步要开深度写入和深度测试，并且被遮挡的像素可以提前discard。注意带骨骼动画的对象需要做蒙皮再计算。</li>
+<li>可选的后处理post pass，对已经绘制好的速度图，再按tile或neighbour，过滤一遍Motion vector。应该是为了优化速度图的效果。</li>
+</ol>
+
+<p>速度图绘制到RT后，用renderdoc查看要注意一下，因为uv差可能是负数，所以直接看RGFloat格式的速度图，可能屏幕是黑的。问题不大。</p>
+
+<p>TAA后处理pass的代码调整如下：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="n">float4</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>
+<span class="n">float2</span> <span class="n">ss_vel</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_VelocityTex</span><span class="p">,</span> <span class="n">iuv</span><span class="p">).</span><span class="n">xy</span><span class="p">;</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_HistoryTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span> <span class="o">-</span> <span class="n">ss_vel</span><span class="p">);</span> <span class="c1">// 相比上面的reprojection，速度图采样不需要管jitter偏移了。原因是速度图的生成算法不太一样</span>
+<span class="n">float4</span> <span class="n">to_screen</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">_BlendAlpha</span><span class="p">);</span>
+</code></pre></div>
+<p>但速度图其实作用挺有限，毕竟上一节已经展示了：静态场景下只有摄像机移动+reprojection后，画面依然会有ghosting。而速度图是物体和相机都运动时，屏幕空间下只有物体边界会ghosting：</p>
+
+<p><img src="../images/2021.12/velocity_buffer.png" alt="velocity_buffer.png"></p>
+
+<p>(可以看到这个大cube旋转时，内部区域的AA也是正确的)</p>
+
+<p>所以速度图是有效的，但只比Reprojection好一些。</p>
+
+<h1>速度图的采样优化-Velocity Dilation</h1>
+
+<p>直接用屏幕uv采样速度图的得到的速度并不是那么可靠的，TAA后的模型边界可能会模糊（有一层虚影）。</p>
+
+<p>解决办法是，先采样周围若干相邻像素点的深度值，找到离相机最近的像素点，以这个像素点的速度为准（这个问题的本质还是不明白）：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="cp">#if UNITY_REVERSED_Z
+#define ZCMP_GT(a, b) (a &lt; b)
+#else
+#define ZCMP_GT(a, b) (a &gt; b)
+#endif
+</span>
+<span class="n">float3</span> <span class="nf">find_closest_fragment_3x3</span><span class="p">(</span><span class="n">float2</span> <span class="n">uv</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">float2</span> <span class="n">dd</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">_CameraDepthTexture_TexelSize</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+    <span class="n">float2</span> <span class="n">du</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="n">dd</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span>
+    <span class="n">float2</span> <span class="n">dv</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">dd</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+    <span class="c1">// 获取当前像素周围9个点的深度</span>
+    <span class="n">float3</span> <span class="n">dtl</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">dv</span> <span class="o">-</span> <span class="n">du</span><span class="p">));</span>
+    <span class="n">float3</span> <span class="n">dtc</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">dv</span><span class="p">));</span>
+    <span class="n">float3</span> <span class="n">dtr</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">dv</span> <span class="o">+</span> <span class="n">du</span><span class="p">));</span>
+
+    <span class="n">float3</span> <span class="n">dml</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">du</span><span class="p">));</span>
+    <span class="n">float3</span> <span class="n">dmc</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span><span class="p">));</span>
+    <span class="n">float3</span> <span class="n">dmr</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">du</span><span class="p">));</span>
+
+    <span class="n">float3</span> <span class="n">dbl</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">dv</span> <span class="o">-</span> <span class="n">du</span><span class="p">));</span>
+    <span class="n">float3</span> <span class="n">dbc</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">dv</span><span class="p">).</span><span class="n">x</span><span class="p">);</span>
+    <span class="n">float3</span> <span class="n">dbr</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">dv</span> <span class="o">+</span> <span class="n">du</span><span class="p">));</span>
+
+    <span class="c1">// 找出离这9个点里面深度最小的（离屏幕最近的）</span>
+    <span class="n">float3</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dtl</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dtc</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dtc</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dtr</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dtr</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dml</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dml</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dmc</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dmc</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dmr</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dmr</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dbl</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dbl</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dbc</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dbc</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ZCMP_GT</span><span class="p">(</span><span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">dbr</span><span class="p">.</span><span class="n">z</span><span class="p">))</span> <span class="n">dmin</span> <span class="o">=</span> <span class="n">dbr</span><span class="p">;</span>
+
+    <span class="c1">// 找到周围深度更近的点后，把当前uv偏移过去</span>
+    <span class="k">return</span> <span class="n">float3</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="n">dd</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">dmin</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">dmin</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>把这个处理应用到TAA pass:</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="cp">#if USE_DILATION
+</span>        <span class="n">float3</span> <span class="n">c_frag</span> <span class="o">=</span> <span class="n">find_closest_fragment_3x3</span><span class="p">(</span><span class="n">iuv</span><span class="p">);</span>
+        <span class="n">float2</span> <span class="n">ss_vel</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_VelocityTex</span><span class="p">,</span> <span class="n">c_frag</span><span class="p">.</span><span class="n">xy</span><span class="p">).</span><span class="n">xy</span><span class="p">;</span>
+<span class="cp">#else
+</span>        <span class="n">float2</span> <span class="n">ss_vel</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_VelocityTex</span><span class="p">,</span> <span class="n">iuv</span><span class="p">).</span><span class="n">xy</span><span class="p">;</span>
+<span class="cp">#endif
+</span></code></pre></div>
+<h1>ghosting的终极解决办法-clamp</h1>
+
+<p>上面假设了非常简单的情况：<strong>当前帧的模型的所有像素，都能在历史帧里找到对应的像素</strong>，然而这是很难的，比如说：</p>
+
+<p>相机在当前帧拍到了模型的顶点A，但在上一帧里这个A点的状态可能是：</p>
+
+<ul>
+<li>因为相机运动，A点还在屏幕外</li>
+<li>因为物体运动，A点被模型自身遮挡了</li>
+<li>因为相机+物体运动，A点被别的物体遮挡了</li>
+</ul>
+
+<p>可见情况还挺繁多的。</p>
+
+<p>本质上是因为历史帧的像素信息不准确，解决方法就是剔除掉错误的颜色值，那么怎么识别哪些颜色错了呢，其实不用去知道，直接做裁剪。即直接魔改采样到的历史帧颜色值，让它不要偏移当前像素太多，就又能愉快地blend了。</p>
+
+<p>我在INSIDE的demo里做了实验，如果注释了history color后的clamp代码，画面马上会出现上面的gif一样的ghosting。<strong>clamp操作非常重要</strong>。</p>
+
+<p>这里只介绍最简单的clamp，即用当前uv采样当前帧画面周围3x3共9个像素，然后算颜色的最大值和最小值，也叫AABB颜色包围盒，然后用这2个值clamp一下history color就基本解决了ghosting：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++">
+<span class="n">float2</span> <span class="n">du</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="n">_CurrentTex_TexelSize</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span>
+<span class="n">float2</span> <span class="n">dv</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">_CurrentTex_TexelSize</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+<span class="n">float4</span> <span class="n">ctl</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">dv</span> <span class="o">-</span> <span class="n">du</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">ctc</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">dv</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">ctr</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">dv</span> <span class="o">+</span> <span class="n">du</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">cml</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">du</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">cmc</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">cmr</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">du</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">cbl</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">dv</span> <span class="o">-</span> <span class="n">du</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">cbc</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">dv</span><span class="p">);</span>
+<span class="n">float4</span> <span class="n">cbr</span> <span class="o">=</span> <span class="n">sample_color</span><span class="p">(</span><span class="n">_CurrentTex</span><span class="p">,</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">dv</span> <span class="o">+</span> <span class="n">du</span><span class="p">);</span>
+
+<span class="n">float4</span> <span class="n">cmin</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">ctl</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">ctc</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">ctr</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">cml</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">cmc</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">cmr</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">cbl</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">cbc</span><span class="p">,</span> <span class="n">cbr</span><span class="p">))))))));</span>
+<span class="n">float4</span> <span class="n">cmax</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">ctl</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">ctc</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">ctr</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">cml</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">cmc</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">cmr</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">cbl</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">cbc</span><span class="p">,</span> <span class="n">cbr</span><span class="p">))))))));</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">cmin</span><span class="p">,</span> <span class="n">cmax</span><span class="p">);</span>
+</code></pre></div>
+<h1>AABB clamp的毛病-颜色差异依然过大</h1>
+
+<p>clamp是为了将错误颜色一定程度上剔除，但AABB的范围可能比较大，裁剪后颜色还是不是不尽人意，所以就有了收紧包围盒、clip的方案。</p>
+
+<p>clip示意图如下：</p>
+
+<p><img src="../images/2021.12/clamp.jpg" alt="clamp.jpg"></p>
+
+<p>绿色的点是clamp(h, cmin, cmax)，中间的浅绿色点是用当前颜色、历史颜色、AABB包围盒，clip出来的边界颜色，黄色点也类似，只是clip的是AABB的中心点颜色。中心点颜色等于(cmin + cmax)*0.5。最优的是裁剪到当前颜色，但性能不如中心点，裁剪到中心点有数学技巧，性能是会快一些。</p>
+
+<p>clip到中心点的代码：</p>
+<div class="highlight"><pre><code class="language-c++" data-lang="c++"><span class="n">float4</span> <span class="nf">clip_aabb</span><span class="p">(</span><span class="n">float3</span> <span class="n">aabb_min</span><span class="p">,</span> <span class="n">float3</span> <span class="n">aabb_max</span><span class="p">,</span> <span class="n">float4</span> <span class="n">p</span><span class="p">,</span> <span class="n">float4</span> <span class="n">q</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// note: only clips towards aabb center (but fast!)</span>
+    <span class="n">float3</span> <span class="n">p_clip</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">aabb_max</span> <span class="o">+</span> <span class="n">aabb_min</span><span class="p">);</span>
+    <span class="n">float3</span> <span class="n">e_clip</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">aabb_max</span> <span class="o">-</span> <span class="n">aabb_min</span><span class="p">)</span> <span class="o">+</span> <span class="n">FLT_EPS</span><span class="p">;</span>
+
+    <span class="n">float4</span> <span class="n">v_clip</span> <span class="o">=</span> <span class="n">q</span> <span class="o">-</span> <span class="n">float4</span><span class="p">(</span><span class="n">p_clip</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">w</span><span class="p">);</span>
+    <span class="n">float3</span> <span class="n">v_unit</span> <span class="o">=</span> <span class="n">v_clip</span><span class="p">.</span><span class="n">xyz</span> <span class="o">/</span> <span class="n">e_clip</span><span class="p">;</span>
+    <span class="n">float3</span> <span class="n">a_unit</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">v_unit</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">ma_unit</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">a_unit</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">a_unit</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">a_unit</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">ma_unit</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">float4</span><span class="p">(</span><span class="n">p_clip</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">v_clip</span> <span class="o">/</span> <span class="n">ma_unit</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="n">q</span><span class="p">;</span><span class="c1">// point inside aabb</span>
+<span class="p">}</span>
+
+
+<span class="n">h</span> <span class="o">=</span> <span class="n">clip_aabb</span><span class="p">(</span><span class="n">cmin</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">cmax</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span> <span class="n">clamp</span><span class="p">(</span><span class="n">cavg</span><span class="p">,</span> <span class="n">cmin</span><span class="p">,</span> <span class="n">cmax</span><span class="p">),</span> <span class="n">h</span><span class="p">);</span>
+</code></pre></div>
+<h1>收紧包围盒AABB clamp的问题-闪烁</h1>
+
+<p>收紧包围盒就比较好理解了，包围盒越小，历史颜色clamp后和当前颜色误差也越小。</p>
+
+<p>但过于强调收紧包围盒，也不妥。例如假设用速度图采样到的历史颜色就是和当前颜色有一定差距，但是又被过小的包围盒裁剪了，那就出错了，会产生Flickering闪烁现象。Flickering现象可以考虑用深度差异来识别。</p>
+
+<p><img src="../images/2021.12/flickering.gif" alt="flickering.gif"></p>
+
+<h1>速度图的性能问题</h1>
+
+<p>速度图是为了解决运动物体的追踪，然而如果场景中有很多运动物体，开销就会很大。所以应该有取有舍，只对屏占比大的模型或者重要模型才开启速度图绘制，其他运动模型就不管了。具体来说就是用stencil buffer标记某些模型的像素没有绘制速度图。而且同时可以对这些标记的像素点做收缩包围盒的优化，减弱ghosting。</p>
+
+<h1>YCoCg颜色空间中裁剪</h1>
+
+<p>直接在RGB空间中做裁剪不是最优的，可以尝试在YCoCg空间中裁剪，对解决ghosting有帮助。</p>
+
+<h1>参考资料</h1>
+
+<p><a href="http://s3.amazonaws.com/arena-attachments/655504/c5c71c5507f0f8bf344252958254fb7d.pdf?1468341463">http://s3.amazonaws.com/arena-attachments/655504/c5c71c5507f0f8bf344252958254fb7d.pdf?1468341463</a></p>
+
+<p><a href="https://zhuanlan.zhihu.com/p/71173025">https://zhuanlan.zhihu.com/p/71173025</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on December  7, 2021
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

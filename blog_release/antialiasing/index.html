@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>现代抗锯齿技术——PPAA中的新星SMAA – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="PPAA
+
+所谓PPAA（Post Process Antialiasing)，也叫FBAA（Filter-Based Antialiasing），是基于后处理的各种抗锯齿技术的统称。在PPAA之前，主流AA技术是MSAA（MultiSamples AA）、SSAA（SuperSamples AA）。SSAA是AA中最暴力也是最完美的解决方案，而MSAA是与硬件紧密结合的built-in AA。对于forward rendering来说，MSAA几乎是唯一的选择。
+
+然而，MSAA这种古老的、built-in的技术，已经不太能满足现代渲染器的需求了。它有两大问题，一是MSAA会有多余的AA计算，二是MSAA不适用于deferred rendering。
+
+鉴于MSAA的不足，PPAA就蓬勃发展起来了。PPAA强大之处在于可以自定义、且硬件无关、兼容forward／defer，所以基于PPAA的算法非常多。而其中的翘楚，SMAA(Subpixel Morphological Antialiasing)，性能以及AA质量都很不错。本文将着重介绍SMAA。
+" />
+    <meta property="og:description" content="PPAA
+
+所谓PPAA（Post Process Antialiasing)，也叫FBAA（Filter-Based Antialiasing），是基于后处理的各种抗锯齿技术的统称。在PPAA之前，主流AA技术是MSAA（MultiSamples AA）、SSAA（SuperSamples AA）。SSAA是AA中最暴力也是最完美的解决方案，而MSAA是与硬件紧密结合的built-in AA。对于forward rendering来说，MSAA几乎是唯一的选择。
+
+然而，MSAA这种古老的、built-in的技术，已经不太能满足现代渲染器的需求了。它有两大问题，一是MSAA会有多余的AA计算，二是MSAA不适用于deferred rendering。
+
+鉴于MSAA的不足，PPAA就蓬勃发展起来了。PPAA强大之处在于可以自定义、且硬件无关、兼容forward／defer，所以基于PPAA的算法非常多。而其中的翘楚，SMAA(Subpixel Morphological Antialiasing)，性能以及AA质量都很不错。本文将着重介绍SMAA。
+" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="现代抗锯齿技术——PPAA中的新星SMAA" />
+    <meta property="twitter:title" content="现代抗锯齿技术——PPAA中的新星SMAA" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/antialiasing/',
+		  'title': '现代抗锯齿技术——PPAA中的新星SMAA'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>现代抗锯齿技术——PPAA中的新星SMAA</h1>
+ <h3>Tags: <a href="/tag/computer-graphics/" rel="tag">computer graphics</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <h1>PPAA</h1>
+
+<p>所谓PPAA（Post Process Antialiasing)，也叫FBAA（Filter-Based Antialiasing），是基于后处理的各种抗锯齿技术的统称。在PPAA之前，主流AA技术是MSAA（MultiSamples AA）、SSAA（SuperSamples AA）。SSAA是AA中最暴力也是最完美的解决方案，而MSAA是与硬件紧密结合的built-in AA。对于forward rendering来说，MSAA几乎是唯一的选择。</p>
+
+<p>然而，MSAA这种古老的、built-in的技术，已经不太能满足现代渲染器的需求了。它有两大问题，一是MSAA会有多余的AA计算，二是MSAA不适用于deferred rendering。</p>
+
+<p>鉴于MSAA的不足，PPAA就蓬勃发展起来了。PPAA强大之处在于可以自定义、且硬件无关、兼容forward／defer，所以基于PPAA的算法非常多。而其中的翘楚，SMAA(Subpixel Morphological Antialiasing)，性能以及AA质量都很不错。本文将着重介绍SMAA。</p>
+
+<!--more-->
+
+<p>值得一提的是，SMAA的前身是Jimenez&#39;s MLAA，也是同一个团队做出来的，SMAA可以认为是在质量和性能两方面都超越Jimenez&#39;s MLAA的一个进化版。所以可以先阅读Jimenez&#39;s MLAA的论文再来学习SMAA。</p>
+
+<h1>SMAA</h1>
+
+<p>SMAA的模式处理较之MLAA有了新的改进。MLAA的方法，对sharp物体的轮廓的&quot;边角&quot;和&quot;锯齿角&quot;并不能区分，导致边角也被当作锯齿角处理，导致边角被修成了圆角。而SMAA中，做了进一步的观察：对于锯齿角，大小不超过一个像素，而sharp的边角很大几率超过1个像素。因此，SMAA判断锯齿角需要计算2个像素长度的范围，也从而识别出真的边角。但也就使得SMAA的算法极为复杂。</p>
+
+<p>SMAA总共3个pass：</p>
+
+<ul>
+<li>Pass 1，算edgeTex</li>
+<li>Pass 2，用edgeTex算weightTex</li>
+<li>Pass 3，用weightTex混合原始图像，得到抗锯齿图像</li>
+</ul>
+
+<h2>边缘纹理的计算 Edge Detection (edgeTex) （Pass 1）</h2>
+
+<p>锯齿问题体现在图像上几何物体的边缘处，也就是说，如果能准确地post process出图像上哪些地方是边，哪些地方不是。检测过少，锯齿边就会残留；检测过多，图像就会糊。为来更好地提升AA质量，SMAA边缘检测算法的选取非常关键。</p>
+
+<p>相比基于normal map、depth map，基于颜色的边缘检测尤佳。一是因为，颜色信息容易获得，而深度图／法线图相对难获得，例如对于图像处理领取，用户提供的只有照片而已；二是因为它还有一个优点：对于做了shading后才产生的锯齿，也一样能处理（例如有梯度的toon shading）。</p>
+
+<p>SMAA首推的是基于Luma（亮度）的边缘检测算法。</p>
+
+<p>1，vertex shader，根据纹理坐标输出3组offset，每组2个边，总共6个边要检测：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c">    <span class="n">vec4</span> <span class="n">SMAA_RT_METRICS</span> <span class="o">=</span> <span class="n">vec4</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">/</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">/</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+    <span class="n">Offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">fma</span><span class="p">(</span><span class="n">SMAA_RT_METRICS</span><span class="p">.</span><span class="n">xyxy</span><span class="p">,</span> <span class="n">vec4</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">),</span> <span class="n">texCoord</span><span class="p">.</span><span class="n">xyxy</span><span class="p">);</span> <span class="c1">// Left / Top Edge</span>
+    <span class="n">Offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">fma</span><span class="p">(</span><span class="n">SMAA_RT_METRICS</span><span class="p">.</span><span class="n">xyxy</span><span class="p">,</span> <span class="n">vec4</span><span class="p">(</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">),</span> <span class="n">texCoord</span><span class="p">.</span><span class="n">xyxy</span><span class="p">);</span> <span class="c1">// Right / Bottom Edge</span>
+    <span class="n">Offsets</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">fma</span><span class="p">(</span><span class="n">SMAA_RT_METRICS</span><span class="p">.</span><span class="n">xyxy</span><span class="p">,</span> <span class="n">vec4</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">),</span> <span class="n">texCoord</span><span class="p">.</span><span class="n">xyxy</span><span class="p">);</span> <span class="c1">// Leftx2 / Topx2 Edge</span>
+</code></pre></div>
+<p><img src="../images/2017.10/smaa1.png" alt="smaa1.png"></p>
+
+<p>2，fragment shader，先求出当前fragment的luma值：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c">    <span class="c1">// Calculate lumas:</span>
+    <span class="n">float3</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">2126</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">7152</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mo">0722</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">L</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">texcoord</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+</code></pre></div>
+<p>（RGB-&gt;luma的公式来自wiki <a href="https://en.wikipedia.org/wiki/Relative_luminance">https://en.wikipedia.org/wiki/Relative_luminance</a>  ）</p>
+
+<p>3，算Left和Top的luma值，以及算Left和L的差值delta.x、Top和L的差值delta.y；如果delta.x &lt; threshold.x，edges.x就等于0.0，代表不是边（因为差值很小，即亮度差异小），y方向同理：</p>
+<div class="highlight"><pre><code class="language-c" data-lang="c">    <span class="kt">float</span> <span class="n">Lleft</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">xy</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">Ltop</span>  <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">zw</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+
+    <span class="n">float4</span> <span class="n">delta</span><span class="p">;</span>
+    <span class="n">delta</span><span class="p">.</span><span class="n">xy</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="n">Lleft</span><span class="p">,</span> <span class="n">Ltop</span><span class="p">));</span>
+    <span class="n">float2</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">step</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="n">delta</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">float2</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">discard</span><span class="p">;</span> <span class="c1">// 如果2个方向都没有边，就可以排除这个fragment了</span>
+</code></pre></div>
+<ol>
+<li>如果Left或Top至少有一个是边，就再进一步做检测。</li>
+</ol>
+<div class="highlight"><pre><code class="language-c" data-lang="c">
+    <span class="c1">// 计算Right Bottom的luma差值</span>
+    <span class="kt">float</span> <span class="n">Lright</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">xy</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">Lbottom</span>  <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">zw</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+    <span class="n">delta</span><span class="p">.</span><span class="n">zw</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="n">Lright</span><span class="p">,</span> <span class="n">Lbottom</span><span class="p">));</span> <span class="c1">// 和算delta.xy过程差不多</span>
+
+    <span class="c1">// 分别算出x、y方向的最大luma差值</span>
+    <span class="n">float2</span> <span class="n">maxDelta</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">delta</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">delta</span><span class="p">.</span><span class="n">zw</span><span class="p">);</span>
+
+    <span class="c1">// 算出 Left x2 and Top x2 的luma:</span>
+    <span class="kt">float</span> <span class="n">Lleftleft</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">xy</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+    <span class="kt">float</span> <span class="n">Ltoptop</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">colorTex</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">zw</span><span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="n">weights</span><span class="p">);</span>
+    <span class="c1">// 算出Left和Left x2的luma差值、Top和Top x2的luma差值</span>
+    <span class="n">delta</span><span class="p">.</span><span class="n">zw</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="n">Lleft</span><span class="p">,</span> <span class="n">Ltop</span><span class="p">)</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="n">Lleftleft</span><span class="p">,</span> <span class="n">Ltoptop</span><span class="p">));</span>
+
+    <span class="c1">// Calculate the final maximum delta:</span>
+    <span class="c1">// x、y方向分别最终的最大luma差值</span>
+    <span class="n">maxDelta</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">maxDelta</span><span class="p">.</span><span class="n">xy</span><span class="p">,</span> <span class="n">delta</span><span class="p">.</span><span class="n">zw</span><span class="p">);</span>
+    <span class="c1">// x、y两个方向中取其中最大的luma差值</span>
+    <span class="kt">float</span> <span class="n">finalDelta</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">maxDelta</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">maxDelta</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+    <span class="c1">// Local contrast adaptation:</span>
+    <span class="kt">float</span> <span class="n">SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR</span> <span class="o">=</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+    <span class="c1">// Left、Top亮度差值*2后需超过finalDelta才真的是边</span>
+    <span class="n">edges</span><span class="p">.</span><span class="n">xy</span> <span class="o">*=</span> <span class="n">step</span><span class="p">(</span><span class="n">finalDelta</span><span class="p">,</span> <span class="n">SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR</span> <span class="o">*</span> <span class="n">delta</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">edges</span><span class="p">;</span>
+</code></pre></div>
+<h2>权重纹理的计算 Blending Weight Calculation (weightTex)（Pass 2）</h2>
+
+<p>最复杂的一个pass，需要分成多个部分讲解。</p>
+
+<h3>预生成searchTex</h3>
+
+<p>根据当前像素坐标，搜索当前这个像素对应的边的2个端点，求出2个距离值\(d_{1}、d_{2}\)，是实现模式分类的关键。</p>
+
+<p>因为edgeTex已经包含了边的信息，如果直接暴力搜索端点，就需要对edgeTex做非常多次的纹理采样（我没搞错的话，次数应该等于\(d_{1} + d_{2}\)  ）。在Jimenez&#39;s MLAA中，使用一个叫bilinear filtering的搜索技巧，能大约减少一半的纹理采样数。原理大致如下：</p>
+
+<p>假设有2个要采样的相邻像素点，现在目标是用一次采样得到这2个点的&#39;边&#39;值：\(b_{1}、b_{2}\) （要么等于0要么等于1，代表有无边）。首先得把这个edgeTex纹理的过滤设置，设置成GL_LINEAR。这样就可以利用GPU的插值机制，通过求2个像素点连线上的某一个中间点x的纹理坐标，做一次采样，得到一个[0,1]之间的值。有了这个值后，是能够恢复出\(b_{1}、b_{2}\) 的值的。是不是很神奇？数学原理是这样的：</p>
+
+<p>\[ f_{x}(b_{1},b_{2},x) = x\cdot b_{1} + (1 - x)\cdot b_{2}，b_{1} = 0／1，b_{2} = 0／1 \]</p>
+
+<p>（值得一提的是，在shader里需要把 \( x\cdot b_{1} + (1 - x)\cdot b_{2} \)变换成 \( x\cdot (b_{1} - b_{2} ) + b_{2} \)，即lerp形式，这样可以减少一次乘法运算）</p>
+
+<p>假设我们先取x=0.5，那么f的取值范围为[0, 0.5, 1]，具体的映射关系为：</p>
+
+<p>\( b_{1}\ \ \ b_{2}\ \ \ —— \ \ \ f \)</p>
+
+<p>\( 0\ \ \ \ \ 0\ \ \ \ —— \ \ \ 0 \)</p>
+
+<p>\( 0\ \ \ \ \ 1\ \ \ \ —— \ \ \ 0.5 \)</p>
+
+<p>\( 1\ \ \ \ \ 0\ \ \ \ —— \ \ \ 0.5 \)</p>
+
+<p>\( 1\ \ \ \ \ 1\ \ \ \ —— \ \ \ 1 \)</p>
+
+<p>可以看到左右两边并不是一一对应的关系，0.5对应了2种情况。那么假设我们再取别的值，且满足\(x \neq 0.5，x \neq 0 ，x \neq 1 \)，那么有：</p>
+
+<p>\( b_{1}\ \ \ b_{2}\ \ \ —— \ \ \ f \)</p>
+
+<p>\( 0\ \ \ \ \ 0\ \ \ \ —— \ \ \ 0 \)</p>
+
+<p>\( 0\ \ \ \ \ 1\ \ \ \ —— \ \ \ 1 - x \)</p>
+
+<p>\( 1\ \ \ \ \ 0\ \ \ \ —— \ \ \ x \)</p>
+
+<p>\( 1\ \ \ \ \ 1\ \ \ \ —— \ \ \ 1 \)</p>
+
+<p>神奇的事情发生了，左右两边满足了一一对应关系！也就是说，只需要知道x的值，就能&#39;解码&#39;出\(b_{1}、b_{2}\)的值！</p>
+
+<p>这个bilinear filtering虽好，但它只能搜索一个方向（一维）。而在SMAA中，因为需要进一步做好模式分类，需要支持二维的edgeTex搜索。所以SMAA拓展了bilinear filtering到了二维：</p>
+
+<p>\[ f_{xy}(b_{1},b_{2},b_{3},b_{4},x,y) = f_{x}(b_{1},b_{2},x) \cdot y + f_{x}(b_{3},b_{4},x) \cdot (1 - y) \]</p>
+
+<p>这里增加了一个y，y和x是类似的，需要赋予一个不等于0.5的值，但需要附加一个限制是y = 0.5x（可以假设y!=0.5x去推导上面的公式，会得到无法一一对应的情况）。这样拓展后，就可以用2个常量值x、y，对\(b_{1}、b_{2}、b_{3}、b_{4}\)所有组合编码出\(2^{4} \)共16种取值情况。也就是依然可以用一个f值，反向找出\(b_{1}、b_{2}、b_{3}、b_{4}\)！</p>
+
+<p>这个映射关系可以打表到代码里减少shader计算，但这样还不够，SMAA做啦进一步的优化，减少了对这个映射表的访问。作者写了一个脚本来生成一个叫searchTex的东西。先讲一下生成步骤再说用法。</p>
+
+<p>首先，确定了刚才提到的常量x，y的值，x等于0.25，y等于0.5x=0.125。然后枚举16种情况，调用bilinear函数，生成映射表:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python">
+<span class="c1"># Interpolates between two values:
+</span><span class="k">def</span> <span class="nf">lerp</span><span class="p">(</span><span class="n">v0</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">v0</span> <span class="o">+</span> <span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span>
+
+<span class="c1"># Calculates the bilinear fetch for a certain edge combination:
+</span><span class="k">def</span> <span class="nf">bilinear</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+    <span class="c1"># e[0]       e[1]
+</span>    <span class="c1">#
+</span>    <span class="c1">#          x &lt;-------- Sample position:    (-0.25,-0.125)
+</span>    <span class="c1"># e[2]       e[3] &lt;--- Current pixel [3]:  (  0.0, 0.0  )
+</span>    <span class="n">a</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lerp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">0.125</span><span class="p">)</span>
+
+<span class="c1"># This dict returns which edges are active for a certain bilinear fetch:
+# (it's the reverse lookup of the bilinear function)
+</span><span class="n">edge</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.0
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.65625
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.21875
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.875
+</span>
+    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.09375
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.75
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.3125
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.96875
+</span>
+    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.03125
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.6875
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.25
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.90625
+</span>
+    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.125
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 0.78125
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># 0.34375
+</span>    <span class="n">bilinear</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="c1"># 1.0
+</span><span class="p">}</span>
+
+</code></pre></div>
+<p>然后观察16个bilinear值，发现它们有最大公约数0.03125，于是，可以设计一个大小为33 x 33的数组（这是因为33 = 1 / 0.03125 + 1），又因为搜索的是line，需要分左右（也只有左右2个方向），所以数组要乘2，变成66 x 33。</p>
+
+<p>然后开始枚举所有pattern：</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># Calculate delta distances to the left:
+</span><span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="s">"RGB"</span><span class="p">,</span> <span class="p">(</span><span class="mi">66</span><span class="p">,</span> <span class="mi">33</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">33</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">33</span><span class="p">):</span>
+        <span class="n">texcoord</span> <span class="o">=</span> <span class="mf">0.03125</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mf">0.03125</span> <span class="o">*</span> <span class="n">y</span>
+        <span class="k">if</span> <span class="n">texcoord</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">edge</span> <span class="ow">and</span> <span class="n">texcoord</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">:</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="n">texcoord</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">edge</span><span class="p">[</span><span class="n">texcoord</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="mi">127</span> <span class="o">*</span> <span class="n">deltaLeft</span><span class="p">(</span><span class="o">*</span><span class="n">edges</span><span class="p">)</span> <span class="c1"># Maximize dynamic range to help compression
+</span>            <span class="n">image</span><span class="p">.</span><span class="n">putpixel</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+            <span class="c1">#debug("left: ", texcoord, val, *edges)
+</span>
+<span class="c1"># Calculate delta distances to the right:
+</span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">33</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">33</span><span class="p">):</span>
+        <span class="n">texcoord</span> <span class="o">=</span> <span class="mf">0.03125</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mf">0.03125</span> <span class="o">*</span> <span class="n">y</span>
+        <span class="k">if</span> <span class="n">texcoord</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">edge</span> <span class="ow">and</span> <span class="n">texcoord</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">:</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="n">texcoord</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">edge</span><span class="p">[</span><span class="n">texcoord</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="mi">127</span> <span class="o">*</span> <span class="n">deltaRight</span><span class="p">(</span><span class="o">*</span><span class="n">edges</span><span class="p">)</span> <span class="c1"># Maximize dynamic range to help compression
+</span>            <span class="n">image</span><span class="p">.</span><span class="n">putpixel</span><span class="p">((</span><span class="mi">33</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+            <span class="c1">#debug("right: ", texcoord, val, *edges)
+</span></code></pre></div>
+<p>其中的if texcoord[0] in edge and texcoord[1] in edge意思是当前这2个纹理坐标x y，都刚好是一个f，f就对应了某四个bool值，2个f就组成一个pattern。edges = edge[texcoord[0]], edge[texcoord[1]]，分别解码出了x y方向的4个bool值。接着是另外两个函数:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># Delta distance to add in the last step of searches to the left:
+</span><span class="k">def</span> <span class="nf">deltaLeft</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># If there is an edge, continue:
+</span>    <span class="k">if</span> <span class="n">top</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1"># If we previously found an edge, there is another edge and no crossing
+</span>    <span class="c1"># edges, continue:
+</span>    <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">top</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">d</span>
+<span class="c1"># Delta distance to add in the last step of searches to the right:
+</span><span class="k">def</span> <span class="nf">deltaRight</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># If there is an edge, and no crossing edges, continue:
+</span>    <span class="k">if</span> <span class="n">top</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1"># If we previously found an edge, there is another edge and no crossing
+</span>    <span class="c1"># edges, continue:
+</span>    <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">top</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">d</span>
+</code></pre></div>
+<p>deltaLeft，就是根据x y方向2组bool值，算出一个长度补充值d，d的取值范围是0/1/2。top[3]是指当前像素在y方向上的bool值，如果为0，就是没边，d = 0；如果为1，就是有边，那么d = 1；再如果top[2]也有边，且x方向没有边(没有交叉边)，那么d = 2。deltaRight过程类似。</p>
+
+<p>以下图为例，上面的是top，下面的是left，标绿色／红色的是边，那么经过deltaLeft运算后，下面的pattern会得到d=1(有交叉边)。</p>
+
+<p><img src="../images/2017.10/e1.png" alt="e1.png"></p>
+
+<p><img src="../images/2017.10/e2.png" alt="e2.png"></p>
+
+<p>求出d后， val = 127 * d，把d映射到0／127/254，然后就可以填入到searchTex了，相当于是在生成一张三值的灰度值。</p>
+
+<p><img src="../images/2017.10/searchTex.png" alt="searchTex.png"></p>
+
+<p>观察searchTex发现，这图有很大部分是全黑的。略显多余，于是作者补充了一个裁剪操作：</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">crop</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">33</span><span class="p">])</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Image</span><span class="p">.</span><span class="n">FLIP_TOP_BOTTOM</span><span class="p">)</span>
+</code></pre></div>
+<p>把上面的17行黑色区域都裁掉，searchTex就变成了64x16的大小，符合2的幂次方，更迷你更优雅。第二行代码做了个上下翻转，用意不明。最终的searchTex如下:</p>
+
+<p><img src="../images/2017.10/searchTex2.png" alt="searchTex2.png"></p>
+
+<p>searchTex会用在横向和纵向的搜索中。</p>
+
+<h3>预生成areaTex</h3>
+
+<p>areaTex是用来快速算出面积比，即混合权重的。AreaTex的生成步骤比searchTex更复杂，作者更是用了多线程来做。为了破解areaTex的魔法原理，需要慢慢剖析AreaTex.py。尽管AreaTex.py已经有不少注释，但还是很难理解。</p>
+
+<p>先来看areaTex长啥样：</p>
+
+<p><img src="../images/2017.10/areaTex.png" alt="areaTex.png"></p>
+
+<p>它分左右两列，左边一列七个大格（黄色框代表第一个大格），每个大格包含16个pattern的area纹理，右边一列类似，但只有五个大格（蓝色框）。有意思的是黄框大格是有镂空的，理应可以放5*5=25个小格，但只放了16个，所以有个十字架的黑色区域（原因和binear filtering有关）。因为areaTex有4个维度： ortho还是diag、哪一个大格、哪一个小格、纹理坐标，所以areaTex是一个4D的纹理。</p>
+
+<p>标记下16个pattern在大格里的位置：</p>
+
+<p><img src="../images/2017.10/areaTex2.png" alt="areaTex2.png"></p>
+
+<p>（值得一提的是，对于SMAA 1x，只会用到第一排这2个大格。）</p>
+
+<p>对于orhto、并且只用SMAA 1x的情况，查询areaTex需要这么些参数：当前像素点的edge line的left方向和right方向末尾的边值e1、e2以及长度值d1、d2。e1、e2用来定位大格中的小格，d1、d2用来定位小格里的像素点。</p>
+
+<p>注意，因为areaTex分辨率有限，并且需要用长度值去索引，所以对于超长的锯齿边，就行不通了。作者也加了一个#define SMAA_MAX_SEARCH_STEPS 32。32就是小格的边长的一半，因为做了一个sqrt的压缩。</p>
+
+<p>areaTex的使用地方极少，只有在pass2调用了两次SMAAArea。所以关键的地方是areaTex的原理和生成（AreaTex.py）、以及SMAAArea需要的参数的计算。</p>
+
+<p>areaTex的生成是brute force的，遍历每一个subsample offset、每一个pattern、每一个left distance、每一个right distance，然后算出left、right方向4个面积存到weightTex，就可以给pass 3用了。</p>
+
+<p>先看如何生成Ortho（左边列）的一个小格：</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">tex2dortho</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">pattern</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">args</span> <span class="c1"># 对哪一个offset、哪一个pattern做生成，SMAA 1x的话只需要认为offset为0
+</span>    <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">SIZE_ORTHO</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span> <span class="c1"># 本来只有SIZE_ORTHO大小，这里偷偷放大一倍来计算，最终会被压缩回SIZE_ORTHO放进4D纹理里
+</span>    <span class="n">tex2d</span> <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="s">"RGBA"</span><span class="p">,</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+            <span class="c1"># x y代表left distance 和 right distance
+</span>            <span class="n">p</span> <span class="o">=</span> <span class="n">areaortho</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="c1"># p[0] p[1]就是一个edge关联的2个像素的a值了
+</span>            <span class="n">tex2d</span><span class="p">.</span><span class="n">putpixel</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+    <span class="n">tex2d</span><span class="p">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">"TGA"</span><span class="p">)</span>
+</code></pre></div>
+<p>关键的areaortho：</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># Calculates the area for a given pattern and distances to the left and to the
+# right, biased by an offset:
+</span><span class="k">def</span> <span class="nf">areaortho</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+
+    <span class="c1"># Calculates the area under the line p1-&gt;p2, for the pixel x..x+1:
+</span>    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="p">......</span>
+
+    <span class="c1"># o1           |
+</span>    <span class="c1">#      .-------´
+</span>    <span class="c1"># o2   |
+</span>    <span class="c1">#
+</span>    <span class="c1">#      &lt;---d---&gt;
+</span>    <span class="n">d</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">o1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">offset</span>
+    <span class="n">o2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">-</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1">#
+</span>        <span class="c1">#    ------
+</span>        <span class="c1">#   
+</span>        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1">#
+</span>        <span class="c1">#   .------
+</span>        <span class="c1">#   |
+</span>        <span class="c1">#
+</span>        <span class="c1"># We only offset L patterns in the crossing edge side, to make it
+</span>        <span class="c1"># converge with the unfiltered pattern 0 (we don't want to filter the
+</span>        <span class="c1"># pattern 0 to avoid artifacts).
+</span>        <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1">#
+</span>        <span class="c1">#    ------.
+</span>        <span class="c1">#          |
+</span>        <span class="k">if</span> <span class="n">left</span> <span class="o">&gt;=</span> <span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1">#
+</span>        <span class="c1">#   .------.
+</span>        <span class="c1">#   |      |
+</span>        <span class="n">a1</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+        <span class="n">a2</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+        <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">smootharea</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">a2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="c1">#   |
+</span>        <span class="c1">#   `------
+</span>        <span class="c1">#          
+</span>        <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="c1">#   |
+</span>        <span class="c1">#   +------
+</span>        <span class="c1">#   |      
+</span>        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="c1">#   |
+</span>        <span class="c1">#   `------.
+</span>        <span class="c1">#          |
+</span>        <span class="c1">#
+</span>        <span class="c1"># A problem of not offseting L patterns (see above), is that for certain
+</span>        <span class="c1"># max search distances, the pixels in the center of a Z pattern will
+</span>        <span class="c1"># detect the full Z pattern, while the pixels in the sides will detect a
+</span>        <span class="c1"># L pattern. To avoid discontinuities, we blend the full offsetted Z
+</span>        <span class="c1"># revectorization with partially offsetted L patterns.
+</span>        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">a1</span> <span class="o">=</span>  <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+            <span class="n">a2</span> <span class="o">=</span>  <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+            <span class="n">a2</span> <span class="o">+=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">a1</span> <span class="o">+</span> <span class="n">a2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
+        <span class="c1">#   |
+</span>        <span class="c1">#   +------.
+</span>        <span class="c1">#   |      |
+</span>        <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="c1">#          |
+</span>        <span class="c1">#    ------´
+</span>        <span class="c1">#   
+</span>        <span class="k">if</span> <span class="n">left</span> <span class="o">&gt;=</span> <span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="c1">#          |
+</span>        <span class="c1">#   .------´
+</span>        <span class="c1">#   |
+</span>        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">a1</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+            <span class="n">a2</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+            <span class="n">a2</span> <span class="o">+=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">a1</span> <span class="o">+</span> <span class="n">a2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="c1">#          |
+</span>        <span class="c1">#    ------+
+</span>        <span class="c1">#          |
+</span>        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="c1">#          |
+</span>        <span class="c1">#   .------+
+</span>        <span class="c1">#   |      |
+</span>        <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="c1">#   |      |
+</span>        <span class="c1">#   `------´
+</span>        <span class="c1">#   
+</span>        <span class="n">a1</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+        <span class="n">a2</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">(</span><span class="o">*</span><span class="n">area</span><span class="p">(([</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">))</span>
+        <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">smootharea</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">a2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+        <span class="c1">#   |      |
+</span>        <span class="c1">#   +------´
+</span>        <span class="c1">#   |
+</span>        <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">14</span><span class="p">:</span>
+        <span class="c1">#   |      |
+</span>        <span class="c1">#   `------+
+</span>        <span class="c1">#          |
+</span>        <span class="k">return</span> <span class="n">area</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">o1</span><span class="p">]),</span> <span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">o2</span><span class="p">]),</span> <span class="n">left</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">pattern</span> <span class="o">==</span> <span class="mi">15</span><span class="p">:</span>
+        <span class="c1">#   |      |
+</span>        <span class="c1">#   +------+
+</span>        <span class="c1">#   |      |
+</span>        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+</code></pre></div>
+<p>（代码贴进来后排版乱来= =）</p>
+
+<p>这里面根据pattern的值做来16个分支判断，为什么是16，看注释的图就知道了，4个边值\(e_{1}、e_{2}、e_{3}、e_{4}\)的组合都要枚举出来，每个e取值0或1，所以有2的4次方共16种情况。</p>
+
+<p>中间的横杠代表在search的时候的当前line，长度等于当前像素左边缘到左端点+右边缘到右端点+自己的宽度1，即d=left+right+1。</p>
+
+<p>// 因为SMAA 1x的offset为0，所以 o1 = 0.5， o2 = 0.5 - 1.0 = -0.5，代表o1当前像素的上边缘距离中心0.5个像素距离，o2是-0.5距离。</p>
+
+<ul>
+<li><p><strong>一型pattern：1</strong>。对于pattern 0，左右都没有crossing edge，是完美的直线，不需要抗锯齿，所以返回了两个0；</p></li>
+<li><p><strong>L型pattern：1、2、4、8</strong>。对于pattern 1，先做了一个判断if left &lt;= right，这是为了收敛到pattern 0，当left比right小，且是这个L型pattern，那么当前像素才需要做混合，也就需要计算面积。注释也写着只对L型pattern的crossing edge一侧做计算。pattern 2、4、8，就是pattern 1的3种镜像情况了，同理。</p></li>
+<li><p><strong>和一型pattern输出一样的pattern：5、10、15</strong>。观察这几个pattern可以发现有上下对称性，等于2个L叠加，互相抵消掉了。返回两个0.</p></li>
+<li><p><strong>U型pattern：3、12</strong>。对于3，就是1、2的叠加，同时做了1和2的面积计算，再smooth，再混合；同理，12就是4、8的叠加了。</p></li>
+<li><p><strong>Z型pattern：6、9</strong>。对于SMAA 1x，即offset=0，Z型pattern 6等同于h型pattern 7，Z型pattern 9等同于h型pattern 13。</p></li>
+<li><p><strong>h型pattern：7、11、13、14</strong>。相当直白的area函数调用。</p></li>
+</ul>
+
+<p>作者绘制的一张pattern图（就是左列的第一个大格）：</p>
+
+<p><img src="../images/2017.10/area.png" alt="area.png"></p>
+
+<p>观察此图和对应分支代码，可以发现area函数的坐标系原点是在left处，即最左边edge那里。以这里为原点，+x方向朝右，+y方向朝下。</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># Calculates the area under the line p1-&gt;p2, for the pixel x..x+1:
+</span><span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">p1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mf">1.0</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">p1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">inside</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">&gt;=</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x2</span> <span class="o">&gt;</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&lt;=</span> <span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># 线段[x,x+1]和[p1,p2]需要重叠
+</span>    <span class="k">if</span> <span class="n">inside</span><span class="p">:</span>
+        <span class="n">istrapezoid</span> <span class="o">=</span> <span class="p">(</span><span class="n">copysign</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">==</span> <span class="n">copysign</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="ow">or</span> 
+                        <span class="nb">abs</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-4</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">)</span> 
+        <span class="c1"># 计算是不是梯形（y1和y2同正负号）／直角形（y1或y2的长度为0）
+</span>        <span class="k">if</span> <span class="n">istrapezoid</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="c1"># 梯形面积公式：0.5 * h * (上底+下底) = 0.5 * 1 * (y1 + y2)
+</span>            <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span> <span class="c1"># y1和y2都在top edge线下方
+</span>                <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># [p1,p2]和top edge交叉了，形成2个三角形
+</span>            <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">p1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">a1</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">*</span>        <span class="n">modf</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="o">/</span> <span class="mf">2.0</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="mf">0.0</span>
+            <span class="n">a2</span> <span class="o">=</span> <span class="n">y2</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">modf</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="mf">0.0</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">a1</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="n">a2</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a1</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a2</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+</code></pre></div>
+<p>函数说明写着area函数算的是p1到p2这条线段下，x到x+1范围内的面积，x参数其实就是等于left，因为16个pattern都是传入了left。所以[x, x+1]就是[left，left+1]，又因为坐标系原点在最左边，[left，left+1]指的其实就是当前像素的左边界和右边界（一个像素的宽度为1）。所以area的任务就是要算出p1-p2把当前像素切开了多大面积。</p>
+
+<p>再就是斜向的情况：</p>
+
+<p><img src="../images/2017.10/area_diag.png" alt="area_diag.png"></p>
+
+<p>如果能完全理解ortho的情况，diag的就触类旁通了。这里暂时跳过。（这套SMAA太多细节了，每个点都搞懂实在不容易）</p>
+
+<h3>search算法</h3>
+
+<p>(待续)</p>
+
+<h2>用weightTex混合原图像（Pass 3）</h2>
+
+<h1>总结</h1>
+
+<p>SMAA的优点：</p>
+
+<ul>
+<li>强配置性，可以根据需要决定使用SMAA 1x/SMAA t2x/SMAA 4x</li>
+<li>SMAA 4x的性能和质量足以抗衡SSAA，低配的SMAA 1x对低端机也足够用了</li>
+<li>支持defer框架</li>
+</ul>
+
+<p>SMAA的缺点：</p>
+
+<ul>
+<li>流程太复杂，代码各种trick，仅读论文是看不懂代码的。只能边看代码边读论文，结合地去理解。</li>
+<li>需要预生成areaTex、searchTex，维护shader之外还得维护2个py脚本，定制修改SMAA比较复杂。</li>
+</ul>
+
+<p>我说的缺点可能比较naive，说不定对大佬来说这套SMAA并不复杂。</p>
+
+<p>本文仅介绍SMAA 1x的技术原理，至于SMAA t2x和SMAA 4x需要用到temporal reprojection和supersampliing，就是更进一步的话题了。</p>
+
+<h1>最终效果</h1>
+
+<p>原始图像:</p>
+
+<p><img src="../images/2017.10/alias.png" alt="alias.png"></p>
+
+<p>经过SMAA 1x过滤后:</p>
+
+<p><img src="../images/2017.10/antialias.png" alt="antialias.png"></p>
+
+<h1>资料</h1>
+
+<p><a href="http://www.iryoku.com/smaa/">http://www.iryoku.com/smaa/</a></p>
+
+<p><a href="http://www.iryoku.com/mlaa/">http://www.iryoku.com/mlaa/</a></p>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on October 22, 2017
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>

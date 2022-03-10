@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>学习增强学习 – Wyman的原创技术博客 – 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+    <meta name="baidu-site-verification" content="0OpfO1OtHA" />
+    
+    <meta name="description" content="" />
+    <meta property="og:description" content="" />
+    
+    <meta name="author" content="Wyman的原创技术博客" />
+
+    
+    <meta property="og:title" content="学习增强学习" />
+    <meta property="twitter:title" content="学习增强学习" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Wyman的原创技术博客 - 恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman" href="/feed.xml" />
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65954265-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/reinforcement-learning/',
+		  'title': '学习增强学习'
+		});
+	</script>
+	<!-- End Google Analytics -->
+	<!-- Baidu Analytics -->
+	<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?0dc968591d8c64196a37eca9ca4f86b3";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+	</script>
+	<!-- End Baidu Analytics -->
+
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://www.qiujiawei.com/images/avatar.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Wyman的原创技术博客</a></h1>
+            <p class="site-description">恭喜你发现我的小站，撩我请加QQ：234707482、Wechat：_Wyman</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <nav class="nav2">
+      <ul></ul>
+    </nav>
+
+    <div id="main" role="main" class="container">
+      <section>  
+        <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4=" crossorigin="anonymous"></script>
+<script src="/main.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h1>学习增强学习</h1>
+ <h3>Tags: <a href="/tag/ml/" rel="tag">ml</a></h3>
+<article class="post">
+    
+    <div class="entry">
+        <!--more-->
+
+<h1>马尔可夫决策过程</h1>
+
+<p>马尔可夫决策过程(<a href="https://en.wikipedia.org/wiki/Markov_decision_process">Markov decision process</a>，下文简称MDP)，可用来处理一些最优化问题，譬如非常出名的<a href="https://en.wikipedia.org/wiki/Dynamic_programming">动态规划</a>问题，以及本文的核心——<a href="https://en.wikipedia.org/wiki/Reinforcement_learning">增强学习</a>问题。</p>
+
+<h2>MDP的定义</h2>
+
+<p>MDP包含5个东西：\(S、A、P、R、\gamma \)</p>
+
+<ul>
+<li><p>S(State)，指的是目标系统的所有状态的集合</p></li>
+<li><p>A(Action)，状态之间的转换行为。可以把状态S想象成一堆节点，而A就是各个节点之间的有向连线集合</p></li>
+<li><p>P(probability)，\(P_{a}(s,s&#39;)\)，某状态\(s\)通过某行为a进入另一个状态\(s&#39;\)的概率</p></li>
+<li><p>R(Rewawrd)，\(R_{a}(s,s&#39;)\)，某状态\(s\)通过某行为a进入另一个状态\(s&#39;\)能获得的奖励值</p></li>
+<li><p>\(\gamma \) (Discount Factor)，用于奖励值计算的一个系数，表示非立即奖励(future rewards)相对于立即奖励(present rewards)的重要程度，当为1时表示同等重要，小于1时表示非立即奖励要打个折，等于0时表示只考虑立即奖励。因此有\( 0 \leq \gamma \leq 1 \)。注意，\(\gamma \) 是一个常数</p></li>
+</ul>
+
+<p>因为一般来说，状态之间是有时间先后顺序的（拓扑结构），所以每个状态s有它自己的固有属性t，表示这个s处于时间轴上的位置。</p>
+
+<p>在MDP的定义中没有指出S、A是不是有限集合(finite)，但在实际应用MDP时，必然是有限的。</p>
+
+<p>MDP的直观表示是一个有向图：</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Markov_Decision_Process_example.png" alt="1.png">
+(from wiki)</p>
+
+<h2>MDP的核心问题</h2>
+
+<p>MDP的核心核心是找出一个最理想的策略函数\(\pi ^{*} (s)\)给做决策的人，这个\(\pi ^{*}(s)\)决定了当处于状态s时，应采取哪个行为a，即\( a_{t} = \pi ^{*} (s_{t})\)。</p>
+
+<p>这个问题的解决方案是：求出一个叫做<strong>折算累积奖励(discounted cumulative reward)</strong>多项式的最大值，此时的\(\pi (s)\)就是最优解\(\pi ^{*}(s)\)。公式化表示就是：</p>
+
+<p>\[ r_{t} =  R_{ a_{t} }(s_{t}, s_{t+1} ) \]</p>
+
+<p>\[ V ^{\pi } (s_{t}) = r_{t} + \gamma r_{t+1} + \gamma ^{2} r_{t+2} + \cdots  =  \sum _{i=0}^{\infty }\gamma ^{i}r_{t+i} \]</p>
+
+<p>\[\pi ^{*} = argmax  V ^{\pi } (s) \]</p>
+
+<p>获得\(\pi ^{*} (s)\)后，就可以应用了，即对任意一个\(s_{t}\)，都可以算出最理想的行为\( a^{*}_{t} = \pi ^{*} (s_{t})\)。</p>
+
+<p>注意：\( V ^{\pi } (s_{t}) \)的实现不是唯一的，还有其他各种各样的公式可以选择，严格来说并不是MDP定义的一部分。</p>
+
+<h2>Q函数</h2>
+
+<p>评估函数Q的公式定义：</p>
+
+<p>\[ Q(s,a) = r_{immediate}(s,a) + \gamma V^{ \pi ^{*} }(s&#39;) \]</p>
+
+<p>用文字解释：Q的值为从状态s执行动作a所获得的立即奖励再加上后续遵循最优策略时的V值，V用\(\gamma \)折算。</p>
+
+<p>并且有：</p>
+
+<p>\[\pi ^{*} = argmax Q(s,a)  \]</p>
+
+<p>V函数和Q函数的关系：</p>
+
+<p>\[ V^{ \pi ^{*} } = \max _{a&#39;}Q(s,a&#39;) \]</p>
+
+<p>用这个式子重写Q的定义式：</p>
+
+<p>\[ Q(s,a) = r_{immediate}(s,a) + \gamma \max _{a&#39;}Q(s&#39;,a&#39;) \]</p>
+
+<h2>确定性MDP系统的基于Q函数的增强学习算法</h2>
+
+<p>在增强学习中，要学习的函数是Q函数而不是\( V^{ \pi ^{*} } \)函数。这是因为后者是关于s的一元函数，计算过程要求知道每个状态\(s_{t}\)的最佳\(a_{t}\)，否则就算不出\(r_{t}\)了；而Q函数是关于s、a的二元函数，不需要知道最佳\(a_{t}\)，而仅仅需要知道\( r_{immediate}(s,a) \)的值（右边的\(  \gamma \max _{a&#39;}Q(s&#39;,a&#39;) \)是递归式，熟悉动态规划的童鞋就知道Q可以计算出来的，实际上Q就是一个<a href="https://en.wikipedia.org/wiki/Bellman_equation">Bellman方程</a>）；当算出所有Q(s,a)的值后，根据\( a_{t}  = argmax Q(s_{t},a) \)，就可以知道\( \pi ^{*} \)。</p>
+
+<p>Q学习算法的流程如下：</p>
+
+<ol>
+<li><p>建一个二维表Q(s,a)，并把所有表项Q(s,a)初始化成0</p></li>
+<li><p>重复迭代：</p>
+
+<ol>
+<li>根据当前状态s，选一个动作a并执行</li>
+<li>得到立即奖励r：\( r = R_{ a }(s, s&#39;)  \)</li>
+<li>更新表项：\( Q(s,a) = r + \gamma \max _{a&#39;}Q(s&#39;, a&#39;)  \) 【向后传播(back propagation)】</li>
+<li>进入新状态s&#39;：\(  s = s&#39; \)</li>
+</ol></li>
+</ol>
+
+    </div>
+    <div class="entry">
+        (未经授权禁止转载)
+    </div>
+    <div class="date">
+        Written on June 11, 2016
+    </div>
+    <p>博主将十分感谢对本文章的任意金额的打赏^_^</p>
+    <img src="../images/dashang1.jpeg" />
+    <img src="../images/dashang2.jpeg" />
+    
+    
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+
+	    var disqus_shortname = 'qiujiawei';
+
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+</article>
+
+
+
+      </section>
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:voyagingmk@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="http://github.com/barryclark/jekyll-now"><i class="svg-icon github"></i></a>
+
+
+
+
+<a href="http://twitter.com/voyagingmk"><i class="svg-icon twitter"></i></a>
+
+
+        </footer>
+      </div>
+    </div>
+
+  </body>
+</html>
