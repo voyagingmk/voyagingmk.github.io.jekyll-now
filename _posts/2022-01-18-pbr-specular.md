@@ -424,11 +424,11 @@ float visibility(float roughness, float NoV, float NoL) {
 
 \\[ f = (1 - v\cdot h)\^ 5 \\]
 
-\\[ F = f\_\{90\}(1 - v\cdot h)\^ 5 - f\_\{0\}( 1 - (1 - v\cdot h)\^ 5 ) \\]
+\\[ F = f\_\{90\}(1 - v\cdot h)\^ 5 + f\_\{0\}( 1 - (1 - v\cdot h)\^ 5 ) \\]
 
-\\[ = (1 - v\cdot h)\^ 5 - f\_\{0\}( 1 - (1 - v\cdot h)\^ 5 ) \\]
+\\[ = (1 - v\cdot h)\^ 5 + f\_\{0\}( 1 - (1 - v\cdot h)\^ 5 ) \\]
 
-\\[ = f - f\_\{0\}( 1 - f ) \\]
+\\[ = f + f\_\{0\}( 1 - f ) \\]
 
 
 ```glsl
